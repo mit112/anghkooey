@@ -22,7 +22,7 @@ targets:
         excludes:
           - "**/*.xcprivacy"
     resources:
-      - path: Anghkooey/PrivacyInfo.xcprivacy
+      - Anghkooey/PrivacyInfo.xcprivacy
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.mitsheth.anghkooey
@@ -31,3 +31,19 @@ targets:
         IPHONEOS_DEPLOYMENT_TARGET: "26.0"
         INFOPLIST_FILE: ""
         GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_IDENTITY: "Apple Development"
+        CODE_SIGN_STYLE: Automatic
+
+schemes:
+  Anghkooey:
+    build:
+      targets:
+        Anghkooey: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+    profile:
+      config: Release
+    archive:
+      config: Release
