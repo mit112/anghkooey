@@ -1,0 +1,33 @@
+name: Anghkooey
+options:
+  bundleIdPrefix: com.mitsheth
+  deploymentTarget:
+    iOS: "26.0"
+  defaultConfig: Debug
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    IPHONEOS_DEPLOYMENT_TARGET: "26.0"
+
+targets:
+  Anghkooey:
+    type: application
+    platform: iOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: Anghkooey
+        excludes:
+          - "**/*.xcprivacy"
+    resources:
+      - path: Anghkooey/PrivacyInfo.xcprivacy
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mitsheth.anghkooey
+        SWIFT_VERSION: "6.0"
+        SWIFT_STRICT_CONCURRENCY: complete
+        IPHONEOS_DEPLOYMENT_TARGET: "26.0"
+        INFOPLIST_FILE: ""
+        GENERATE_INFOPLIST_FILE: YES
