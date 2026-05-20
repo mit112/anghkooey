@@ -8,24 +8,49 @@
 
 /* Begin PBXBuildFile section */
 		46A0E6A0C20AE8578112E927 /* AnghkooeyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6303924A04882FA4C900557B /* AnghkooeyApp.swift */; };
+		65C5300478257265174ECB34 /* AnghkooeyUI in Frameworks */ = {isa = PBXBuildFile; productRef = 35F7FD1699C5DB4B94EEF7ED /* AnghkooeyUI */; };
 		BD158D82F31B74D299DF85F8 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E3ED969F4ECE89B0A25E87 /* ContentView.swift */; };
-		C7A1B2D3E4F5A6B7C8D9E0F1 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A7B8C9D0E1F2 /* PrivacyInfo.xcprivacy */; };
+		C0FFEE01DEADBEEF11111111 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C0FFEE02DEADBEEF22222222 /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		039A95E01BFF83BC28BA6F22 /* AnghkooeyIntelligence */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AnghkooeyIntelligence; path = ../Packages/AnghkooeyIntelligence; sourceTree = SOURCE_ROOT; };
+		071F54EC6FF668936C218728 /* AnghkooeyCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AnghkooeyCore; path = ../Packages/AnghkooeyCore; sourceTree = SOURCE_ROOT; };
 		6303924A04882FA4C900557B /* AnghkooeyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnghkooeyApp.swift; sourceTree = "<group>"; };
 		80E3ED969F4ECE89B0A25E87 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F6A7B8C9D0E1F2 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = file.xcprivacy; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		83CE7E31BDF48A8B35196DB6 /* AnghkooeyUI */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AnghkooeyUI; path = ../Packages/AnghkooeyUI; sourceTree = SOURCE_ROOT; };
+		C0FFEE02DEADBEEF22222222 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		EA63E5FA330602579BBE4E25 /* Anghkooey.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Anghkooey.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFrameworksBuildPhase section */
+		F917D06412004FAA2CDCEB46 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				65C5300478257265174ECB34 /* AnghkooeyUI in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
 /* Begin PBXGroup section */
+		16D3A861B07EFD2F644BF73B /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				071F54EC6FF668936C218728 /* AnghkooeyCore */,
+				039A95E01BFF83BC28BA6F22 /* AnghkooeyIntelligence */,
+				83CE7E31BDF48A8B35196DB6 /* AnghkooeyUI */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
 		314911AE872155B4BC9640C8 /* Anghkooey */ = {
 			isa = PBXGroup;
 			children = (
 				6303924A04882FA4C900557B /* AnghkooeyApp.swift */,
 				80E3ED969F4ECE89B0A25E87 /* ContentView.swift */,
-				A1B2C3D4E5F6A7B8C9D0E1F2 /* PrivacyInfo.xcprivacy */,
+				C0FFEE02DEADBEEF22222222 /* PrivacyInfo.xcprivacy */,
 			);
 			path = Anghkooey;
 			sourceTree = "<group>";
@@ -42,6 +67,7 @@
 			isa = PBXGroup;
 			children = (
 				314911AE872155B4BC9640C8 /* Anghkooey */,
+				16D3A861B07EFD2F644BF73B /* Packages */,
 				772CA5EFF1AF47C0CF8ADC88 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -53,8 +79,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 67CA97998EAF96096A215C7E /* Build configuration list for PBXNativeTarget "Anghkooey" */;
 			buildPhases = (
-				F1E2D3C4B5A69788970A0B1C /* Resources */,
 				86F48F1F9CC0C93AC8355A3A /* Sources */,
+				F917D06412004FAA2CDCEB46 /* Frameworks */,
+				C0FFEE03DEADBEEF33333333 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -62,6 +89,7 @@
 			);
 			name = Anghkooey;
 			packageProductDependencies = (
+				35F7FD1699C5DB4B94EEF7ED /* AnghkooeyUI */,
 			);
 			productName = Anghkooey;
 			productReference = EA63E5FA330602579BBE4E25 /* Anghkooey.app */;
@@ -90,6 +118,11 @@
 			);
 			mainGroup = 7B0A27900734474C82DB9EE2;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				AC0176BD46B94200BE7F8FD8 /* XCLocalSwiftPackageReference "../Packages/AnghkooeyCore" */,
+				855497277983DEBA7676E36C /* XCLocalSwiftPackageReference "../Packages/AnghkooeyIntelligence" */,
+				54CE233A161E231738B6F5EF /* XCLocalSwiftPackageReference "../Packages/AnghkooeyUI" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 772CA5EFF1AF47C0CF8ADC88 /* Products */;
 			projectDirPath = "";
@@ -101,11 +134,11 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		F1E2D3C4B5A69788970A0B1C /* Resources */ = {
+		C0FFEE03DEADBEEF33333333 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C7A1B2D3E4F5A6B7C8D9E0F1 /* PrivacyInfo.xcprivacy in Resources */,
+				C0FFEE01DEADBEEF11111111 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -309,6 +342,28 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		54CE233A161E231738B6F5EF /* XCLocalSwiftPackageReference "../Packages/AnghkooeyUI" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/AnghkooeyUI;
+		};
+		855497277983DEBA7676E36C /* XCLocalSwiftPackageReference "../Packages/AnghkooeyIntelligence" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/AnghkooeyIntelligence;
+		};
+		AC0176BD46B94200BE7F8FD8 /* XCLocalSwiftPackageReference "../Packages/AnghkooeyCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/AnghkooeyCore;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		35F7FD1699C5DB4B94EEF7ED /* AnghkooeyUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AnghkooeyUI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 94D568656132B33BBE87E20A /* Project object */;
 }

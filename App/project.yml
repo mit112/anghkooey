@@ -12,16 +12,34 @@ settings:
     SWIFT_STRICT_CONCURRENCY: complete
     IPHONEOS_DEPLOYMENT_TARGET: "26.0"
 
+packages:
+  AnghkooeyCore:
+    path: ../Packages/AnghkooeyCore
+  AnghkooeyIntelligence:
+    path: ../Packages/AnghkooeyIntelligence
+  AnghkooeyUI:
+    path: ../Packages/AnghkooeyUI
+
 targets:
   Anghkooey:
     type: application
     platform: iOS
     deploymentTarget: "26.0"
+    dependencies:
+      - package: AnghkooeyUI
     sources:
       - path: Anghkooey
         excludes:
           - "**/*.xcprivacy"
     resources:
+      # WARNING — xcodegen fragility: xcodegen silently omits .xcprivacy from
+      # PBXResourcesBuildPhase even when listed here. After every `make generate`
+      # you MUST manually verify that PrivacyInfo.xcprivacy appears in the
+      # PBXResourcesBuildPhase section of project.pbxproj. If it is missing,
+      # re-add the PBXBuildFile entry and the reference in PBXResourcesBuildPhase.
+      # Run: grep -c "PrivacyInfo" App/Anghkooey.xcodeproj/project.pbxproj
+      # Expected count: 4 (PBXBuildFile, PBXFileReference, PBXGroup, PBXResourcesBuildPhase)
+      # TODO: replace this manual step with a postGenCommand patch script.
       - Anghkooey/PrivacyInfo.xcprivacy
     settings:
       base:
