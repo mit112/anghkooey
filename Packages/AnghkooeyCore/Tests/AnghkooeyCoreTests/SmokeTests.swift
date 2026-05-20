@@ -2,5 +2,5 @@ import Testing
 @testable import AnghkooeyCore
 
 @Test func packageLoads() {
-    #expect(Bool(true))
+    _ = AnghkooeyCore.self
 }

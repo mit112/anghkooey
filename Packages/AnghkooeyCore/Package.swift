@@ -4,7 +4,8 @@ import PackageDescription
 let package = Package(
     name: "AnghkooeyCore",
     platforms: [
-        .iOS(.v26)
+        .iOS(.v26),
+        .macOS(.v15)
     ],
     products: [
         .library(
@@ -21,5 +22,7 @@ let package = Package(
             dependencies: ["AnghkooeyCore"]
         )
     ],
+    // Strict concurrency is enforced implicitly by Swift 6 language mode (.v6).
+    // No .enableExperimentalFeature("StrictConcurrency") is needed.
     swiftLanguageModes: [.v6]
 )
