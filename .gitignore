@@ -40,6 +40,9 @@ fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
 
+# CI
+.ci-derived-data/
+
 # Other
 *.log
 *.lock
