@@ -1,4 +1,4 @@
-# CLAUDE.md — Rewind (working name)
+# CLAUDE.md — Anghkooey
 
 > Loaded into every session. Keep this file tight; it is context, not documentation.
 

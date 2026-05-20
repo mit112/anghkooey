@@ -26,11 +26,13 @@ DerivedData/
 .build/
 .swiftpm/xcode/
 .swiftpm/configuration/
-*.resolved
+# Package.resolved is intentionally tracked for reproducible app builds (omit only for library targets)
 
 # CocoaPods (not used, but guard against accidental addition)
 Pods/
-*.xcworkspace
+# Ignore user-specific data inside workspaces, not the workspace files themselves
+**/*.xcworkspace/xcuserdata/
+**/*.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
 
 # Fastlane
 fastlane/report.xml
