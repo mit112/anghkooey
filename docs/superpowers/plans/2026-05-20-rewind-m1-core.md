@@ -71,18 +71,17 @@ Sequenced; arrows mark hard dependencies. Owner: **C = Codex (Sonnet via /codex:
 
 ## Handoff Ledger
 
-- **Current owner:** Claude (T1 contract authored 2026-05-20; awaiting iOS-Simulator verification + commit handoff to Codex)
-- **Current branch:** `m1/swiftdata-models` (uncommitted)
-- **Last good commit:** `6842c90` (m0-complete tag)
-- **Active task:** T1 — SwiftData models + in-memory ModelContainer
-- **Completed:** Contract files written by Claude (8 source files + 1 test file + tripwire script); `swift test` returns 9/9 passing on macOS host
-- **Verification run:** `swift test` (macOS host) — exit 0, 9 tests (7 new persistence + 2 pre-existing M0 logging). Pending: `xcodebuild test` on iOS 26 Simulator.
+- **Current owner:** Claude (T2 complete 2026-05-20; T3 ready to dispatch to Codex)
+- **Current branch:** `m1/swiftdata-models` (T1 committed at `97e5bef`; T2 uncommitted, about to commit)
+- **Last good commit:** `97e5bef` (T1 — SwiftData v1 schema)
+- **Active task:** T2 — FSRS-6 reference pin + parity-fixture generation
+- **Completed:**
+  - T1 — SwiftData models green on macOS host + iOS 26 Simulator (Codex-verified, commit `97e5bef`).
+  - T2 — Pinned `ts-fsrs v5.4.0` (SHA `80bab011a7f496b06c99924d54e772cf258244f2`) as the FSRS-6 reference. Decision recorded in `docs/DECISIONS/0002-fsrs-reference.md` (rs-fsrs rejected: latest release v1.2.1 is FSRS-5, no FSRS-6 branch). Wrote `scripts/fsrs/generate-parity-fixtures.mjs` driving the pinned impl. Generated 150 fixtures (50 synthetic + 100 deterministic-random, seeds 0–99) at `Packages/AnghkooeyCore/Tests/AnghkooeyCoreTests/Fixtures/fsrs6-parity.json`. Schema documented inline in ADR-0002.
+- **Verification run (T2):** `node generate-parity-fixtures.mjs` → `Wrote 150 fixtures (50 synthetic + 100 random) … ts-fsrs version: v5.4.0 using FSRS-6.0`. Coverage scan: all 4 ratings present, lifecycle states {1, 2, 3} covered (state 0 = pre-review, never appears in `expected.state`), 282 steps with `lapses > 0`.
 - **Known failures:** —
-- **Process notes (2026-05-20):**
-  - Codex attempts #1 (default model) and #2 (resumed, default since spark unavailable on ChatGPT account) both went off-spec on the schema design itself: invented `Deck`, used `front`/`back`, omitted `Tag`, missed `Rating`/`PersistenceError`, hard-coded subsystem. See AGENTS.md → "Contract-first task shape" for the resulting workflow change.
-  - Workflow now: Claude owns the contract (file layout, public symbols, failing tests, forbidden-patterns); Codex's role on T1 narrows to verification + commit.
-- **Next step:** Dispatch a narrow Codex task: `xcodebuild test` on an iOS 26 Simulator, run `scripts/m1-forbidden-patterns.sh`, then commit on `m1/swiftdata-models`. No source edits permitted.
-- **Review needed from:** Codex (simulator verification only); then Claude proceeds to T2 (FSRS reference pin).
+- **Next step:** Dispatch T3 to Codex — fill the FSRS-6 type skeleton in `AnghkooeyCore/Sources/AnghkooeyCore/Scheduling/` per the contract Claude will author at the start of T3. T4 (math port) stays with Claude/Opus per AGENTS.md §FSRS math exception.
+- **Review needed from:** — (T2 is research/data, no code review needed beyond ADR-0002 sanity-read.)
 
 ---
 
