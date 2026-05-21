@@ -20,6 +20,7 @@ public struct CardDraft: Sendable, Codable, Equatable {
     /// `nil` when the model cannot isolate a single span.
     public var sourceSpan: String?
 
+    /// Creates a card draft with the given question, answer, and optional metadata.
     public init(question: String,
                 answer: String,
                 proposedTags: [String] = [],
