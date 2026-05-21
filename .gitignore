@@ -43,6 +43,9 @@ fastlane/test_output
 # CI
 .ci-derived-data/
 
+# Claude Code (local-only settings + cached state)
+.claude/settings.local.json
+
 # Other
 *.log
 *.lock
