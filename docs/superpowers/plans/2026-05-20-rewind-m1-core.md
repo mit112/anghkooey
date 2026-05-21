@@ -71,18 +71,19 @@ Sequenced; arrows mark hard dependencies. Owner: **C = Codex (Sonnet via /codex:
 
 ## Handoff Ledger
 
-- **Current owner:** Codex (T3 contract authored + committed by Claude; Codex must fill `MockFSRS6Engine.next` and run iOS-Simulator verification)
-- **Current branch:** `m1/swiftdata-models` (4 commits ahead of `main`)
-- **Last good commit:** `e556200` (T3 contract — FSRS-6 scheduling skeleton)
-- **Active task:** T3 — Codex fills `MockFSRS6Engine.next` per the doc-comment contract pinned in `Scheduling/MockFSRS6Engine.swift` and asserted by `SchedulingContractTests.MockFSRS6EngineContractTests` (6 tests). `LiveFSRS6Engine.next` stays at `fatalError("unimplemented — M1 T4")` — do not touch.
+- **Current owner:** Claude — T3 complete; T4 (math port) opens on a fresh Opus session with the parity harness loaded.
+- **Current branch:** `m1/swiftdata-models` (5 commits ahead of `main`)
+- **Last good commit:** `4545247` (T3 fill — MockFSRS6Engine.next)
+- **Active task:** — (T3 closed; T4 next)
 - **Completed:**
   - T1 — SwiftData models green on macOS host + iOS 26 Simulator (Codex-verified, commit `97e5bef`).
   - T2 — Pinned `ts-fsrs v5.4.0` (SHA `80bab011a7f496b06c99924d54e772cf258244f2`) as the FSRS-6 reference. ADR-0002. 150 fixtures at `Packages/AnghkooeyCore/Tests/AnghkooeyCoreTests/Fixtures/fsrs6-parity.json`. Commit `7964a1b`.
-  - T3 contract (Claude) — `Scheduling/FSRSParameters.swift`, `SchedulingCard.swift`, `SchedulerOutput.swift`, `FSRS6Engine.swift`, `MockFSRS6Engine.swift` (stub), `Tests/SchedulingContractTests.swift` (18 cases), `scripts/m1-forbidden-patterns.sh` extension. `swift build` green, tripwire green. Commit `e556200`.
-- **Verification run (T3 contract, Claude):** `swift build` → `Build complete! (0.57s)`; `bash scripts/m1-forbidden-patterns.sh` → `M1 forbidden-pattern check: OK`. `swift test` exits non-zero as designed — Mock stub traps with `fatalError`, which is the RED Codex must turn green.
-- **Known failures:** `MockFSRS6EngineContractTests` (6 tests) trap on `fatalError` until Codex fills `MockFSRS6Engine.next`. This is the intended contract-first RED.
-- **Next step:** Codex T3 fill — implement `MockFSRS6Engine.next` exactly per its doc-comment contract; run `xcodebuild test -scheme AnghkooeyCore -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.0'`; run `bash scripts/m1-forbidden-patterns.sh`; commit on `m1/swiftdata-models`. Then T4 (math port) opens on a fresh Opus session with parity harness loaded.
-- **Review needed from:** Claude (Opus) once Codex returns — diff review against the doc-comment contract, then close T3.
+  - T3 contract (Claude) — `Scheduling/FSRSParameters.swift`, `SchedulingCard.swift`, `SchedulerOutput.swift`, `FSRS6Engine.swift`, `MockFSRS6Engine.swift` (stub), `Tests/SchedulingContractTests.swift` (18 cases), `scripts/m1-forbidden-patterns.sh` extension. Commit `e556200`.
+  - T3 fill (Codex authored body, Claude verified on simulator due to Codex sandbox blocking `swift build`) — `MockFSRS6Engine.next` implements the doc-comment contract exactly. Commit `4545247`.
+- **Verification run (T3 fill, Claude):** `bash scripts/m1-forbidden-patterns.sh` → `M1 forbidden-pattern check: OK`. `xcodebuild test -scheme AnghkooeyCore -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.0'` → `** TEST SUCCEEDED **`, 23/23 tests passed in 5 suites. xcresult at `/tmp/anghkooey-m1t3.xcresult`.
+- **Known failures:** — `LiveFSRS6Engine.next` still traps with `fatalError("unimplemented — M1 T4")`; intentional, exercised by no test until T4.
+- **Next step:** T4 — FSRS-6 math port. Open a fresh Opus session, load `docs/DECISIONS/0002-fsrs-reference.md` + `Fixtures/fsrs6-parity.json` + `Scheduling/FSRS6Engine.swift`. Implement `LiveFSRS6Engine.next` against the 21-weight FSRS-6 spec; do not unify with the parity harness (T5 — Codex) in the same commit.
+- **Review needed from:** — (T3 review complete; Claude both authored and verified.)
 
 ---
 
