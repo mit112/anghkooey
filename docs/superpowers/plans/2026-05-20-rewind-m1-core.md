@@ -71,10 +71,10 @@ Sequenced; arrows mark hard dependencies. Owner: **C = Codex (Sonnet via /codex:
 
 ## Handoff Ledger
 
-- **Current owner:** Claude/Sonnet or Codex — T4 math fix landed; parity gate green; T6 (DocC + ARCHITECTURE.md) is next and is Sonnet/Codex-suitable.
-- **Current branch:** `m1/swiftdata-models` (8 commits ahead of `main`)
-- **Last good commit:** T4 math fix (`LiveFSRS6Engine` review-state t=0 triple uses short-term stability)
-- **Active task:** T6 (DocC pass + ARCHITECTURE.md M1 update)
+- **Current owner:** — M1 COMPLETE. Propose M1 exit review (Opus) before merging to `main`.
+- **Current branch:** `m1/swiftdata-models` (10 commits ahead of `main`, all unpushed)
+- **Last good commit:** T6b ARCHITECTURE.md (`36c7f6d`)
+- **Active task:** none
 - **Completed:**
   - T1 — SwiftData models green on macOS host + iOS 26 Simulator (Codex-verified, commit `97e5bef`).
   - T2 — Pinned `ts-fsrs v5.4.0` (SHA `80bab011a7f496b06c99924d54e772cf258244f2`) as the FSRS-6 reference. ADR-0002. 150 fixtures at `Packages/AnghkooeyCore/Tests/AnghkooeyCoreTests/Fixtures/fsrs6-parity.json`. Commit `7964a1b`.
@@ -83,10 +83,12 @@ Sequenced; arrows mark hard dependencies. Owner: **C = Codex (Sonnet via /codex:
   - T4 initial port (Claude/Opus) — `LiveFSRS6Engine.swift` + `FSRSAlgorithmTests.swift` (47/47 green at T4 close). Math bug revealed by T5 parity harness — see below.
   - T5 harness (Claude/Sonnet) — `FSRS6ParityTests.swift` (Swift Testing, `@Test(arguments:)` over 150 fixtures). `Package.swift` test target gains `resources: [.process("Fixtures")]` for `Bundle.module` access. Harness compiles and runs; found 76 divergences across fixtures. 47 pre-existing unit tests still pass.
   - T4 math fix (Claude/Opus) — `LiveFSRS6Engine.next` review-state non-again branch now branches on `elapsed == 0 && enableShortTerm`: when true, the hard/good/easy stability triple comes from `nextShortTermStability(s:, g:)` per grade (matching ts-fsrs `nextMemoryState` short-term short-circuit). The `next.stability` line was already correct via the actual-rating `nextMemoryState` call; only the interval triple needed the branch. Monotonicity constraint unchanged.
+  - T6a DocC pass (Claude/Sonnet) — `AnghkooeyCore` namespace enum and `CoreLog` type + 3 logger properties now carry `///` summaries. All other public symbols already had doc comments. Commit `addc279`. Build + forbidden-pattern check green.
+  - T6b ARCHITECTURE.md (Claude/Sonnet) — created `ARCHITECTURE.md` at repo root with M1 section: package topology, SwiftData schema v1, FSRS-6 engine type surface, short-term vs long-term scheduler semantics, ADR-0002 parameter table, test strategy (223 tests across 4 layers). Commit `36c7f6d`.
 - **Verification run (T4 fix, Claude):** `bash scripts/m1-forbidden-patterns.sh` → `M1 forbidden-pattern check: OK`. `xcodebuild test -scheme AnghkooeyCore -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.0'` → `** TEST SUCCEEDED **` — 48 unit tests + 150 parity fixtures all green. xcresult at `/tmp/anghkooey-m1t4b.xcresult`. Total: 198 tests pass.
 - **Known caveats:** Long-term scheduler (`enableShortTerm == false`) is not specialised — the basic dispatch is used regardless. FSRS-6 default parameters have short-term enabled (ADR-0002) so parity is unaffected; a dedicated long-term path can land later without API change.
-- **Next step:** T6 — DocC pass on `AnghkooeyCore` public APIs + `ARCHITECTURE.md` M1 update. Sonnet/Codex-suitable (no math, mostly prose and doc-comments).
-- **Review needed from:** — (T4 closed by parity gate; T6 is doc-only.)
+- **Next step:** M1 exit review on Opus. See M1 exit gate checklist above. After exit review passes, open PR `m1/swiftdata-models → main`.
+- **Review needed from:** Opus (exit review — mandatory per CLAUDE.md routing policy).
 
 ---
 
