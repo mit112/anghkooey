@@ -5,6 +5,9 @@ import FoundationModels
 /// `CardDraft` is the output unit of `CardAuthoringService`. It does not
 /// map to `Card` directly — conversion happens in `AnghkooeyUI` after the
 /// user reviews and accepts the draft.
+// @Generable and Codable coexist intentionally — verified on Xcode 26 beta.
+// If a future beta produces a "redundant conformance" error here, move
+// Codable conformance to a separate extension in a non-@Generable file.
 @Generable
 public struct CardDraft: Sendable, Codable, Equatable {
     /// The recall prompt shown to the user during review.
