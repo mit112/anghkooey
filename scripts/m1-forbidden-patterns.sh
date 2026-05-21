@@ -62,6 +62,22 @@ for pattern in "${PATTERNS[@]}"; do
   fi
 done
 
+# M2 — AnghkooeyIntelligence source checks
+INT_SRC="${ROOT}/Packages/AnghkooeyIntelligence/Sources/AnghkooeyIntelligence"
+INT_PATTERNS=(
+  'import SwiftData'
+  'import SwiftUI'
+  'import UIKit'
+)
+
+for pattern in "${INT_PATTERNS[@]}"; do
+  if rg --no-heading --line-number --color=never \
+        -e "${pattern}" "${INT_SRC}" 2>/dev/null; then
+    echo "  ↑ forbidden pattern in AnghkooeyIntelligence: ${pattern}" >&2
+    EXIT=1
+  fi
+done
+
 if [[ "${EXIT}" -eq 0 ]]; then
   echo "M1 forbidden-pattern check: OK"
 fi
