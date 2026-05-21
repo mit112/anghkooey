@@ -63,13 +63,14 @@ public enum RubricScorer {
             .components(separatedBy: .whitespacesAndNewlines)
             .map { $0.trimmingCharacters(in: .punctuationCharacters) }
             .filter { !$0.isEmpty && !stopwords.contains($0) }
+        // TODO: uses substring match, not whole-word — "cat" satisfies "catecholamine". Upgrade to word-boundary regex for v2.
         return answerTokens.allSatisfy { passageLower.contains($0) }
     }
 
     private static func questionDoesNotLeakAnswer(question: String, answer: String) -> Bool {
         let qWords = question.lowercased().split(separator: " ").map(String.init)
         let aWords = answer.lowercased().split(separator: " ").map(String.init)
-        guard aWords.count >= 4 else { return true }
+        guard aWords.count >= 4 else { return true } // < 4 words can't form a 4-gram; skip check
         for i in 0...(aWords.count - 4) {
             let gram = aWords[i..<(i + 4)].joined(separator: " ")
             if qWords.joined(separator: " ").contains(gram) { return false }
