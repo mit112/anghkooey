@@ -71,20 +71,26 @@ Sequenced; arrows mark hard dependencies. Owner: **C = Codex (Sonnet via /codex:
 
 ## Handoff Ledger
 
-- **Current owner:** Claude — T4 complete; T5 (parity harness) opens next, Codex-suitable.
-- **Current branch:** `m1/swiftdata-models` (6 commits ahead of `main`)
-- **Last good commit:** T4 (FSRS-6 math port — `LiveFSRS6Engine.next`)
-- **Active task:** — (T4 closed; T5 next)
+- **Current owner:** Claude/Opus — T5 harness complete; T4 math bug found; Opus must fix `LiveFSRS6Engine` before parity gate can go green.
+- **Current branch:** `m1/swiftdata-models` (7 commits ahead of `main`)
+- **Last good commit:** T5 (parity harness scaffolding — `FSRS6ParityTests.swift`)
+- **Active task:** T4 math fix (re-opened by parity harness)
 - **Completed:**
   - T1 — SwiftData models green on macOS host + iOS 26 Simulator (Codex-verified, commit `97e5bef`).
   - T2 — Pinned `ts-fsrs v5.4.0` (SHA `80bab011a7f496b06c99924d54e772cf258244f2`) as the FSRS-6 reference. ADR-0002. 150 fixtures at `Packages/AnghkooeyCore/Tests/AnghkooeyCoreTests/Fixtures/fsrs6-parity.json`. Commit `7964a1b`.
   - T3 contract (Claude) — `Scheduling/FSRSParameters.swift`, `SchedulingCard.swift`, `SchedulerOutput.swift`, `FSRS6Engine.swift`, `MockFSRS6Engine.swift` (stub), `Tests/SchedulingContractTests.swift` (18 cases), `scripts/m1-forbidden-patterns.sh` extension. Commit `e556200`.
   - T3 fill (Codex authored body, Claude verified on simulator due to Codex sandbox blocking `swift build`) — `MockFSRS6Engine.next` implements the doc-comment contract exactly. Commit `4545247`.
-  - T4 (Claude/Opus) — Ported FSRS-6 algorithm and BasicScheduler dispatch into `LiveFSRS6Engine`. New file `Scheduling/LiveFSRS6Engine.swift` exposes `@usableFromInline` math primitives (`forgettingCurve`, `initStability`/`initDifficulty`, `linearDamping`, `meanReversion`, `nextDifficulty`, `nextRecallStability`, `nextForgetStability`, `nextShortTermStability`, `nextInterval`, `nextMemoryState`) plus the public `next(card:rating:now:)`. UTC-calendar-day `elapsed` computed by the engine; basic learning-step strategy ported verbatim; review-state triple applies the hard ≤ good < easy monotonicity from `BasicScheduler.next_interval`. New file `Tests/FSRSAlgorithmTests.swift` (`@testable`) with 24 cases: primitive math (derived constants, forgetting curve, init S/D, mean reversion, recall/forget/short-term stability, interval clamp, seed path) + end-to-end fixture matches (first-rating-{again,hard,good,easy}, graduate-good-good through step 2 stability/difficulty, review→Again lapse, error paths).
-- **Verification run (T4, Claude):** `bash scripts/m1-forbidden-patterns.sh` → `M1 forbidden-pattern check: OK`. `xcodebuild test -scheme AnghkooeyCore -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=26.0'` → `** TEST SUCCEEDED **`, 47/47 tests passed in 7 suites. xcresult at `/tmp/anghkooey-m1t4.xcresult`.
+  - T4 initial port (Claude/Opus) — `LiveFSRS6Engine.swift` + `FSRSAlgorithmTests.swift` (47/47 green at T4 close). Math bug revealed by T5 parity harness — see below.
+  - T5 harness (Claude/Sonnet) — `FSRS6ParityTests.swift` (Swift Testing, `@Test(arguments:)` over 150 fixtures). `Package.swift` test target gains `resources: [.process("Fixtures")]` for `Bundle.module` access. Harness compiles and runs; found 76 divergences across fixtures. 47 pre-existing unit tests still pass.
+- **Verification run (T5, Claude):** `bash scripts/m1-forbidden-patterns.sh` → `M1 forbidden-pattern check: OK`. `xcodebuild test` → `** TEST FAILED **` — 47/47 pre-existing tests pass, parity suite finds 76 issues across 150 fixture tests. xcresult at `/tmp/anghkooey-m1t5.xcresult`.
+- **T4 math bug (isolated by T5 harness — Opus must fix):**
+  - **Trigger:** review state + elapsed = 0 calendar days (intra-day review) + `enableShortTerm = true`.
+  - **Root cause:** The review-state non-again path in `LiveFSRS6Engine.next` computes the interval triple using `computeRecallStability(d, s, r, g)`. When `t = 0`, `r = forgettingCurve(0, s) = 1.0`, so the recall formula collapses to `s * (1 + 0) = s_old` for every grade. ts-fsrs instead computes the interval for each grade from the full `nextMemoryState` output (which, at `t = 0` with `enableShortTerm = true`, calls `nextShortTermStability` per grade). The short-term formula returns a grade-specific boosted value, so Easy gets a larger interval than the recall path gives.
+  - **Example:** review at stability=11.69, Easy, t=0. Recall path: easyI = 14. Short-term path: easyI = 18 (expected). Difference ≈ 4 days, matching the fixture delta of 345600s.
+  - **Fix direction (for Opus):** in the review-state non-again branch, when `t == 0 && enableShortTerm`, replace the three `computeRecallStability` calls with `nextMemoryState(d:s:t:g:).s` invocations for `g = .hard`, `.good`, `.easy`, then pass those stability values to `nextInterval`. Apply the same monotonicity constraint afterward.
 - **Known caveats:** Long-term scheduler (`enableShortTerm == false`) is not specialised — the basic dispatch is used regardless. FSRS-6 default parameters have short-term enabled (ADR-0002) so parity is unaffected; a dedicated long-term path can land later without API change.
-- **Next step:** T5 — Parity harness. Codex-suitable. Fixture loader + Swift Testing wrapper that drives `LiveFSRS6Engine` step-by-step over all 150 fixtures and compares against `expected` with ε per ADR-0002. Use `@testable import AnghkooeyCore` and `LiveFSRS6Engine.dateDiffInUTCDays` if needed; the engine already accepts wall-clock `now`, so the harness only needs to materialise per-step `Date`s from `absolute_seconds_from_epoch`.
-- **Review needed from:** — (T4 review complete; Claude authored and verified.)
+- **Next step:** Opus session — fix the t=0 review-state interval triple in `LiveFSRS6Engine.next` per the fix direction above. Re-run xcodebuild; all 150 fixtures + 47 unit tests must pass. Then T6 (DocC + ARCHITECTURE.md).
+- **Review needed from:** — (Opus math fix required before T6 can open.)
 
 ---
 
