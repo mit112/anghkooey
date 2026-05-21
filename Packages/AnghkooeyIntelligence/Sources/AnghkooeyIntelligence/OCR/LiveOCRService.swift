@@ -21,7 +21,7 @@ public struct LiveOCRService: OCRService {
                     continuation.resume(throwing: OCRError.noTextFound)
                     return
                 }
-                continuation.resume(returning: MockOCRService.cleanup(raw))
+                continuation.resume(returning: ocrCleanup(raw))
             }
             request.recognitionLevel = .accurate
             request.usesLanguageCorrection = true

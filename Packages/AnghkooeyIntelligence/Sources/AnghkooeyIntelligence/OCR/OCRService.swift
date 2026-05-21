@@ -16,3 +16,9 @@ public enum OCRError: Error, Sendable {
     case recognitionFailed(underlying: Error)
     case noTextFound
 }
+
+/// Remove soft hyphens inserted at line breaks by OCR scanners.
+func ocrCleanup(_ text: String) -> String {
+    text.replacingOccurrences(of: "-\n", with: "")
+        .replacingOccurrences(of: "-\r\n", with: "")
+}

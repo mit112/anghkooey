@@ -19,15 +19,15 @@ struct SnapshotAccumulator {
     /// Feed the latest partial drafts array; returns newly-completed `CardDraft` values.
     ///
     /// Each array index is emitted at most once — the first time both
-    /// `question` and `answer` are non-empty. Later refinements to an already-
-    /// emitted index are ignored.
+    /// `question` and `answer` are non-empty. Stops at the first incomplete
+    /// entry so a card that completes late is never silently dropped.
     mutating func update(_ partials: [PartialDraft]) -> [CardDraft] {
         var result: [CardDraft] = []
         let start = lastEmittedIndex + 1
         guard start < partials.count else { return result }
         for i in start..<partials.count {
             let p = partials[i]
-            guard !p.question.isEmpty, !p.answer.isEmpty else { continue }
+            guard !p.question.isEmpty, !p.answer.isEmpty else { break } // stop; revisit next snapshot
             result.append(CardDraft(
                 question: p.question,
                 answer: p.answer,
