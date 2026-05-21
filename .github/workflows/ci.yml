@@ -13,5 +13,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install dependencies
+        run: brew install ripgrep
+
       - name: Run CI
         run: bash scripts/ci.sh
