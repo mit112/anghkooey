@@ -50,24 +50,4 @@ public enum SchedulingError: Error, Equatable, Sendable {
     case unsupportedParameterLength(Int)
 }
 
-/// Production FSRS-6 implementation.
-///
-/// `next(...)` traps with `fatalError("unimplemented — M1 T4")` until the
-/// math port lands. Construction is intentionally cheap and side-effect
-/// free so downstream packages can wire it through dependency injection
-/// today and have it light up automatically when T4 ships.
-public struct LiveFSRS6Engine: FSRS6Engine {
-    public let parameters: FSRSParameters
-
-    /// Construct an engine with the given parameter set. Defaults to
-    /// `FSRSParameters.default` (the ADR-0002-pinned 21-weight vector).
-    public init(parameters: FSRSParameters = .default) {
-        self.parameters = parameters
-    }
-
-    public func next(card: SchedulingCard, rating: Rating, now: Date) throws -> SchedulerOutput {
-        // Implementation lands in M1 T4 (math port). Do not call from tests
-        // until then — there is no behaviour to verify, only a trap.
-        fatalError("LiveFSRS6Engine.next is unimplemented — see M1 T4 (math port)")
-    }
-}
+// `LiveFSRS6Engine` is defined in `LiveFSRS6Engine.swift`.
