@@ -12,7 +12,7 @@ public enum AuthoringError: Error, Sendable, Equatable {
         switch (lhs, rhs) {
         case (.emptyInput, .emptyInput): return true
         case (.unavailable(let l), .unavailable(let r)): return l == r
-        case (.generationFailed, .generationFailed): return true
+        case (.generationFailed, .generationFailed): return true // Error is not Equatable; any two generationFailed(_:) compare equal
         default: return false
         }
     }
