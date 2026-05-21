@@ -11,6 +11,9 @@ SIMULATOR="platform=iOS Simulator,name=iPhone 17,OS=26.0"
 WORKSPACE_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DERIVED="$WORKSPACE_ROOT/.ci-derived-data"
 
+echo "=== M1 forbidden-pattern check ==="
+bash "$WORKSPACE_ROOT/scripts/m1-forbidden-patterns.sh"
+
 echo "=== AnghkooeyCore tests ==="
 (cd "$WORKSPACE_ROOT/Packages/AnghkooeyCore" && swift test)
 
