@@ -31,6 +31,7 @@ struct AnghkooeyApp: App {
                         onAccept: { appState.acceptCard() },
                         onSkip: { appState.skipCard() }
                     )
+                    .onAppear { appState.cardReviewSheetDidAppear() }
                 }
         }
     }

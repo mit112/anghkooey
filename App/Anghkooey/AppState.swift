@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 import AnghkooeyCore
 import AnghkooeyIntelligence
 
@@ -47,6 +48,10 @@ final class AppState: @unchecked Sendable {
     private let bridge: DrainerBridge
     private var notificationToken: InboxNotificationToken?
 
+    // Tracks the "card-review-sheet-ready" signpost interval: begun when a
+    // draft is assigned to `presentedCard`, ended on the sheet's onAppear.
+    private var reviewSheetSignpostState: OSSignpostIntervalState?
+
     // MARK: Init
 
     init() {
@@ -84,6 +89,14 @@ final class AppState: @unchecked Sendable {
     func acceptCard() { advanceQueue() }
     func skipCard()  { advanceQueue() }
 
+    /// Called from `CardReviewSheet.onAppear` to close the
+    /// `"card-review-sheet-ready"` signpost interval.
+    func cardReviewSheetDidAppear() {
+        guard let state = reviewSheetSignpostState else { return }
+        CoreLog.poiSignposter.endInterval("card-review-sheet-ready", state)
+        reviewSheetSignpostState = nil
+    }
+
     // MARK: Private
 
     /// Called by DrainerBridge when the drainer produces resolved text.
@@ -93,6 +106,14 @@ final class AppState: @unchecked Sendable {
     }
 
     private func advanceQueue() {
-        presentedCard = pendingCards.isEmpty ? nil : pendingCards.removeFirst()
+        let next = pendingCards.isEmpty ? nil : pendingCards.removeFirst()
+        presentedCard = next
+        if next != nil {
+            let signposter = CoreLog.poiSignposter
+            reviewSheetSignpostState = signposter.beginInterval(
+                "card-review-sheet-ready",
+                id: signposter.makeSignpostID()
+            )
+        }
     }
 }

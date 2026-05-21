@@ -34,4 +34,14 @@ public enum CoreLog {
 
     /// Logger for the capture-inbox pipeline (category `"CaptureInbox"`).
     public static var captureInbox: Logger { Logger(subsystem: subsystem, category: "CaptureInbox") }
+
+    /// Shared `OSSignposter` for capture-pipeline latency intervals.
+    ///
+    /// Uses the `"PointsOfInterest"` category so intervals appear in the
+    /// Instruments **Points of Interest** track. Interval names used by
+    /// M3 capture: `"inbox-drain"`, `"share-tap-to-inbox-write"`,
+    /// `"card-review-sheet-ready"`.
+    public static var poiSignposter: OSSignposter {
+        OSSignposter(subsystem: subsystem, category: "PointsOfInterest")
+    }
 }

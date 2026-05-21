@@ -72,6 +72,13 @@ final class ShareViewController: UIViewController {
     // MARK: - Processing
 
     private func processSharedContent() async {
+        let signposter = CoreLog.poiSignposter
+        let intervalState = signposter.beginInterval(
+            "share-tap-to-inbox-write",
+            id: signposter.makeSignpostID()
+        )
+        defer { signposter.endInterval("share-tap-to-inbox-write", intervalState) }
+
         guard let items = extensionContext?.inputItems as? [NSExtensionItem],
               let firstItem = items.first,
               let providers = firstItem.attachments else {

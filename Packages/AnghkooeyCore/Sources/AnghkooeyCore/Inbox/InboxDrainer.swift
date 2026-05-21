@@ -81,7 +81,13 @@ public actor InboxDrainer {
     public func drain() async {
         guard !isDraining else { return }
         isDraining = true
-        defer { isDraining = false }
+        let signposter = CoreLog.poiSignposter
+        let signpostID = signposter.makeSignpostID()
+        let intervalState = signposter.beginInterval("inbox-drain", id: signpostID)
+        defer {
+            signposter.endInterval("inbox-drain", intervalState)
+            isDraining = false
+        }
         _ = await drainOnce()
     }
 
