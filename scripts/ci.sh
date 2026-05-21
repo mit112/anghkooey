@@ -7,7 +7,7 @@
 # verify the Xcode project and SwiftUI compilation.
 set -euo pipefail
 
-SIMULATOR="platform=iOS Simulator,name=iPhone 17,OS=26.0"
+SIMULATOR="generic/platform=iOS Simulator"
 WORKSPACE_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DERIVED="$WORKSPACE_ROOT/.ci-derived-data"
 
