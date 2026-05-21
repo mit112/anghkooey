@@ -6,11 +6,19 @@ import Foundation
 /// See strategic plan §4.2 for the locked scoring contract.
 public enum RubricScorer {
 
+    /// Binary rubric result for a single `CardDraft`.
+    ///
+    /// All four criteria must be `true` for `cardPasses` to return `true`.
     public struct CardResult: Sendable {
+        /// Question is ≤ 120 chars and tests exactly one fact (no "and"/"or" conjunctions).
         public var atomic: Bool
+        /// Answer is ≥ 4 words and contains no vague references (e.g. "above", "following").
         public var specific: Bool
+        /// Every non-stop-word token in the answer appears in the source passage.
         public var groundednessPass: Bool
+        /// No 4-gram from the answer appears verbatim in the question.
         public var qNotA: Bool
+        /// `true` iff all four criteria pass.
         public var cardPasses: Bool { atomic && specific && groundednessPass && qNotA }
     }
 

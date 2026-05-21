@@ -183,3 +183,41 @@ fixture-driven coverage is meaningful, closing the iOS skill gap flagged in
 
 **In-memory container** (`AnghkooeyModelContainer.makeInMemoryContainer()`)
 is used by all persistence tests. No test touches a real on-disk store.
+
+---
+
+## M2 — AnghkooeyIntelligence: Card Authoring + OCR
+
+**Branch:** `m2/foundation-models`
+**Status:** complete
+**Spec:** `docs/superpowers/plans/2026-05-21-m2-intelligence.md`
+
+### Package topology addition
+
+```
+Anghkooey (app target)
+├── AnghkooeyCore      (M1 — schema + FSRS-6)
+└── AnghkooeyIntelligence  (M2)
+    ├── Authoring/     — CardDraft, AuthorResponse, CardAuthoringService, LiveCardAuthoringService, MockCardAuthoringService, SnapshotAccumulator
+    ├── OCR/           — OCRService, LiveOCRService (Vision), MockOCRService
+    ├── Eval/          — EvalFixture, RubricScorer
+    └── Logging/       — IntelligenceLog
+```
+
+`AnghkooeyIntelligence` imports `AnghkooeyCore` for logging patterns only. No SwiftData, SwiftUI, or UIKit imports enforced by `scripts/m1-forbidden-patterns.sh`.
+
+### Card authoring data flow
+
+Text passage → `CardAuthoringService.generateDrafts(from:)` → `AsyncThrowingStream<CardDraft, Error>`. The live implementation calls `LanguageModelSession.streamResponse(to:generating:)` and routes each `ResponseStream<AuthorResponse>.Snapshot` through `SnapshotAccumulator`, which emits `CardDraft` values as each array slot reaches both `question` and `answer` non-empty. One emission per array index; later refinements discarded.
+
+FoundationModels API verified against `arm64-apple-ios-simulator.swiftinterface`: `snapshot.content.drafts` yields `[CardDraft.PartiallyGenerated]` with all fields Optional.
+
+### Eval harness
+
+Two modes:
+- **CI mode** — `swift test` / xcodebuild runs `EvalFixtureGateTests`: `@Test(arguments:)` over `eval-fixtures.json` golden drafts; scores each card against 4 binary rubric criteria (atomic, specific, groundedness, Q≠A); fails build if any card fails. Zero model calls.
+- **Live mode** — `make eval` (from repo root) runs the `EvalRunner` executable on macOS 26 with the real model; prints per-input verdicts; `make eval-update` overwrites golden fixtures only if pass rate ≥ 80%.
+
+### Module seam
+
+`CardDraft` is the output type of `AnghkooeyIntelligence`. `Card(from: CardDraft)` conversion is an `AnghkooeyUI` responsibility (M3), co-located with the user-confirmation ViewModel.
