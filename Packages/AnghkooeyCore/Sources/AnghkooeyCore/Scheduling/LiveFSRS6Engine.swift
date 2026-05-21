@@ -159,9 +159,23 @@ public struct LiveFSRS6Engine: FSRS6Engine {
                 // hard / good / easy: compute the full triple and pick.
                 // The monotonicity constraint hard ≤ good < easy is applied
                 // exactly as in `BasicScheduler.next_interval` (private).
-                let hardS = computeRecallStability(d: card.difficulty, s: card.stability, r: r, g: .hard)
-                let goodS = computeRecallStability(d: card.difficulty, s: card.stability, r: r, g: .good)
-                let easyS = computeRecallStability(d: card.difficulty, s: card.stability, r: r, g: .easy)
+                //
+                // ts-fsrs derives the per-grade interval from the full
+                // `next_state` stability, not from `next_recall_stability`
+                // alone. At t == 0 with short-term enabled, `next_state`
+                // short-circuits to `next_short_term_stability` — which is
+                // grade-boosted, where the recall formula collapses to
+                // `s_old` because (1 - r) == 0. Mirror that branch here.
+                let useShortTerm = (elapsed == 0 && parameters.enableShortTerm)
+                let hardS = useShortTerm
+                    ? nextShortTermStability(s: card.stability, g: .hard)
+                    : computeRecallStability(d: card.difficulty, s: card.stability, r: r, g: .hard)
+                let goodS = useShortTerm
+                    ? nextShortTermStability(s: card.stability, g: .good)
+                    : computeRecallStability(d: card.difficulty, s: card.stability, r: r, g: .good)
+                let easyS = useShortTerm
+                    ? nextShortTermStability(s: card.stability, g: .easy)
+                    : computeRecallStability(d: card.difficulty, s: card.stability, r: r, g: .easy)
 
                 var hardI = nextInterval(stability: hardS)
                 var goodI = nextInterval(stability: goodS)
