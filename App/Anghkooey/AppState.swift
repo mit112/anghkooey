@@ -1,11 +1,6 @@
 import Foundation
 import AnghkooeyCore
-
-// MARK: - Stub OCR service (replaced by LiveOCRService adapter in M3.9)
-
-private struct NoOpOCRService: OCRServiceProtocol, Sendable {
-    func recognizeText(inImageData _: Data) async throws -> String { "" }
-}
+import AnghkooeyIntelligence
 
 // MARK: - Delegate bridge
 
@@ -62,7 +57,7 @@ final class AppState: @unchecked Sendable {
         let bridge = DrainerBridge()
         let drainer = InboxDrainer(
             containerURL: containerURL,
-            ocr: NoOpOCRService(),
+            ocr: LiveOCRServiceDataAdapter(),
             delegate: bridge
         )
         self.bridge = bridge
