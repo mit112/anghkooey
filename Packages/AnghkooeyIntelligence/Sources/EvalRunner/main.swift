@@ -56,17 +56,17 @@ struct EvalRunner: AsyncParsableCommand {
         let rate = Double(passCount) / Double(total) * 100
         print("\n=== Eval complete: \(passCount)/\(total) inputs passed (\(String(format: "%.1f", rate))%) ===")
 
+        if rate < 80.0 {
+            print("❌ Pass rate \(String(format: "%.1f", rate))% is below 80% threshold.")
+            throw ExitCode.failure
+        }
+
         if updateGoldens {
             let encoder = JSONEncoder()
             encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
             let newData = try encoder.encode(updatedFixtures)
             try newData.write(to: fixturesURL)
             print("✓ Updated \(fixturesURL.path)")
-        }
-
-        if rate < 80.0 {
-            print("❌ Pass rate \(String(format: "%.1f", rate))% is below 80% threshold.")
-            throw ExitCode.failure
         }
     }
 }
