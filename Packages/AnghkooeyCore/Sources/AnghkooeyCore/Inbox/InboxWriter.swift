@@ -1,4 +1,5 @@
 import Foundation
+import CryptoKit
 
 /// Write-side contract for the App Group inbox.
 ///
@@ -20,8 +21,9 @@ public protocol InboxWriterProtocol: Sendable {
 
 /// Writes `InboxItem` files atomically to the App Group inbox directory.
 ///
-/// **Lifecycle — extension side only.** `InboxWriter` only creates files;
-/// it never reads or deletes them. See ADR-0003 for the full contract.
+/// **Lifecycle — extension side only.** `InboxWriter` appends files and reads
+/// existing JSON only for text dedup; it never deletes them. See ADR-0003 for
+/// the full contract.
 ///
 /// Use a temp directory as `containerURL` in unit tests — no App Group
 /// provisioning is required.
@@ -36,29 +38,133 @@ public actor InboxWriter: InboxWriterProtocol {
     }
 
     public func write(text: String, sourceApp: String) async throws {
-        // Implementation: Codex task M3.2
-        // Contract (ADR-0003 §5, §6):
-        //   1. Normalise: trimmed + lowercased.
-        //   2. Compute SHA-256 hex as textHash.
-        //   3. Check dedup: scan existing inbox/*.json for same textHash
-        //      within dedupWindowSeconds. Return without writing on hit.
-        //   4. Truncate text at textCharacterLimit (last sentence boundary, append "[truncated]").
-        //   5. Create inbox/ and inbox/images/ directories if absent.
-        //   6. Write JSON to inbox/<UUID>.json.tmp via InboxItem.encoder.
-        //   7. Atomic rename: FileManager.moveItem(at:to:) to <UUID>.json.
-        //   8. Post Darwin notification: CFNotificationCenterPostNotification
-        //      with InboxConstants.darwinNotificationName.
+        let now = Date.now
+        let normalisedText = text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let textHash = Self.sha256Hex(for: normalisedText)
+
+        guard try !hasDuplicate(textHash: textHash, now: now) else { return }
+
+        try createInboxDirectories()
+
+        let id = UUID()
+        let item = InboxItem(
+            id: id,
+            capturedAt: now,
+            sourceApp: sourceApp,
+            kind: .text,
+            text: Self.truncatedTextIfNeeded(text),
+            textHash: textHash
+        )
+
+        try writeJSONItem(item)
+        postInboxDidChangeNotification()
     }
 
     public func write(imageData: Data, sourceApp: String) async throws {
-        // Implementation: Codex task M3.2
-        // Contract (ADR-0003 §4, §5):
-        //   1. Create inbox/ and inbox/images/ directories if absent.
-        //   2. Generate a UUID for this submission.
-        //   3. Write imageData to inbox/images/<UUID>.heic.
-        //   4. Write JSON item (kind: .imageRef, imagePath: "images/<UUID>.heic")
-        //      to inbox/<UUID>.json.tmp via InboxItem.encoder.
-        //   5. Atomic rename: moveItem to <UUID>.json.
-        //   6. Post Darwin notification.
+        try createInboxDirectories()
+
+        let id = UUID()
+        let imageFilename = "\(id.uuidString).heic"
+        let relativeImagePath = "images/\(imageFilename)"
+        let imageURL = imagesURL.appendingPathComponent(imageFilename)
+        try imageData.write(to: imageURL)
+
+        let item = InboxItem(
+            id: id,
+            capturedAt: .now,
+            sourceApp: sourceApp,
+            kind: .imageRef,
+            imagePath: relativeImagePath
+        )
+
+        try writeJSONItem(item)
+        postInboxDidChangeNotification()
+    }
+}
+
+private extension InboxWriter {
+    var inboxURL: URL {
+        containerURL.appendingPathComponent(InboxConstants.inboxDirectory, isDirectory: true)
+    }
+
+    var imagesURL: URL {
+        containerURL.appendingPathComponent(InboxConstants.imagesDirectory, isDirectory: true)
+    }
+
+    func createInboxDirectories() throws {
+        try FileManager.default.createDirectory(at: inboxURL, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: imagesURL, withIntermediateDirectories: true)
+    }
+
+    func hasDuplicate(textHash: String, now: Date) throws -> Bool {
+        guard FileManager.default.fileExists(atPath: inboxURL.path) else { return false }
+
+        let jsonFiles = try FileManager.default.contentsOfDirectory(
+            at: inboxURL,
+            includingPropertiesForKeys: nil
+        )
+        .filter { $0.pathExtension == "json" }
+
+        for fileURL in jsonFiles {
+            guard
+                let data = try? Data(contentsOf: fileURL),
+                let item = try? InboxItem.decoder.decode(InboxItem.self, from: data),
+                item.textHash == textHash
+            else {
+                continue
+            }
+
+            let age = abs(now.timeIntervalSince(item.capturedAt))
+            if age <= InboxConstants.dedupWindowSeconds {
+                return true
+            }
+        }
+
+        return false
+    }
+
+    func writeJSONItem(_ item: InboxItem) throws {
+        let data = try InboxItem.encoder.encode(item)
+        let finalURL = inboxURL.appendingPathComponent("\(item.id.uuidString).json")
+        let tmpURL = inboxURL.appendingPathComponent("\(item.id.uuidString).json.tmp")
+
+        try data.write(to: tmpURL)
+        try FileManager.default.moveItem(at: tmpURL, to: finalURL)
+    }
+
+    func postInboxDidChangeNotification() {
+        let name = CFNotificationName(InboxConstants.darwinNotificationName as CFString)
+        CFNotificationCenterPostNotification(
+            CFNotificationCenterGetDarwinNotifyCenter(),
+            name,
+            nil,
+            nil,
+            true
+        )
+    }
+
+    static func sha256Hex(for text: String) -> String {
+        let digest = SHA256.hash(data: Data(text.utf8))
+        return digest.map { String(format: "%02x", $0) }.joined()
+    }
+
+    static func truncatedTextIfNeeded(_ text: String) -> String {
+        let limit = InboxConstants.textCharacterLimit
+        guard text.count > limit else { return text }
+
+        let limitIndex = text.index(text.startIndex, offsetBy: limit)
+        var index = text.startIndex
+        var sentenceBoundary: String.Index?
+
+        while index < limitIndex {
+            let nextIndex = text.index(after: index)
+            if ".!?".contains(text[index]), nextIndex < limitIndex {
+                sentenceBoundary = nextIndex
+            }
+            index = nextIndex
+        }
+
+        let truncationIndex = sentenceBoundary ?? text.index(before: limitIndex)
+        return String(text[..<truncationIndex]) + " [truncated]"
     }
 }
