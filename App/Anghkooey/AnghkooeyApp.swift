@@ -7,7 +7,7 @@ import AnghkooeyUI
 struct AnghkooeyApp: App {
     init() {
         let subsystem = Bundle.main.bundleIdentifier ?? "com.unknown.anghkooey"
-        CoreLog.subsystem = subsystem
+        CoreLog.configure(subsystem: subsystem)
         IntelligenceLog.subsystem = subsystem
         UILog.subsystem = subsystem
     }
