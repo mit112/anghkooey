@@ -1,0 +1,37 @@
+import CoreGraphics
+import Vision
+
+/// Production OCR service backed by `VNRecognizeTextRequest`.
+public struct LiveOCRService: OCRService {
+
+    public init() {}
+
+    public func recognizeText(in image: CGImage) async throws -> String {
+        try await withCheckedThrowingContinuation { continuation in
+            let request = VNRecognizeTextRequest { request, error in
+                if let error {
+                    continuation.resume(throwing: OCRError.recognitionFailed(underlying: error))
+                    return
+                }
+                let observations = request.results as? [VNRecognizedTextObservation] ?? []
+                let raw = observations
+                    .compactMap { $0.topCandidates(1).first?.string }
+                    .joined(separator: "\n")
+                guard !raw.isEmpty else {
+                    continuation.resume(throwing: OCRError.noTextFound)
+                    return
+                }
+                continuation.resume(returning: MockOCRService.cleanup(raw))
+            }
+            request.recognitionLevel = .accurate
+            request.usesLanguageCorrection = true
+
+            let handler = VNImageRequestHandler(cgImage: image)
+            do {
+                try handler.perform([request])
+            } catch {
+                continuation.resume(throwing: OCRError.recognitionFailed(underlying: error))
+            }
+        }
+    }
+}
