@@ -62,7 +62,15 @@ targets:
     dependencies:
       - package: AnghkooeyCore
     sources:
-      - AnghkooeyShare
+      - path: AnghkooeyShare
+        excludes:
+          - "**/*.xcprivacy"
+    resources:
+      # Same xcodegen fragility as main app: verify PrivacyInfo.xcprivacy appears in
+      # PBXResourcesBuildPhase after every `make generate`.
+      # Run: grep -c "AnghkooeyShare/PrivacyInfo" App/Anghkooey.xcodeproj/project.pbxproj
+      # Expected count: 4 (PBXBuildFile, PBXFileReference, PBXGroup, PBXResourcesBuildPhase)
+      - AnghkooeyShare/PrivacyInfo.xcprivacy
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.mitsheth.anghkooey.share
