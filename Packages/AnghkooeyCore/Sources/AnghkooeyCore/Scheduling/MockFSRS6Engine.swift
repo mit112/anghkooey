@@ -53,9 +53,47 @@ public struct MockFSRS6Engine: FSRS6Engine {
     }
 
     public func next(card: SchedulingCard, rating: Rating, now: Date) throws -> SchedulerOutput {
-        // Body intentionally unimplemented in the T3 contract — Codex fills
-        // this in step 4 of the T3 handoff per the contract documented above.
-        // The contract tests in MockFSRS6EngineContractTests are the spec.
-        fatalError("MockFSRS6Engine.next is unimplemented — Codex fills per the doc-comment contract in M1 T3")
+        let previousReview = card.lastReview ?? .distantPast
+        guard now >= previousReview else {
+            throw SchedulingError.reviewedBeforeLastReview
+        }
+
+        let elapsedDays = card.lastReview.map { now.timeIntervalSince($0) / 86_400 } ?? 0
+        let log = ReviewLogEntry(
+            rating: rating,
+            stateBefore: card.state,
+            stabilityBefore: card.stability,
+            difficultyBefore: card.difficulty,
+            elapsedDays: elapsedDays,
+            scheduledDays: card.scheduledDays,
+            reviewedAt: now
+        )
+
+        var newCard = card
+        newCard.reps += 1
+        newCard.lastReview = now
+        newCard.elapsedDays = elapsedDays
+
+        switch rating {
+        case .again:
+            newCard.state = .relearning
+            newCard.lapses += 1
+            newCard.due = now.addingTimeInterval(600)
+            newCard.scheduledDays = 0
+        case .hard:
+            newCard.state = .review
+            newCard.due = now.addingTimeInterval(600)
+            newCard.scheduledDays = 0
+        case .good:
+            newCard.state = .review
+            newCard.due = now.addingTimeInterval(86_400)
+            newCard.scheduledDays = 1
+        case .easy:
+            newCard.state = .review
+            newCard.due = now.addingTimeInterval(4 * 86_400)
+            newCard.scheduledDays = 4
+        }
+
+        return SchedulerOutput(card: newCard, log: log)
     }
 }
