@@ -1,16 +1,25 @@
-# M2 Design Spec — AnghkooeyIntelligence: On-Device Card Authoring
+# M2 Design Spec — AnghkooeyIntelligence: Card Authoring Subsystem
 
 > Status: approved for implementation planning
 > Branch target: `m2/foundation-models`
 > Depends on: M1 (`AnghkooeyCore` — `Card`, `CardState`, `Rating`, schema v1)
+> Scope note: this spec covers the FoundationModels card-authoring service.
+> OCR (`OCRService`) and the availability composition root are M2 tasks
+> covered mechanically in the M2 implementation plan, not in this spec.
 
 ---
 
 ## 1. Goal
 
-Add `AnghkooeyIntelligence` — a pure-logic Swift package that takes a text passage and returns a stream of AI-authored `CardDraft` values using Apple's FoundationModels framework (`LanguageModelSession` + `@Generable`). No SwiftData import anywhere in the package. No UI. No Tool use.
+Add the card-authoring service to `AnghkooeyIntelligence` — a pure-logic Swift
+package that takes a text passage and returns a stream of AI-authored
+`CardDraft` values using Apple's FoundationModels framework
+(`LanguageModelSession` + `@Generable`). No SwiftData import anywhere in the
+package. No UI.
 
-Closes iOS skill-map gap #1 (FoundationModels, `@Generable`, structured streaming). Ships an eval harness with rubric-scored fixtures so CI can gate on golden-set quality without a live model call.
+Closes iOS skill-map gap #1 (FoundationModels, `@Generable`, structured
+streaming). Ships an eval harness with rubric-scored fixtures so CI can gate on
+golden-set quality without a live model call.
 
 ---
 
@@ -29,9 +38,13 @@ Closes iOS skill-map gap #1 (FoundationModels, `@Generable`, structured streamin
 
 - `AnghkooeyIntelligence` already depends on `AnghkooeyCore` (per `Package.swift`)
 - Swift 6 strict concurrency (`swiftLanguageModes: [.v6]`)
-- Platform floor: iOS 26 / macOS 15 (existing `Package.swift`)
-- **Forbidden imports in `AnghkooeyIntelligence` sources:** `SwiftData`, `SwiftUI`, `UIKit` — enforced by extending `scripts/m1-forbidden-patterns.sh`
-- FoundationModels is iOS 26 only; the `macOS(.v15)` platform entry in `Package.swift` must be gated with `#if canImport(FoundationModels)` or the macOS target removed for M2
+- **Platform:** FoundationModels is available on iOS 26, macOS 26, and visionOS 26 —
+  not macOS 15. The current `Package.swift` declares `.macOS(.v15)`. All
+  FoundationModels imports must be wrapped in `#if canImport(FoundationModels)`
+  guards, or the macOS minimum must be bumped to `.macOS(.v26)`. Resolve at M2
+  task T1 before any authoring code lands.
+- **Forbidden imports in `AnghkooeyIntelligence` sources:** `SwiftData`,
+  `SwiftUI`, `UIKit` — enforced by extending `scripts/m1-forbidden-patterns.sh`
 
 ---
 
@@ -45,11 +58,9 @@ public struct CardDraft: Sendable, Codable, Equatable {
     public var question: String
     public var answer: String
     public var proposedTags: [String]
-    public init(question: String, answer: String, proposedTags: [String] = []) {
-        self.question = question
-        self.answer = answer
-        self.proposedTags = proposedTags
-    }
+    public var sourceSpan: String?        // excerpt from passage; nil if not isolatable
+    public init(question: String, answer: String,
+                proposedTags: [String] = [], sourceSpan: String? = nil) { ... }
 }
 
 @Generable
@@ -61,80 +72,148 @@ public struct AuthorResponse: Sendable {
 `Sendable` — required for Swift 6 strict concurrency across actor boundaries.
 `Codable` — required for eval fixture serialisation.
 `Equatable` — required for mock comparisons and rubric scorer.
-Explicit `public init` — memberwise init is internal by default; other modules (tests, UI) need to construct `CardDraft` directly.
+Explicit `public init` — memberwise init is internal by default.
+`sourceSpan` — field is in `Card` schema v1 (`Card.sourceSpan: String?`); populate
+it from the passage so the UI can show "from" context without another model call.
 
-### 4.2 Error (Authoring/)
+### 4.2 Availability (Authoring/)
+
+```swift
+public enum AuthoringAvailability: Sendable, Equatable {
+    case available
+    case unavailable(reason: UnavailableReason)
+
+    public enum UnavailableReason: Sendable, Equatable {
+        case deviceNotEligible
+        case appleIntelligenceNotEnabled
+        case modelNotReady
+    }
+}
+```
+
+Backed by `SystemLanguageModel.availability` at call time. The three reasons
+map directly to the FoundationModels SDK enum; they drive the capture-screen
+UI decision in M3 (hide AI path, show manual path, show "enable in Settings"
+prompt — each reason needs a different string).
+
+### 4.3 Error (Authoring/)
 
 ```swift
 public enum AuthoringError: Error, Sendable {
-    case modelUnavailable
     case emptyInput
+    case unavailable(reason: AuthoringAvailability.UnavailableReason)
     case generationFailed(underlying: Error)
 }
 ```
 
-`generationFailed` wraps the underlying FoundationModels error (e.g. `assetsUnavailable`, `guardrailViolation`, `rateLimited`, `refusal`) without discarding it. Callers can inspect `underlying` for retry decisions.
+`modelUnavailable` replaced by `unavailable(reason:)` — callers get the reason
+to drive UX decisions. `generationFailed` wraps the underlying FoundationModels
+error (`assetsUnavailable`, `guardrailViolation`, `rateLimited`, `refusal`,
+etc.) without discarding it.
 
-### 4.3 Protocol (Authoring/)
+### 4.4 Protocol (Authoring/)
 
 ```swift
 public protocol CardAuthoringService: Sendable {
+    var availability: AuthoringAvailability { get async }
     func generateDrafts(from text: String) async throws -> AsyncThrowingStream<CardDraft, Error>
 }
 ```
 
-`async throws` on the method (not just on the stream elements) lets the implementation:
-- Validate input and throw `AuthoringError.emptyInput` before opening the stream
-- Handle model availability synchronously before opening the stream
-- Be implemented by an actor without violating Swift 6 protocol witness rules
+`availability` — async probe backed by `SystemLanguageModel.availability`. The
+UI layer calls this before presenting the AI capture path; `MockCardAuthoringService`
+covers all three unavailability reasons in tests.
 
-The stream itself carries `CardDraft` values only — no FoundationModels types leak through the protocol boundary.
+`async throws` on `generateDrafts` — lets the implementation validate input and
+check availability before opening the stream, and lets an actor implementation
+satisfy the requirement under Swift 6 strict concurrency.
 
-### 4.4 Implementations (Authoring/)
+No FoundationModels types leak through the protocol boundary.
+
+### 4.5 Implementations (Authoring/)
 
 **`LiveCardAuthoringService`** — production, wraps FoundationModels:
-- Owns prompt template as `static let instructions: String`
-- Validates input, creates `LanguageModelSession(instructions:)`
-- Calls `session.streamResponse(generating: AuthorResponse.self)`
-- Iterates `ResponseStream<AuthorResponse>.Snapshot` values
-- Tracks `lastEmittedIndex: Int`; emits `CardDraft` at index `i` the first time `drafts[i].question` and `drafts[i].answer` are both non-empty
+- `var availability: AuthoringAvailability` — queries `SystemLanguageModel.availability`
+- Validates input (throws `AuthoringError.emptyInput`)
+- Checks availability (throws `AuthoringError.unavailable(reason:)`)
+- Creates `LanguageModelSession(instructions: Self.instructions)`
+- Calls `session.streamResponse(to: text, generating: AuthorResponse.self)`
+- Passes snapshots to `SnapshotAccumulator`; yields completed `CardDraft` values
 - Wraps in `AsyncThrowingStream`; `onTermination` cancels the underlying `Task`
 - Maps FoundationModels errors to `AuthoringError.generationFailed(underlying:)`
 
 **`MockCardAuthoringService`** — test/eval, fixture-replay:
-- Init takes `[CardDraft]` (the drafts to emit) and optional `shouldThrow: Error?`
+- Init takes `[CardDraft]`, optional `availability: AuthoringAvailability = .available`,
+  and optional `shouldThrow: Error?`
+- `var availability` returns the configured value
 - Emits drafts one by one via `AsyncThrowingStream`
-- Used by all unit tests and the CI eval harness (no FoundationModels dependency)
+- Used by all unit tests and the CI eval harness
 
 ---
 
-## 5. Data Flow
+## 5. SnapshotAccumulator
+
+Extracted pure reducer so the emit-once invariant is unit-testable without a
+live model or `AsyncThrowingStream`.
+
+```swift
+// Internal type — not public API
+struct SnapshotAccumulator {
+    private var lastEmittedIndex: Int = -1
+
+    /// Feed a new partial drafts array; returns any newly-completedCardDrafts.
+    mutating func update(_ partialDrafts: [CardDraft.PartiallyGenerated]) -> [CardDraft]
+}
+```
+
+`update(_:)` iterates indices `(lastEmittedIndex+1)..<partialDrafts.count`.
+For each index `i`, if `partialDrafts[i].question` and `partialDrafts[i].answer`
+are both non-empty, it constructs a `CardDraft` and advances `lastEmittedIndex`.
+Returns all newly-completed drafts from this snapshot (may be empty, may be >1
+if the model jumped ahead).
+
+**Emit-once invariant:** each array index is emitted at most once. Later snapshot
+refinements to the same slot are discarded. First-complete is final.
+
+`LiveCardAuthoringService` holds a `SnapshotAccumulator` per call and pipes
+snapshot content through it. The streaming loop becomes:
+
+```swift
+var accumulator = SnapshotAccumulator()
+for try await snapshot in stream {
+    for draft in accumulator.update(snapshot.content.drafts) {
+        continuation.yield(draft)
+    }
+}
+```
+
+**UNVERIFIED:** `snapshot.content.drafts` element type is
+`CardDraft.PartiallyGenerated` (macro-synthesised). The `.question` and
+`.answer` fields are expected to be `String` (non-optional) that start empty
+and fill in progressively. Confirm against a real simulator build at T1 —
+adjust `SnapshotAccumulator.update` if the partial type uses optionals instead.
+
+---
+
+## 6. Data Flow
 
 ```
 caller: generateDrafts(from: text) async throws
   │
-  ├─ guard non-empty input → else throw AuthoringError.emptyInput
-  │
-  ├─ (model availability check — wrap session init in do/catch;
-  │   map assetsUnavailable → AuthoringError.modelUnavailable)
+  ├─ guard non-empty → else throw AuthoringError.emptyInput
+  ├─ guard availability == .available → else throw AuthoringError.unavailable(reason:)
   │
   └─ return AsyncThrowingStream<CardDraft, Error> { continuation in
          let task = Task {
              do {
                  let session = LanguageModelSession(instructions: Self.instructions)
-                 let stream = session.streamResponse(generating: AuthorResponse.self)
-                 var lastEmittedIndex = -1
+                 let stream = session.streamResponse(
+                     to: text,
+                     generating: AuthorResponse.self)
+                 var accumulator = SnapshotAccumulator()
                  for try await snapshot in stream {
-                     let drafts = snapshot.content.drafts   // AuthorResponse.PartiallyGenerated
-                     for i in (lastEmittedIndex + 1)..<drafts.count {
-                         let d = drafts[i]
-                         if !d.question.isEmpty && !d.answer.isEmpty {
-                             continuation.yield(
-                                 CardDraft(question: d.question,
-                                           answer: d.answer,
-                                           proposedTags: d.proposedTags))
-                             lastEmittedIndex = i
-                         }
+                     for draft in accumulator.update(snapshot.content.drafts) {
+                         continuation.yield(draft)
                      }
                  }
                  continuation.finish()
@@ -147,13 +226,9 @@ caller: generateDrafts(from: text) async throws
      }
 ```
 
-**Emit-once invariant:** each array index is emitted at most once, the first time both fields are non-empty. Later snapshot refinements to the same slot are discarded. This is intentional — the protocol surface has no update event; first-complete is final.
-
-**UNVERIFIED:** `snapshot.content` field name and `AuthorResponse.PartiallyGenerated` member layout are inferred from SDK `.swiftinterface` plus Codex SDK inspection. The macro-synthesised partial type is not fully represented in the interface file. Implement defensively; test with a real simulator early.
-
 ---
 
-## 6. Prompt Template
+## 7. Prompt Template
 
 `LiveCardAuthoringService.instructions` (static constant, not inline):
 
@@ -166,67 +241,87 @@ in the passage. Rules:
 - Questions must be specific enough that only someone who read the passage
   can answer them.
 - Answers must be concise (1–2 sentences maximum).
+- The question must not contain or restate the answer.
 - Propose 1–3 relevant topic tags per card (lowercase, no spaces).
 Return only cards derivable from the passage. If the passage contains no
 memorable facts, return an empty list.
 ```
 
-The template is the primary quality lever. It is versioned via `templateVersion` in `EvalFixture` so fixture runs are traceable to the template that generated them.
+The template is versioned via `templateVersion` in `EvalFixture`. Any prompt
+change must produce a new `templateVersion` string and a new `make eval` run
+committed alongside the diff (per strategic plan §4.2).
 
 ---
 
-## 7. Eval Harness
+## 8. Eval Harness
 
-### 7.1 Fixture Format (Eval/)
+### 8.1 Rubric (from strategic plan §4.2 — locked, do not drift)
+
+Binary per card; all four required to pass:
+
+| Criterion | Heuristic implementation |
+|---|---|
+| **Atomic** — one fact per card | Question contains no conjunction joining two independent clauses; length ≤ 120 chars |
+| **Specific** — no vague reference | Answer ≥ 4 words; does not contain "above", "following", "described", "mentioned" |
+| **Hallucination-free** — every fact traceable to input | Every non-stopword token in answer appears (case-insensitive) in source passage |
+| **Q ≠ A** — question doesn't leak the answer | No contiguous 4-gram from the answer appears verbatim in the question |
+
+**Scoring rules (locked):**
+- A *card* passes iff all 4 criteria pass.
+- An *input* passes iff **every** generated card from that input passes. One bad card fails the input.
+- Pass-rate = passing inputs / total inputs. Target ≥ 80%.
+- Eval runs at `temperature = 0`, fixed random seed. No retries.
+
+### 8.2 Fixture Format (Eval/)
 
 ```swift
 public struct EvalFixture: Codable, Sendable {
-    public var id: String               // e.g. "biology-001"
-    public var passage: String          // input text fed to the service
-    public var templateVersion: String  // prompt template version that produced goldens
-    public var goldenDrafts: [CardDraft]
-    public var rubricScores: RubricScore  // pre-computed scores for the golden set
-}
-
-public struct RubricScore: Codable, Sendable {
-    public var atomicity: Double      // 0.0–1.0
-    public var specificity: Double    // 0.0–1.0
-    public var groundedness: Double   // 0.0–1.0
-    public var overall: Double        // mean of above three
+    public var id: String                  // e.g. "biology-001"
+    public var passage: String             // input text
+    public var templateVersion: String     // prompt version that produced goldens
+    public var goldenDrafts: [CardDraft]   // expected output, checked in
 }
 ```
 
-Fixtures at: `Packages/AnghkooeyIntelligence/Tests/AnghkooeyIntelligenceTests/Fixtures/eval-fixtures.json`
-Loaded via `Bundle.module` (same pattern as M1 FSRS parity fixtures).
-Initial fixture count: ≥ 20 passages at milestone close; grows toward 100 before App Store submission per `foundation.md §7`.
+Per-card and per-input rubric scores are computed at eval time, not stored in
+the fixture — storing them would allow them to drift silently from the scorer
+implementation. CI always re-derives scores from the golden drafts.
 
-### 7.2 RubricScorer — Pure String Logic (Eval/)
+Fixtures at:
+`Packages/AnghkooeyIntelligence/Tests/AnghkooeyIntelligenceTests/Fixtures/eval-fixtures.json`
+Loaded via `Bundle.module`. Initial count: ≥ 20 passages at milestone close;
+grows to 100 before App Store submission per strategic plan §4.2.
 
-| Dimension | Heuristic | Rationale |
-|---|---|---|
-| Atomicity | Question contains no "and"/"or" joining two independent clauses; length ≤ 120 chars | Detects compound questions mechanically |
-| Specificity | Answer ≥ 4 words; not composed entirely of stopwords | Guards against vague one-word answers |
-| Groundedness | Every non-stopword token in answer appears (case-insensitive) in source passage | Mechanically catches hallucinations |
+### 8.3 Two Harness Modes
 
-Groundedness has the most real signal. Atomicity and specificity are weak heuristics, cheap enough to run on CI.
+**CI mode** (runs in `AnghkooeyIntelligenceTests` on every PR):
+- Loads fixtures via `Bundle.module`
+- Scores each `goldenDraft` per the 4-criterion rubric
+- Asserts every input passes (all cards pass, per scoring rules)
+- Zero model calls — validates golden-set integrity, not live model quality
 
-### 7.3 Two Harness Modes
+**Live mode** (`make eval`, developer-side, never on CI):
+- Swift executable target `EvalRunner` in `Packages/AnghkooeyIntelligence`
+  (not a test target; no XCTest/Swift Testing dependency)
+- Runs on macOS host via `swift run EvalRunner` — no simulator plumbing needed
+  because `LanguageModelSession` on macOS 26 is sufficient for eval
+- Accepts `--fixtures <path>` (default: repo fixtures file) and
+  `--update-goldens` flag (overwrites the fixtures file in place with new
+  golden output)
+- Prints per-input verdict and aggregate pass-rate to stdout
+- With `--update-goldens`: writes updated JSON, prints diff summary, exits
+  non-zero if pass-rate < 80% so `make eval` fails loudly
 
-**CI mode** (runs as part of `AnghkooeyIntelligenceTests` on every PR):
-- Loads fixtures from `Bundle.module`
-- Scores each `goldenDraft` in each fixture with `RubricScorer`
-- Asserts `rubricScore.overall ≥ 0.80` for every fixture
-- Zero model calls — validates golden set integrity, not live model quality
-- Fail = rubric regression or corrupted fixture
+`Makefile` target:
+```makefile
+eval:
+	swift run --package-path Packages/AnghkooeyIntelligence EvalRunner
 
-**Live mode** (`make eval`, developer-side only, never on CI):
-- Instantiates `LiveCardAuthoringService` with real `LanguageModelSession`
-- Runs each fixture's `passage` through the live model
-- Scores returned drafts, prints per-fixture and aggregate report
-- Pass `--update-goldens` to overwrite `eval-fixtures.json` with new golden output
-- Requires: iOS 26 simulator with on-device model downloaded
+eval-update:
+	swift run --package-path Packages/AnghkooeyIntelligence EvalRunner --update-goldens
+```
 
-### 7.4 CI Gate
+### 8.4 CI Gate
 
 `scripts/ci.sh` gains an `AnghkooeyIntelligence` test step:
 ```bash
@@ -236,57 +331,101 @@ xcodebuild test \
   -resultBundlePath /tmp/anghkooey-m2.xcresult
 ```
 
-`scripts/m1-forbidden-patterns.sh` extended with Intelligence-specific checks:
+`scripts/m1-forbidden-patterns.sh` extended:
 - No `import SwiftData` in `AnghkooeyIntelligence/Sources/`
 - No `import SwiftUI` or `import UIKit` in `AnghkooeyIntelligence/Sources/`
 
 ---
 
-## 8. Module Seam
+## 9. File Structure
+
+```
+Packages/AnghkooeyIntelligence/
+  Sources/AnghkooeyIntelligence/
+    Authoring/
+      CardDraft.swift               @Generable + Sendable + Codable + Equatable
+      AuthorResponse.swift          @Generable + Sendable
+      AuthoringAvailability.swift   enum + UnavailableReason
+      AuthoringError.swift          enum (emptyInput, unavailable, generationFailed)
+      CardAuthoringService.swift    protocol
+      LiveCardAuthoringService.swift
+      MockCardAuthoringService.swift
+      SnapshotAccumulator.swift     internal reducer
+    Logging/
+      IntelligenceLog.swift         (already exists)
+  Sources/EvalRunner/               Swift executable target (live eval only)
+    main.swift
+  Tests/AnghkooeyIntelligenceTests/
+    Authoring/
+      SnapshotAccumulatorTests.swift
+      MockCardAuthoringServiceTests.swift
+      AuthoringErrorTests.swift
+    Eval/
+      RubricScorerTests.swift
+      EvalFixtureGateTests.swift    @Test(arguments:) over fixtures — CI gate
+    Fixtures/
+      eval-fixtures.json
+```
+
+---
+
+## 10. Module Seam
 
 `AnghkooeyIntelligence` outputs `[CardDraft]`. It does not know about `Card`.
 
-The conversion `Card(from: CardDraft)` is a `Card` extension or `CardDraftReviewViewModel` responsibility in `AnghkooeyUI` (M3). When the user taps "Add" on a reviewed draft, the ViewModel:
-1. Maps `CardDraft` → `Card` (question, answer, proposedTags → Tag lookup/create)
+The conversion `Card(from: CardDraft)` is a `Card` extension or
+`CardDraftReviewViewModel` responsibility in `AnghkooeyUI` (M3). When the user
+taps "Add" on a reviewed draft, the ViewModel:
+1. Maps `CardDraft` → `Card` (question, answer, proposedTags → Tag lookup/create,
+   sourceSpan forwarded as-is)
 2. Writes `Card` to the `ModelContext` from `AnghkooeyCore`
 3. Tags resolved case-insensitively via `Tag.normalize(_:)` from M1
 
-This conversion does not exist in M2 — it is documented here so M3 knows where to put it.
+This conversion does not exist in M2 — documented here so M3 knows where to put it.
 
 ---
 
-## 9. Test Plan
+## 11. Test Plan
 
-All tests use Swift Testing (`@Test`, `@Suite`). `@Test(arguments:)` over fixture array for the rubric gate.
+All tests use Swift Testing. `@Test(arguments:)` over fixture array for the CI gate.
 
-| Test | Framework | What it covers |
+| Test | File | What it covers |
 |---|---|---|
-| `emptyInputThrows` | Swift Testing | `generateDrafts(from: "")` throws `AuthoringError.emptyInput` |
-| `mockEmitsDraftsInOrder` | Swift Testing | `MockCardAuthoringService` yields expected drafts in sequence |
-| `partialSnapshotNotEmitted` | Swift Testing | Draft with only `question` set does not appear in stream |
-| `cancellationStopsStream` | Swift Testing | `Task.cancel()` on consumer terminates stream without error |
-| `generationFailedWrapsError` | Swift Testing | `AuthoringError.generationFailed` preserves `underlying` |
-| `goldenFixturesPassRubric` | Swift Testing, `@Test(arguments:)` | All golden drafts score ≥ 0.80 overall (CI gate) |
+| `emptyInputThrows` | `MockCardAuthoringServiceTests` | `generateDrafts(from: "")` throws `AuthoringError.emptyInput` |
+| `unavailableThrows` × 3 reasons | `MockCardAuthoringServiceTests` | Each `UnavailableReason` surfaces via `AuthoringError.unavailable(reason:)` |
+| `availabilityProbe` | `MockCardAuthoringServiceTests` | `availability` returns configured value |
+| `mockEmitsDraftsInOrder` | `MockCardAuthoringServiceTests` | Stream yields drafts in order, then finishes |
+| `accumulator_emitsOnFirstComplete` | `SnapshotAccumulatorTests` | Partial snapshot with only `question` → no emission |
+| `accumulator_emitsOncePerIndex` | `SnapshotAccumulatorTests` | Second snapshot refining same index → no duplicate |
+| `accumulator_multipleCompletionsOneSnapshot` | `SnapshotAccumulatorTests` | Model jumps two indices → two emissions in one `update` call |
+| `cancellationStopsStream` | `MockCardAuthoringServiceTests` | Task cancel → `onTermination` fires, stream ends |
+| `generationFailedWrapsError` | `AuthoringErrorTests` | `generationFailed` preserves `underlying` without data loss |
+| `rubricScorer_atomicFail` | `RubricScorerTests` | Compound question fails atomicity |
+| `rubricScorer_qEqualsAFail` | `RubricScorerTests` | Answer 4-gram in question fails Q≠A |
+| `rubricScorer_hallucinationFail` | `RubricScorerTests` | Token not in passage fails groundedness |
+| `goldenFixturesPassGate` | `EvalFixtureGateTests` | `@Test(arguments:)` — every fixture: every card passes all 4 criteria |
 
 ---
 
-## 10. M1 Carry-Overs Addressed in M2
+## 12. M1 Carry-Overs Addressed in M2
 
 | Item | Resolution |
 |---|---|
-| `CoreLog.subsystem` is `nonisolated(unsafe) static var` | M2 wires real bundle ID (`com.<author>.anghkooey`) via a `CoreLog.configure(subsystem:)` call in app init |
-| First additive schema change needs explicit no-op `MigrationStage` | If M2 adds any field to `Card` (e.g. `sourceSpan` population), a no-op `MigrationStage` is added to `AnghkooeyMigrationPlan` to lock in the habit |
+| `CoreLog.subsystem` is `nonisolated(unsafe) static var` | M2 wires real bundle ID via `CoreLog.configure(subsystem:)` in app init |
+| First additive schema change needs explicit no-op `MigrationStage` | If M2 populates `Card.sourceSpan`, a no-op stage is added to `AnghkooeyMigrationPlan` |
 | Long-term FSRS scheduler unspecialised | Not addressed in M2; remains documented caveat |
 
 ---
 
-## 11. Exit Gate (M2)
+## 13. Exit Gate (M2 — card authoring subsystem)
 
-- `LiveCardAuthoringService` compiles and streams `CardDraft` values from a real `LanguageModelSession` on iOS 26 Simulator
-- All 6 unit tests pass
-- CI rubric gate: all golden fixtures score ≥ 0.80 overall
+- `LiveCardAuthoringService` compiles under `#if canImport(FoundationModels)`;
+  streams `CardDraft` values from a real `LanguageModelSession` on iOS 26 Simulator
+- All tests in §11 pass
+- CI rubric gate: all golden fixtures pass (every card, every input)
 - Forbidden-pattern check green (no SwiftData/SwiftUI/UIKit in Intelligence sources)
 - `ARCHITECTURE.md` updated with M2 section
 - DocC on all public APIs
-- `make eval` runs end-to-end on developer machine with ≥ 20 fixture passages; aggregate score logged
-- `UNVERIFIED` items in §5 resolved against real simulator build (snapshot field names confirmed or corrected)
+- `make eval` runs end-to-end; aggregate pass-rate ≥ 80% on ≥ 20 fixture passages;
+  result logged in commit message alongside any prompt change
+- UNVERIFIED items in §5 resolved against real simulator build
