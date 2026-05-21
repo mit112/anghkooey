@@ -1,0 +1,13 @@
+{
+  "name": "anghkooey-fsrs-parity-generator",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Drives the pinned ts-fsrs reference impl to produce parity fixtures. See docs/DECISIONS/0002-fsrs-reference.md.",
+  "scripts": {
+    "generate": "node generate-parity-fixtures.mjs"
+  },
+  "dependencies": {
+    "ts-fsrs": "5.4.0"
+  }
+}

@@ -19,7 +19,8 @@ let package = Package(
         ),
         .testTarget(
             name: "AnghkooeyCoreTests",
-            dependencies: ["AnghkooeyCore"]
+            dependencies: ["AnghkooeyCore"],
+            resources: [.process("Fixtures")]
         )
     ],
     // Strict concurrency is enforced implicitly by Swift 6 language mode (.v6).
