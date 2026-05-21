@@ -30,6 +30,24 @@ PATTERNS=(
   '\bvar[[:space:]]+nextDue\b'               # field is dueAt
   'tags:[[:space:]]*\[String\]'              # tags is a [Tag] relationship
   'Logger\([[:space:]]*subsystem:'           # use CoreLog.persistence; do not hard-code subsystem
+  # M1 T3 — Scheduling/ contract bans. ts-fsrs is JS (snake_case); Codex's
+  # priors will pull those identifiers in verbatim. Swift port is camelCase.
+  '\bscheduled_days\b'
+  '\belapsed_days\b'
+  '\blearning_steps\b'
+  '\brelearning_steps\b'
+  '\blast_review\b'
+  '\brequest_retention\b'
+  '\bmaximum_interval\b'
+  '\benable_fuzz\b'
+  '\benable_short_term\b'
+  '\bdefault_w\b'
+  # FSRS-5 / SM-2 vocabulary that must not appear in the FSRS-6 port.
+  '\bFSRS5\b'
+  '\bfsrs5\b'
+  '\bFSRS-5\b'
+  '\bSM2\b'
+  '\bSM-2\b'
 )
 
 EXIT=0
