@@ -45,6 +45,21 @@ struct AppStateEnqueueTests {
         #expect(presented.draft.answer == "(edit to add answer)")
     }
 
+    @Test("enqueue queues a fallback draft when model is unavailable (airplane-mode path)")
+    func enqueue_onModelUnavailable_queuesFallbackDraft() async throws {
+        let mock = MockCardAuthoringService(
+            error: AuthoringError.unavailable(reason: .modelNotReady)
+        )
+        let sut = AppState(cardAuthor: mock)
+        let resolvedText = "Offline captured text"
+
+        await sut.enqueue(resolvedText: resolvedText)
+
+        let presented = try #require(sut.presentedDraft)
+        #expect(presented.draft.question == resolvedText)
+        #expect(presented.draft.answer == "(edit to add answer)")
+    }
+
     // MARK: enqueue_preservesQueueOrder_acrossMultipleDrains
 
     @Test("enqueue preserves FIFO order across multiple calls")
