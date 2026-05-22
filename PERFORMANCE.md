@@ -9,16 +9,21 @@ The capture pipeline emits the following `OSSignposter` intervals on category
 `PointsOfInterest` (subsystem = app bundle identifier). Use Instruments →
 Blank template + os_signpost instrument to capture all three.
 
-| Interval name                | Begins                                                     | Ends                                              | Process            |
-| ---------------------------- | ---------------------------------------------------------- | ------------------------------------------------- | ------------------ |
-| `share-tap-to-inbox-write`   | `ShareViewController.processSharedContent` entry           | scope exit (after `InboxWriter.write` returns)    | AnghkooeyShare ext |
-| `inbox-drain`                | `InboxDrainer.drain()` entry (after `isDraining` guard)    | scope exit of `drain()`                           | Anghkooey app      |
-| `card-review-sheet-ready`    | `AppState.advanceQueue()` when `presentedCard` set non-nil | `CardReviewSheet.onAppear` → `cardReviewSheetDidAppear` | Anghkooey app  |
+| Interval name                | Begins                                                                   | Ends                                                                                  | Process            |
+| ---------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- | ------------------ |
+| `share-tap-to-inbox-write`   | `ShareViewController.processSharedContent` entry                         | scope exit (after `InboxWriter.write` returns)                                        | AnghkooeyShare ext |
+| `inbox-drain`                | `InboxDrainer.drain()` entry (after `isDraining` guard)                  | scope exit of `drain()`                                                               | Anghkooey app      |
+| `card-review-sheet-ready`    | `AppState.advanceQueue()` when `presentedCard` set non-nil               | `CardReviewSheet.onAppear` → `cardReviewSheetDidAppear`                               | Anghkooey app      |
+| `review-tap`                 | `ReviewSession.submit(grade:)` entry (after `currentCard` guard)         | `defer` at end of `submit` — after queue-advance state mutations                      | Anghkooey app      |
+| `ai-draft-generation`        | Top of inner `Task` in `LiveCardAuthoringService.generateDrafts`         | `defer` at end of `Task` — after `continuation.finish()` or `.finish(throwing:)`     | Anghkooey app      |
 
 Wall-clock share-tap → review-sheet latency =
 `share-tap-to-inbox-write` end → `card-review-sheet-ready` end, summed across
 the extension and main-app traces (the two processes share the subsystem so
 Instruments groups them on the same Points of Interest track).
+
+`review-tap` and `ai-draft-generation` are main-app only and appear on the same
+Points of Interest track as `inbox-drain` and `card-review-sheet-ready`.
 
 ## Baselines
 
