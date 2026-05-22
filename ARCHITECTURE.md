@@ -406,3 +406,50 @@ sheet queue and posted `.anghkooeyCardAccepted` without ever calling
 `cardStore.create()`. Every accepted draft was silently dropped; the SwiftData
 store stayed empty. Fix: capture `presentedDraft` before `advanceQueue()`, then
 `Task { try? await cardStore.create(...) }`. Commit `4345f0c`.
+
+### M5.B — Performance instrumentation (Lane B)
+
+Added two `OSSignposter` intervals on category `"PointsOfInterest"`:
+
+- **`review-tap`** (`ReviewSession.submit`) — wraps FSRS scheduling math +
+  `CardStore.apply` (`ModelContext.save`) + queue-advance state mutation.
+  Measures full tap-to-next-card latency. Implementation: `import OSLog` +
+  `CoreLog.poiSignposter.beginInterval`/`defer endInterval` at top of `submit`.
+
+- **`ai-draft-generation`** (`LiveCardAuthoringService.generateDrafts`) — wraps
+  the inner `Task` from generation start to `continuation.finish()`. Measures
+  full FoundationModels on-device generation time. Uses `IntelligenceLog.poiSignposter`
+  (same `"PointsOfInterest"` category, same subsystem at runtime → same Instruments
+  track as Core's intervals).
+
+`IntelligenceLog` gains a `poiSignposter: OSSignposter` computed property matching
+`CoreLog.poiSignposter`'s category.
+
+`MetricsReceiver` (`NSObject`/`MXMetricManagerSubscriber`) added to app target.
+Registered via `MXMetricManager.shared.add(metricsReceiver)` in `AnghkooeyApp.init()`.
+Logs `MXMetricPayload` and `MXDiagnosticPayload` JSON to OSLog category `"MetricKit"`.
+First payload delivered ~24 hours after first real-device run.
+
+PERFORMANCE.md instrumentation table now has 5 intervals. M5 baseline section
+(measured numbers + Instruments screenshot) pending one Instruments run + Opus
+prose session.
+
+### M5.C — Privacy manifest audit + App Store metadata
+
+Required-reason API audit (2026-05-22):
+
+| API category | Target | Reason | Source |
+|---|---|---|---|
+| `NSPrivacyAccessedAPICategoryFileTimestamp` | Anghkooey (main app) | `3B52.1` | `InboxDrainer` reads `contentModificationDateKey` and `attributesOfItem` on app-managed inbox files |
+| `NSPrivacyAccessedAPICategoryFileTimestamp` | AnghkooeyShare (ext) | `DDA9.1` | `InboxWriter` checks inbox for existing items received from other apps via Share Sheet |
+
+No other required-reason APIs are used in production code (no disk space, no system
+boot time, no active keyboard, no UserDefaults access).
+
+`App/Anghkooey/PrivacyInfo.xcprivacy` updated: was an empty array; now declares
+`FileTimestamp/3B52.1` plus the required top-level keys (`NSPrivacyTracking: false`,
+`NSPrivacyCollectedDataTypes: []`). `AnghkooeyShare/PrivacyInfo.xcprivacy` was
+already correct.
+
+Required-reason table added to `README.md`. App Store metadata draft at
+`docs/STORE/metadata.md` (description, keywords, screenshot plan, submission checklist).
