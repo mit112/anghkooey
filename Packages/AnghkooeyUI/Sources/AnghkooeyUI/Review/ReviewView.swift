@@ -45,6 +45,21 @@ public struct ReviewView: View {
 
     private var reviewingBody: some View {
         VStack(spacing: 0) {
+            if session.isCushionActive {
+                HStack(spacing: 8) {
+                    Image(systemName: "cup.and.saucer.fill")
+                        .foregroundStyle(.secondary)
+                    Text("Showing today's batch — \(session.dailyBatchCap) of \(session.backlogTotal) due")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 6)
+                .background(.thinMaterial, in: Capsule())
+                .padding(.bottom, 8)
+                .accessibilityElement(children: .combine)
+            }
+
             if let card = session.currentCard {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 24) {
