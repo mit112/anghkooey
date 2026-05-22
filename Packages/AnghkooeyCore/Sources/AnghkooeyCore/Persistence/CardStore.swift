@@ -131,7 +131,7 @@ public protocol CardStoreProtocol: Sendable {
     ///   - now: Creation timestamp; also used as `dueAt` so the card is
     ///     immediately due on creation.
     /// - Returns: A snapshot of the persisted card.
-    func create(question: String, answer: String, sourceSpan: String?, now: Date) async throws -> Card.Snapshot
+    func create(question: String, answer: String, sourceSpan: String?, tags: [String], now: Date) async throws -> Card.Snapshot
 
     /// Returns snapshots of all cards whose `dueAt ≤ now`.
     func dueCards(asOf now: Date) async throws -> [Card.Snapshot]
@@ -168,7 +168,16 @@ public protocol CardStoreProtocol: Sendable {
     ///
     /// Passing an unknown `id` is a silent no-op.
     /// - Throws: `PersistenceError` on a SwiftData write failure.
-    func update(id: UUID, question: String, answer: String) async throws
+    func update(id: UUID, question: String, answer: String, tags: [String]) async throws
+}
+
+// MARK: - CardStoreProtocol backward-compat extensions
+
+public extension CardStoreProtocol {
+    /// Creates a card with no tags. Existing call sites compile without change.
+    func create(question: String, answer: String, sourceSpan: String?, now: Date) async throws -> Card.Snapshot {
+        try await create(question: question, answer: answer, sourceSpan: sourceSpan, tags: [], now: now)
+    }
 }
 
 // MARK: - CardStore (actor skeleton)
@@ -186,14 +195,15 @@ public actor CardStore: CardStoreProtocol {
         self.modelContext = ModelContext(container)
     }
 
-    public func create(question: String, answer: String, sourceSpan: String?, now: Date) async throws -> Card.Snapshot {
+    public func create(question: String, answer: String, sourceSpan: String?, tags: [String], now: Date) async throws -> Card.Snapshot {
+        let tagObjects = try findOrCreateTags(tags)
         let card = Card(
             id: UUID(),
             question: question,
             answer: answer,
             createdAt: now,
             updatedAt: now,
-            tags: [],
+            tags: tagObjects,
             state: .new,
             stability: 0,
             difficulty: 0,
@@ -205,6 +215,23 @@ public actor CardStore: CardStoreProtocol {
         modelContext.insert(card)
         try modelContext.save()
         return Card.Snapshot(from: card)
+    }
+
+    private func findOrCreateTags(_ names: [String]) throws -> [Tag] {
+        var result: [Tag] = []
+        for name in names {
+            let norm = Tag.normalize(name)
+            let predicate = #Predicate<Tag> { $0.normalizedName == norm }
+            let descriptor = FetchDescriptor<Tag>(predicate: predicate)
+            if let existing = try modelContext.fetch(descriptor).first {
+                result.append(existing)
+            } else {
+                let tag = Tag(name: name)
+                modelContext.insert(tag)
+                result.append(tag)
+            }
+        }
+        return result
     }
 
     public func dueCards(asOf now: Date) async throws -> [Card.Snapshot] {
@@ -244,7 +271,12 @@ public actor CardStore: CardStoreProtocol {
             scheduledDays: output.log.scheduledDays
         )
         modelContext.insert(log)
-        try modelContext.save()
+        do {
+            try modelContext.save()
+        } catch {
+            modelContext.rollback()
+            throw error
+        }
     }
 
     public func count(asOf now: Date) async throws -> (total: Int, due: Int) {
@@ -263,7 +295,12 @@ public actor CardStore: CardStoreProtocol {
         for card in all {
             card.dueAt = card.dueAt.addingTimeInterval(interval)
         }
-        try modelContext.save()
+        do {
+            try modelContext.save()
+        } catch {
+            modelContext.rollback()
+            throw error
+        }
     }
 
     public func allCards() async throws -> [Card.Snapshot] {
@@ -271,12 +308,13 @@ public actor CardStore: CardStoreProtocol {
         return try modelContext.fetch(descriptor).map { Card.Snapshot(from: $0) }
     }
 
-    public func update(id: UUID, question: String, answer: String) async throws {
+    public func update(id: UUID, question: String, answer: String, tags: [String]) async throws {
         let predicate = #Predicate<Card> { $0.id == id }
         let descriptor = FetchDescriptor<Card>(predicate: predicate)
         guard let card = try modelContext.fetch(descriptor).first else { return }
         card.question = question
         card.answer = answer
+        card.tags = try findOrCreateTags(tags)
         card.updatedAt = .now
         do {
             try modelContext.save()
@@ -301,13 +339,14 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
 
     public init() {}
 
-    public func create(question: String, answer: String, sourceSpan: String?, now: Date) async throws -> Card.Snapshot {
+    public func create(question: String, answer: String, sourceSpan: String?, tags: [String], now: Date) async throws -> Card.Snapshot {
         if let err = createError { throw err }
         let snap = Card.Snapshot(
             id: UUID(),
             question: question,
             answer: answer,
             sourceSpan: sourceSpan,
+            tags: tags,
             state: .new,
             stability: 0,
             difficulty: 0,
@@ -378,7 +417,7 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
         cards.sorted { $0.dueAt < $1.dueAt }
     }
 
-    public func update(id: UUID, question: String, answer: String) async throws {
+    public func update(id: UUID, question: String, answer: String, tags: [String]) async throws {
         if let err = updateError { throw err }
         guard let idx = cards.firstIndex(where: { $0.id == id }) else { return }
         let old = cards[idx]
@@ -387,7 +426,7 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
             question: question,
             answer: answer,
             sourceSpan: old.sourceSpan,
-            tags: old.tags,
+            tags: tags,
             state: old.state,
             stability: old.stability,
             difficulty: old.difficulty,

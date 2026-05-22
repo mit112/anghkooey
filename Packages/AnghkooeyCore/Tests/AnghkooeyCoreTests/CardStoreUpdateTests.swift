@@ -14,7 +14,7 @@ struct CardStoreUpdateTests {
         let now = Date(timeIntervalSince1970: 1_700_000_000)
         let snap = try await store.create(question: "Old Q", answer: "Old A", sourceSpan: nil, now: now)
 
-        try await store.update(id: snap.id, question: "New Q", answer: "New A")
+        try await store.update(id: snap.id, question: "New Q", answer: "New A", tags: [])
 
         let all = try await store.allCards()
         let updated = try #require(all.first(where: { $0.id == snap.id }))
@@ -27,7 +27,7 @@ struct CardStoreUpdateTests {
         let container = try AnghkooeyModelContainer.makeInMemoryContainer()
         let store = CardStore(container: container)
         // No cards created — passing any UUID should be a silent no-op.
-        try await store.update(id: UUID(), question: "Q", answer: "A")
+        try await store.update(id: UUID(), question: "Q", answer: "A", tags: [])
     }
 
     @Test("update does not modify FSRS scheduling fields")
@@ -40,7 +40,7 @@ struct CardStoreUpdateTests {
         let output = try engine.next(card: snap.schedulingCard, rating: .good, now: now)
         try await store.apply(output, to: snap.id, grade: .good, now: now)
 
-        try await store.update(id: snap.id, question: "Edited Q", answer: "Edited A")
+        try await store.update(id: snap.id, question: "Edited Q", answer: "Edited A", tags: [])
 
         let all = try await store.allCards()
         let updated = try #require(all.first(where: { $0.id == snap.id }))
@@ -58,7 +58,7 @@ struct CardStoreUpdateTests {
         let now = Date(timeIntervalSince1970: 1_700_000_000)
         let snap = try await store.create(question: "Old Q", answer: "Old A", sourceSpan: nil, now: now)
 
-        try await store.update(id: snap.id, question: "New Q", answer: "New A")
+        try await store.update(id: snap.id, question: "New Q", answer: "New A", tags: [])
 
         let updated = try #require(store.cards.first(where: { $0.id == snap.id }))
         #expect(updated.question == "New Q")
@@ -72,7 +72,7 @@ struct CardStoreUpdateTests {
         _ = try await store.create(question: "Q", answer: "A", sourceSpan: nil, now: now)
         let originalCount = store.cards.count
 
-        try await store.update(id: UUID(), question: "X", answer: "Y")
+        try await store.update(id: UUID(), question: "X", answer: "Y", tags: [])
 
         #expect(store.cards.count == originalCount)
     }
@@ -85,7 +85,7 @@ struct CardStoreUpdateTests {
         store.updateError = PersistenceError.invalidShift(days: -1)
 
         await #expect(throws: (any Error).self) {
-            try await store.update(id: snap.id, question: "X", answer: "Y")
+            try await store.update(id: snap.id, question: "X", answer: "Y", tags: [])
         }
     }
 }
