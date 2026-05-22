@@ -51,8 +51,10 @@ targets:
         IPHONEOS_DEPLOYMENT_TARGET: "26.0"
         INFOPLIST_FILE: ""
         GENERATE_INFOPLIST_FILE: YES
-        CODE_SIGN_IDENTITY: "Apple Development"
-        CODE_SIGN_STYLE: Automatic
+        # Ad-hoc signing so both app + appex get the same "-" cert on simulator CI.
+        # Physical device builds override this via the Xcode UI / automatic signing.
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
         CODE_SIGN_ENTITLEMENTS: Anghkooey/Anghkooey.entitlements
 
   AnghkooeyShare:
@@ -79,8 +81,9 @@ targets:
         IPHONEOS_DEPLOYMENT_TARGET: "26.0"
         INFOPLIST_FILE: AnghkooeyShare/AnghkooeyShare-Info.plist
         GENERATE_INFOPLIST_FILE: NO
-        CODE_SIGN_IDENTITY: "Apple Development"
-        CODE_SIGN_STYLE: Automatic
+        # Ad-hoc signing to match Anghkooey app target on simulator CI.
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
         CODE_SIGN_ENTITLEMENTS: AnghkooeyShare/AnghkooeyShare.entitlements
 
   AnghkooeyTests:
@@ -90,6 +93,7 @@ targets:
     dependencies:
       - target: Anghkooey
         embed: false
+      - package: AnghkooeyCore
       - package: AnghkooeyIntelligence
     sources:
       - path: AnghkooeyTests

@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import MetricKit
 import AnghkooeyCore
 import AnghkooeyIntelligence
 import AnghkooeyUI
@@ -8,6 +9,7 @@ import AnghkooeyUI
 struct AnghkooeyApp: App {
     @State private var appState: AppState
     @Environment(\.scenePhase) private var scenePhase
+    private let metricsReceiver = MetricsReceiver()
 
     init() {
         let subsystem = Bundle.main.bundleIdentifier ?? "com.unknown.anghkooey"
@@ -26,6 +28,8 @@ struct AnghkooeyApp: App {
             cardAuthor: LiveCardAuthoringService(),
             cardStore: store
         ))
+
+        MXMetricManager.shared.add(metricsReceiver)
     }
 
     var body: some Scene {

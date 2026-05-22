@@ -1,6 +1,7 @@
 import Testing
 import Foundation
 @testable import Anghkooey
+import AnghkooeyCore
 import AnghkooeyIntelligence
 
 // MARK: - M4.2 contract tests
