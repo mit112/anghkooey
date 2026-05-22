@@ -300,7 +300,7 @@ covers Vision/OCR. `CFNotificationCenter` Darwin is not a required-reason API.
 ## M4 — Review Loop
 
 **Branch:** `m4/review-loop`  
-**Status:** contracts complete; Codex implementing M4.2 / M4.3 / M4.7
+**Status:** complete
 
 ### Package topology
 
