@@ -1,7 +1,7 @@
 import Foundation
 import OSLog
 
-private let log = Logger(subsystem: "com.mitsheth.anghkooey", category: "InboxDrainer")
+private var log: Logger { CoreLog.captureInbox }
 
 private enum InboxDrainerError: Error, Sendable {
     case missingImagePath(itemID: UUID)
