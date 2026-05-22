@@ -86,7 +86,7 @@ public struct ReviewView: View {
         .simultaneousGesture(
             DragGesture(minimumDistance: 20)
                 .onChanged { dragOffset = $0.translation }
-                .onEnded { handleSwipeEnd($0.translation) }
+                .onEnded { handleSwipeEnd($0) }
         )
         .sheet(isPresented: $isEditSheetPresented) {
             if let card = session.currentCard {
@@ -124,15 +124,24 @@ public struct ReviewView: View {
         }
     }
 
-    private func handleSwipeEnd(_ translation: CGSize) {
+    private func handleSwipeEnd(_ value: DragGesture.Value) {
         withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
             dragOffset = .zero
         }
         let threshold: CGFloat = 80
-        let dx = translation.width
-        let dy = translation.height
+        let minVelocity: CGFloat = 100
+        let dx = value.translation.width
+        let dy = value.translation.height
+
+        // Diagonal dead zone: require clear axis dominance (1.5×) to
+        // avoid misfiring on near-45° drags.
+        guard abs(dx) > abs(dy) * 1.5 || abs(dy) > abs(dx) * 1.5 else { return }
 
         if abs(dx) >= abs(dy) {
+            // Exclude iOS system left-edge back-swipe (~20pt zone).
+            guard value.startLocation.x > 20 else { return }
+            // Velocity guard: distinguishes deliberate swipe from content scroll.
+            guard abs(value.velocity.width) >= minVelocity else { return }
             guard session.isAnswerRevealed else { return }
             if dx < -threshold {
                 againTrigger.toggle()
@@ -142,6 +151,7 @@ public struct ReviewView: View {
                 Task { await session.submit(grade: .good) }
             }
         } else {
+            guard abs(value.velocity.height) >= minVelocity else { return }
             if dy < -threshold {
                 guard session.isAnswerRevealed else { return }
                 easyTrigger.toggle()

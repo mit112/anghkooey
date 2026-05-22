@@ -274,7 +274,12 @@ public actor CardStore: CardStoreProtocol {
         card.question = question
         card.answer = answer
         card.updatedAt = .now
-        try modelContext.save()
+        do {
+            try modelContext.save()
+        } catch {
+            modelContext.rollback()
+            throw error
+        }
     }
 }
 
