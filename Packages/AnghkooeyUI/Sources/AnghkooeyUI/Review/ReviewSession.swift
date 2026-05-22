@@ -1,6 +1,7 @@
 import Foundation
 import OSLog
 import AnghkooeyCore
+import AnghkooeyIntelligence
 
 // MARK: - ReviewSessionState
 
@@ -37,6 +38,16 @@ public final class ReviewSession {
     /// True when the visible queue was capped by Cushion Mode at last load.
     public private(set) var isCushionActive: Bool = false
 
+    /// The mnemonic for the current card, or nil if none has been generated yet.
+    public private(set) var currentMnemonic: String?
+
+    /// True while `generateMnemonic()` is in flight.
+    public private(set) var isMnemonicLoading: Bool = false
+
+    /// True when a `MnemonicService` was injected — `ReviewView` uses this to
+    /// conditionally render the "Generate Mnemonic" button.
+    public var isMnemonicAvailable: Bool { mnemonicService != nil }
+
     // MARK: Cushion configuration
 
     /// Maximum number of cards shown in a single session when cushion fires.
@@ -53,6 +64,7 @@ public final class ReviewSession {
     private let scheduler: any FSRS6Engine
     private let clock: @Sendable () -> Date
     private var queue: [Card.Snapshot] = []
+    private let mnemonicService: (any MnemonicService)?
 
     // MARK: Init
 
@@ -61,13 +73,15 @@ public final class ReviewSession {
         scheduler: any FSRS6Engine,
         clock: @Sendable @escaping () -> Date = { .now },
         dailyBatchCap: Int = 20,
-        backlogThreshold: Int = 50
+        backlogThreshold: Int = 50,
+        mnemonicService: (any MnemonicService)? = nil
     ) {
         self.store = store
         self.scheduler = scheduler
         self.clock = clock
         self.dailyBatchCap = dailyBatchCap
         self.backlogThreshold = backlogThreshold
+        self.mnemonicService = mnemonicService
     }
 
     // MARK: Public API
@@ -86,6 +100,8 @@ public final class ReviewSession {
             queueRemaining = queue.count
             isAnswerRevealed = false
             state = visible.isEmpty ? .empty : .reviewing
+            currentMnemonic = currentCard?.mnemonic
+            isMnemonicLoading = false
         } catch {
             state = .error(error.localizedDescription)
         }
@@ -118,11 +134,34 @@ public final class ReviewSession {
             currentCard = nil
             queueRemaining = 0
             state = .empty
+            currentMnemonic = nil
+            isMnemonicLoading = false
         } else {
             currentCard = queue.removeFirst()
             queueRemaining = queue.count
             isAnswerRevealed = false
+            currentMnemonic = currentCard?.mnemonic
+            isMnemonicLoading = false
         }
+    }
+
+    /// Calls `mnemonicService` to generate a mnemonic for the current card,
+    /// then persists it via `store.updateMnemonic`. Non-fatal on error.
+    public func generateMnemonic() async {
+        guard let card = currentCard, let service = mnemonicService else { return }
+        guard !isMnemonicLoading else { return }
+        isMnemonicLoading = true
+        do {
+            let text = try await service.generateMnemonic(
+                question: card.question,
+                answer: card.answer
+            )
+            currentMnemonic = text
+            try? await store.updateMnemonic(id: card.id, mnemonic: text)
+        } catch {
+            // Non-fatal: generation failure leaves the button visible to retry.
+        }
+        isMnemonicLoading = false
     }
 
     /// Saves in-session edits to the current card's question, answer, and tags.
@@ -149,7 +188,8 @@ public final class ReviewSession {
                 lapses: card.lapses,
                 learningSteps: card.learningSteps,
                 scheduledDays: card.scheduledDays,
-                elapsedDays: card.elapsedDays
+                elapsedDays: card.elapsedDays,
+                mnemonic: card.mnemonic
             )
         } catch {
             // Non-fatal — leave queue unaffected.

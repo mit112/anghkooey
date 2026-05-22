@@ -15,6 +15,7 @@
 		46A0E6A0C20AE8578112E927 /* AnghkooeyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6303924A04882FA4C900557B /* AnghkooeyApp.swift */; };
 		65C5300478257265174ECB34 /* AnghkooeyUI in Frameworks */ = {isa = PBXBuildFile; productRef = 35F7FD1699C5DB4B94EEF7ED /* AnghkooeyUI */; };
 		6E2B75EF1D532905ED043B04 /* AnghkooeyIntelligence in Frameworks */ = {isa = PBXBuildFile; productRef = E463D25A57483D22C74E098F /* AnghkooeyIntelligence */; };
+		838F434C0E47994FB38A3774 /* ReviewSessionMnemonicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFF0371E042B2726F73268FF /* ReviewSessionMnemonicTests.swift */; };
 		A7AE1592FEEDA52EA1AD8284 /* AnghkooeyShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 0A037B8F43852214FC842CDF /* AnghkooeyShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		AE2B092616BDC257E899D84C /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A6AE21F57389F2FA533F696 /* ShareViewController.swift */; };
 		BB5809147A8AC7D33F6E8A41 /* AnghkooeyCore in Frameworks */ = {isa = PBXBuildFile; productRef = 6050CC9AE2B0A888BBACD0E2 /* AnghkooeyCore */; };
@@ -78,6 +79,7 @@
 		BAD05419FDB54EF847E4F217 /* FreezeControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreezeControllerTests.swift; sourceTree = "<group>"; };
 		DC510E7B9D8F52E50E4CCED4 /* AppStateEnqueueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateEnqueueTests.swift; sourceTree = "<group>"; };
 		DC86FF464394DC7B8C2BA50D /* MetricsReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsReceiver.swift; sourceTree = "<group>"; };
+		DFF0371E042B2726F73268FF /* ReviewSessionMnemonicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewSessionMnemonicTests.swift; sourceTree = "<group>"; };
 		EA63E5FA330602579BBE4E25 /* Anghkooey.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Anghkooey.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1B2C3D4E5F60001A2B3C4D5 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		B1C2D3E4F5060001B2C3D4E5 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -125,9 +127,9 @@
 		314911AE872155B4BC9640C8 /* Anghkooey */ = {
 			isa = PBXGroup;
 			children = (
-				A1B2C3D4E5F60001A2B3C4D5 /* PrivacyInfo.xcprivacy */,
 				A35276B7D331FB0334E9C818 /* Anghkooey.entitlements */,
 				6303924A04882FA4C900557B /* AnghkooeyApp.swift */,
+				A1B2C3D4E5F60001A2B3C4D5 /* PrivacyInfo.xcprivacy */,
 				55F0F922386EE72B02D5FC3F /* AppState.swift */,
 				7E8F3B74ABF8A6FBD7019DB2 /* CardReviewSheet.swift */,
 				80E3ED969F4ECE89B0A25E87 /* ContentView.swift */,
@@ -162,9 +164,9 @@
 		D64DD303F0A57D93C31498AD /* AnghkooeyShare */ = {
 			isa = PBXGroup;
 			children = (
-				B1C2D3E4F5060001B2C3D4E5 /* PrivacyInfo.xcprivacy */,
 				712E1AED1C075F0AAC8CF0CA /* AnghkooeyShare-Info.plist */,
 				718E27D7320553CBB6BCA62A /* AnghkooeyShare.entitlements */,
+				B1C2D3E4F5060001B2C3D4E5 /* PrivacyInfo.xcprivacy */,
 				5A6AE21F57389F2FA533F696 /* ShareViewController.swift */,
 			);
 			path = AnghkooeyShare;
@@ -176,6 +178,7 @@
 				DC510E7B9D8F52E50E4CCED4 /* AppStateEnqueueTests.swift */,
 				BAD05419FDB54EF847E4F217 /* FreezeControllerTests.swift */,
 				6170637242A7E485A643F715 /* MetricsReceiverTests.swift */,
+				DFF0371E042B2726F73268FF /* ReviewSessionMnemonicTests.swift */,
 			);
 			path = AnghkooeyTests;
 			sourceTree = "<group>";
@@ -189,7 +192,6 @@
 			buildPhases = (
 				86F48F1F9CC0C93AC8355A3A /* Sources */,
 				F917D06412004FAA2CDCEB46 /* Frameworks */,
-				A1B2C3D4E5F60003A2B3C4D5 /* Resources */,
 				C101D8F13C1F879865AD4379 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
@@ -211,7 +213,6 @@
 			buildPhases = (
 				AE8C7FE4FFFAB2EF0393B4DC /* Sources */,
 				ECD9F8F6385B28F86CD116B5 /* Frameworks */,
-				B1C2D3E4F5060003B2C3D4E5 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -292,25 +293,6 @@
 		};
 /* End PBXProject section */
 
-/* Begin PBXResourcesBuildPhase section */
-		A1B2C3D4E5F60003A2B3C4D5 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				A1B2C3D4E5F60002A2B3C4D5 /* PrivacyInfo.xcprivacy in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		B1C2D3E4F5060003B2C3D4E5 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				B1C2D3E4F5060002B2C3D4E5 /* PrivacyInfo.xcprivacy in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXResourcesBuildPhase section */
-
 /* Begin PBXSourcesBuildPhase section */
 		86F48F1F9CC0C93AC8355A3A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -333,6 +315,7 @@
 				EA01604E660F4F05E86D4778 /* AppStateEnqueueTests.swift in Sources */,
 				1C5681F0A24B3964F71E900E /* FreezeControllerTests.swift in Sources */,
 				258EF0D8985B6D4FF200A34B /* MetricsReceiverTests.swift in Sources */,
+				838F434C0E47994FB38A3774 /* ReviewSessionMnemonicTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -70,6 +70,7 @@ public struct ReviewView: View {
                         questionSection(card.question)
                         if session.isAnswerRevealed {
                             answerSection(card.answer)
+                            mnemonicSection
                         }
                     }
                     .padding()
@@ -184,6 +185,38 @@ public struct ReviewView: View {
                 .font(.body)
         }
         .transition(.move(edge: .bottom).combined(with: .opacity))
+    }
+
+    @ViewBuilder
+    private var mnemonicSection: some View {
+        if let mnemonic = session.currentMnemonic {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Mnemonic")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .textCase(.uppercase)
+                Text(mnemonic)
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .italic()
+            }
+            .transition(.move(edge: .bottom).combined(with: .opacity))
+        } else if session.isMnemonicLoading {
+            HStack(spacing: 8) {
+                ProgressView()
+                    .controlSize(.small)
+                Text("Generating mnemonic…")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        } else if session.isMnemonicAvailable {
+            Button("Generate Mnemonic") {
+                Task { await session.generateMnemonic() }
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+            .tint(.purple)
+        }
     }
 
     private var actionBar: some View {
