@@ -5,7 +5,7 @@ import AnghkooeyCore
 ///
 /// State machine:
 ///   `.loading` → `.reviewing` (question shown, "Show Answer" button)
-///              → answer revealed + Got it / Missed it buttons
+///              → answer revealed + Again / Hard / Good / Easy buttons
 ///              → next card or `.empty`
 ///
 /// `ReviewView` imports only `AnghkooeyCore` for `ReviewGrade` — it has no
@@ -13,8 +13,10 @@ import AnghkooeyCore
 public struct ReviewView: View {
 
     @Bindable var session: ReviewSession
-    @State private var gotItTrigger = false
-    @State private var missedItTrigger = false
+    @State private var againTrigger = false
+    @State private var hardTrigger = false
+    @State private var goodTrigger = false
+    @State private var easyTrigger = false
 
     public init(session: ReviewSession) {
         self.session = session
@@ -124,30 +126,57 @@ public struct ReviewView: View {
     }
 
     private var gradeButtons: some View {
-        HStack(spacing: 12) {
-            Button {
-                missedItTrigger.toggle()
-                Task { await session.submit(grade: .missed) }
-            } label: {
-                Label("Missed it", systemImage: "xmark")
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.bordered)
-            .tint(.red)
-            .controlSize(.large)
+        VStack(spacing: 8) {
+            HStack(spacing: 8) {
+                Button {
+                    againTrigger.toggle()
+                    Task { await session.submit(grade: .again) }
+                } label: {
+                    Label("Again", systemImage: "arrow.counterclockwise")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .tint(.red)
+                .controlSize(.large)
 
-            Button {
-                gotItTrigger.toggle()
-                Task { await session.submit(grade: .gotIt) }
-            } label: {
-                Label("Got it", systemImage: "checkmark")
-                    .frame(maxWidth: .infinity)
+                Button {
+                    hardTrigger.toggle()
+                    Task { await session.submit(grade: .hard) }
+                } label: {
+                    Label("Hard", systemImage: "minus.circle")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .tint(.orange)
+                .controlSize(.large)
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
+            HStack(spacing: 8) {
+                Button {
+                    goodTrigger.toggle()
+                    Task { await session.submit(grade: .good) }
+                } label: {
+                    Label("Good", systemImage: "checkmark")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+
+                Button {
+                    easyTrigger.toggle()
+                    Task { await session.submit(grade: .easy) }
+                } label: {
+                    Label("Easy", systemImage: "star.fill")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.blue)
+                .controlSize(.large)
+            }
         }
-        .sensoryFeedback(.success, trigger: gotItTrigger)
-        .sensoryFeedback(.error, trigger: missedItTrigger)
+        .sensoryFeedback(.error, trigger: againTrigger)
+        .sensoryFeedback(.impact(weight: .medium), trigger: hardTrigger)
+        .sensoryFeedback(.success, trigger: goodTrigger)
+        .sensoryFeedback(.success, trigger: easyTrigger)
     }
 
     // MARK: - Empty

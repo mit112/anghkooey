@@ -9,24 +9,12 @@ public enum ReviewGrade: String, Codable, Sendable, CaseIterable {
     case good
     case easy
 
-    // MARK: Migration shims (removed at M5.5G lane close)
-
-    /// Deprecated — use `.again`.
-    @available(*, deprecated, renamed: "again")
-    public static var missed: ReviewGrade { .again }
-
-    /// Deprecated — use `.good`.
-    @available(*, deprecated, renamed: "good")
-    public static var gotIt: ReviewGrade { .good }
-
-    // MARK: FSRS mapping
-
     public var fsrsRating: Rating {
         switch self {
         case .again: return .again
-        case .hard: return .hard
-        case .good: return .good
-        case .easy: return .easy
+        case .hard:  return .hard
+        case .good:  return .good
+        case .easy:  return .easy
         }
     }
 }
