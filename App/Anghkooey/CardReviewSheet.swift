@@ -3,19 +3,35 @@ import AnghkooeyIntelligence
 
 /// Review sheet for a single AI-authored card draft.
 ///
-/// Shows Question, Answer, and an optional collapsed source span.
-/// Both fields are read-only in v1; editing-before-accept is M5.
+/// Shows editable Question and Answer fields, plus a collapsed read-only
+/// source span. The user may edit Q/A before accepting; edits are passed
+/// through `onAccept(question:answer:)`.
 struct CardReviewSheet: View {
     let draft: IdentifiedDraft
-    let onAccept: () -> Void
+    let onAccept: (String, String) -> Void
     let onSkip: () -> Void
+
+    @State private var editedQuestion: String
+    @State private var editedAnswer: String
+
+    init(
+        draft: IdentifiedDraft,
+        onAccept: @escaping (String, String) -> Void,
+        onSkip: @escaping () -> Void
+    ) {
+        self.draft = draft
+        self.onAccept = onAccept
+        self.onSkip = onSkip
+        _editedQuestion = State(initialValue: draft.draft.question)
+        _editedAnswer = State(initialValue: draft.draft.answer)
+    }
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    fieldSection(label: "Question", text: draft.draft.question)
-                    fieldSection(label: "Answer", text: draft.draft.answer)
+                    editableFieldSection(label: "Question", text: $editedQuestion)
+                    editableFieldSection(label: "Answer", text: $editedAnswer)
                     if let span = draft.draft.sourceSpan {
                         sourceSection(span: span)
                     }
@@ -29,7 +45,9 @@ struct CardReviewSheet: View {
                     Button("Skip", action: onSkip)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Accept", action: onAccept)
+                    Button("Accept") {
+                        onAccept(editedQuestion, editedAnswer)
+                    }
                 }
             }
         }
@@ -37,15 +55,17 @@ struct CardReviewSheet: View {
 
     // MARK: - Private helpers
 
-    private func fieldSection(label: String, text: String) -> some View {
+    private func editableFieldSection(label: String, text: Binding<String>) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(label)
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .textCase(.uppercase)
-            Text(text)
+            TextEditor(text: text)
                 .font(.body)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(minHeight: 80)
+                .scrollContentBackground(.hidden)
+                .background(Color(.systemFill), in: RoundedRectangle(cornerRadius: 8))
         }
     }
 

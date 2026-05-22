@@ -104,19 +104,29 @@ final class AppState: @unchecked Sendable {
 
     // MARK: Sheet queue
 
-    func acceptDraft() {
+    /// Accepts the current draft with the supplied (possibly edited) Q/A.
+    /// Called by `CardReviewSheet`'s Accept button.
+    func acceptDraft(question: String, answer: String) {
         guard let draft = presentedDraft else { return }
         advanceQueue()
         Task {
             try? await cardStore.create(
-                question: draft.draft.question,
-                answer: draft.draft.answer,
+                question: question,
+                answer: answer,
                 sourceSpan: draft.draft.sourceSpan,
                 now: .now
             )
         }
         NotificationCenter.default.post(name: .anghkooeyCardAccepted, object: nil)
     }
+
+    /// Convenience shim: accepts using the draft's original (unedited) Q/A.
+    /// Kept so existing test call sites compile unchanged.
+    func acceptDraft() {
+        guard let draft = presentedDraft else { return }
+        acceptDraft(question: draft.draft.question, answer: draft.draft.answer)
+    }
+
     func skipDraft() { advanceQueue() }
 
     /// Called from `CardReviewSheet.onAppear` to close the

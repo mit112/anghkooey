@@ -17,6 +17,8 @@ public struct ReviewView: View {
     @State private var hardTrigger = false
     @State private var goodTrigger = false
     @State private var easyTrigger = false
+    @State private var dragOffset: CGSize = .zero
+    @State private var isEditSheetPresented: Bool = false
 
     public init(session: ReviewSession) {
         self.session = session
@@ -73,12 +75,81 @@ public struct ReviewView: View {
                     .padding()
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                .overlay(swipeTintOverlay)
             }
 
             Divider()
             actionBar
         }
+        .offset(x: dragOffset.width * 0.4, y: dragOffset.height * 0.4)
+        .rotationEffect(.degrees(Double(dragOffset.width) / 25))
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 20)
+                .onChanged { dragOffset = $0.translation }
+                .onEnded { handleSwipeEnd($0.translation) }
+        )
+        .sheet(isPresented: $isEditSheetPresented) {
+            if let card = session.currentCard {
+                CardEditSheet(
+                    isPresented: $isEditSheetPresented,
+                    card: card,
+                    session: session
+                )
+            }
+        }
         .animation(.easeInOut(duration: 0.2), value: session.isAnswerRevealed)
+    }
+
+    // MARK: - Swipe helpers
+
+    @ViewBuilder
+    private var swipeTintOverlay: some View {
+        let dx = dragOffset.width
+        let dy = dragOffset.height
+        let threshold: CGFloat = 80
+        if abs(dx) > 10 || abs(dy) > 10 {
+            if abs(dx) >= abs(dy) {
+                Rectangle()
+                    .fill(dx < 0 ? Color.red : Color.green)
+                    .opacity(min(abs(dx) / threshold, 1.0) * 0.2)
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+            } else {
+                Rectangle()
+                    .fill(dy < 0 ? Color.blue : Color.secondary)
+                    .opacity(min(abs(dy) / threshold, 1.0) * 0.18)
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+            }
+        }
+    }
+
+    private func handleSwipeEnd(_ translation: CGSize) {
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+            dragOffset = .zero
+        }
+        let threshold: CGFloat = 80
+        let dx = translation.width
+        let dy = translation.height
+
+        if abs(dx) >= abs(dy) {
+            guard session.isAnswerRevealed else { return }
+            if dx < -threshold {
+                againTrigger.toggle()
+                Task { await session.submit(grade: .again) }
+            } else if dx > threshold {
+                goodTrigger.toggle()
+                Task { await session.submit(grade: .good) }
+            }
+        } else {
+            if dy < -threshold {
+                guard session.isAnswerRevealed else { return }
+                easyTrigger.toggle()
+                Task { await session.submit(grade: .easy) }
+            } else if dy > threshold {
+                isEditSheetPresented = true
+            }
+        }
     }
 
     private func questionSection(_ question: String) -> some View {
@@ -187,5 +258,57 @@ public struct ReviewView: View {
             systemImage: "checkmark.circle.fill",
             description: Text("Come back when your next review is due, or capture something new to grow your deck.")
         )
+    }
+}
+
+// MARK: - CardEditSheet
+
+private struct CardEditSheet: View {
+    @Binding var isPresented: Bool
+    let card: Card.Snapshot
+    let session: ReviewSession
+
+    @State private var editedQuestion: String
+    @State private var editedAnswer: String
+
+    init(isPresented: Binding<Bool>, card: Card.Snapshot, session: ReviewSession) {
+        _isPresented = isPresented
+        self.card = card
+        self.session = session
+        _editedQuestion = State(initialValue: card.question)
+        _editedAnswer = State(initialValue: card.answer)
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Question") {
+                    TextEditor(text: $editedQuestion)
+                        .frame(minHeight: 80)
+                }
+                Section("Answer") {
+                    TextEditor(text: $editedAnswer)
+                        .frame(minHeight: 80)
+                }
+            }
+            .navigationTitle("Edit Card")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { isPresented = false }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        Task { @MainActor in
+                            await session.submitEdit(
+                                question: editedQuestion,
+                                answer: editedAnswer
+                            )
+                            isPresented = false
+                        }
+                    }
+                }
+            }
+        }
     }
 }

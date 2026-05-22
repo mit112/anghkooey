@@ -124,4 +124,34 @@ public final class ReviewSession {
             isAnswerRevealed = false
         }
     }
+
+    /// Saves in-session edits to the current card's question and answer.
+    ///
+    /// Updates the store and refreshes the in-memory snapshot so `ReviewView`
+    /// reflects the edit immediately. Non-fatal: a store error leaves the
+    /// review queue unaffected.
+    public func submitEdit(question: String, answer: String) async {
+        guard let card = currentCard else { return }
+        do {
+            try await store.update(id: card.id, question: question, answer: answer)
+            currentCard = Card.Snapshot(
+                id: card.id,
+                question: question,
+                answer: answer,
+                sourceSpan: card.sourceSpan,
+                state: card.state,
+                stability: card.stability,
+                difficulty: card.difficulty,
+                dueAt: card.dueAt,
+                lastReviewedAt: card.lastReviewedAt,
+                reps: card.reps,
+                lapses: card.lapses,
+                learningSteps: card.learningSteps,
+                scheduledDays: card.scheduledDays,
+                elapsedDays: card.elapsedDays
+            )
+        } catch {
+            // Non-fatal — leave queue unaffected.
+        }
+    }
 }

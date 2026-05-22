@@ -51,7 +51,7 @@ struct AnghkooeyApp: App {
                 .sheet(item: $appState.presentedDraft) { identified in
                     CardReviewSheet(
                         draft: identified,
-                        onAccept: { appState.acceptDraft() },
+                        onAccept: { q, a in appState.acceptDraft(question: q, answer: a) },
                         onSkip: { appState.skipDraft() }
                     )
                     .onAppear { appState.cardReviewSheetDidAppear() }
