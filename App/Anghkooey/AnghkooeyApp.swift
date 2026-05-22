@@ -25,11 +25,11 @@ struct AnghkooeyApp: App {
                         Task { await appState.drain() }
                     }
                 }
-                .sheet(item: $appState.presentedCard) { draft in
+                .sheet(item: $appState.presentedDraft) { identified in
                     CardReviewSheet(
-                        draft: draft,
-                        onAccept: { appState.acceptCard() },
-                        onSkip: { appState.skipCard() }
+                        draft: identified,
+                        onAccept: { appState.acceptDraft() },
+                        onSkip: { appState.skipDraft() }
                     )
                     .onAppear { appState.cardReviewSheetDidAppear() }
                 }
