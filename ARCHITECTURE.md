@@ -398,3 +398,11 @@ migrations swap the alias and add a stage without rippling through call sites.
 longer zero-fills step-machine state, closing the M4 carry-over noted above.
 `CardStore.apply` and `MockCardStore.apply` persist the new fields from
 `SchedulerOutput`.
+
+### M5.0 — Verification: production bug in accept flow
+
+Sim verification (2026-05-22) revealed `AppState.acceptDraft()` advanced the
+sheet queue and posted `.anghkooeyCardAccepted` without ever calling
+`cardStore.create()`. Every accepted draft was silently dropped; the SwiftData
+store stayed empty. Fix: capture `presentedDraft` before `advanceQueue()`, then
+`Task { try? await cardStore.create(...) }`. Commit `4345f0c`.
