@@ -557,3 +557,38 @@ Good/Easy.
 156 → 99 Core tests after lane close (net +2: 5 new ReviewGrade mapping tests
 replaced 3 old 2-case tests; `ReviewSessionTests` grew from 4 to 6 tests
 covering all 4 grade routes plus retained empty-state and idempotency tests).
+
+---
+
+## M5.5S — Swipe-to-grade + Edit-before-accept
+
+**Branch:** `main`
+**Status:** complete
+**Plan:** `docs/superpowers/plans/2026-05-22-m5.5s-swipe-and-edit.md`
+
+### What changed
+
+**`CardStore.update(id:question:answer:)`** — new protocol method + `CardStore` actor impl + `MockCardStore` stub. Updates only `question`, `answer`, and `updatedAt`; FSRS fields are untouched. Rollback on save failure guards against dirty context leaking into subsequent saves. Tested in `CardStoreUpdateTests.swift` (6 Swift Testing tests).
+
+**`ReviewSession.submitEdit(question:answer:)`** — calls `store.update`, refreshes the in-memory `currentCard` snapshot so `ReviewView` reflects edits immediately. Non-fatal on error.
+
+**Swipe gesture layer in `ReviewView`** — `DragGesture(minimumDistance: 20)` with `simultaneousGesture` on the reviewing body VStack. Mapping: left→Again, right→Good, up→Easy, down→edit sheet. Visual feedback: colour-tinted overlay (red/green/blue/grey) + card tilt/offset during drag. Haptic feedback reuses existing `sensoryFeedback` triggers.
+
+Three hardening constraints applied after Codex review:
+- **Diagonal dead zone:** `abs(dx) > abs(dy) * 1.5 || abs(dy) > abs(dx) * 1.5` required before any action fires — prevents near-45° ambiguity.
+- **Velocity guard:** `abs(velocity) >= 100 pt/s` — distinguishes deliberate swipe from a slow content scroll activating the outer gesture via `simultaneousGesture`.
+- **Left-edge exclusion:** `startLocation.x > 20` — prevents iOS system back-swipe from triggering `.good`.
+
+**`CardEditSheet`** — private SwiftUI struct at the bottom of `ReviewView.swift`. Two `TextEditor` fields initialised from the current card snapshot; Save calls `session.submitEdit`; Cancel dismisses without saving.
+
+**`CardReviewSheet` edit-before-accept** — question/answer `Text` views promoted to `TextEditor` fields. `onAccept` signature changed to `(String, String) -> Void`. `AppState.acceptDraft(question:answer:)` added; zero-arg `acceptDraft()` shim delegates to it so existing tests compile unchanged.
+
+### Invariants
+
+- `CardStore.update` only touches `question`, `answer`, `updatedAt`; all FSRS fields remain from the last `apply(...)` call.
+- Swipe grades are guarded behind `session.isAnswerRevealed`; down-swipe (edit) fires regardless of reveal state.
+- No tags in the Lane S edit sheet — `Card.Snapshot` gains a `tags` field in Lane T; the `update` signature is extended there.
+
+### Test count after lane close
+
+105 Core tests (18 suites) — net +6 from `CardStoreUpdateTests`. 13 app-target tests unchanged.
