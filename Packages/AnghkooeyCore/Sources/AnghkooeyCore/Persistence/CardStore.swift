@@ -16,12 +16,8 @@ public extension Card {
     /// across the `CardStore` actor boundary so callers never hold a reference
     /// to a live SwiftData object outside the actor's ModelContext.
     ///
-    /// Note (M4): `reps`, `lapses`, `learningSteps`, `scheduledDays`, and
-    /// `elapsedDays` are not persisted in the M4 schema and default to 0 when
-    /// building a `SchedulingCard`. The scheduler's stability/difficulty/state
-    /// fields are correct; only the step-machine position is lost across app
-    /// restarts. This is acceptable for v1 single-user flow. M5 will extend the
-    /// schema to store these fields.
+    /// As of M5.A all FSRS fields including step-machine state are persisted
+    /// and round-trip through this snapshot.
     struct Snapshot: Sendable, Equatable {
         public let id: UUID
         public let question: String
@@ -32,6 +28,11 @@ public extension Card {
         public let difficulty: Double
         public let dueAt: Date
         public let lastReviewedAt: Date?
+        public let reps: Int
+        public let lapses: Int
+        public let learningSteps: Int
+        public let scheduledDays: Double
+        public let elapsedDays: Double
 
         public init(
             id: UUID,
@@ -42,7 +43,12 @@ public extension Card {
             stability: Double,
             difficulty: Double,
             dueAt: Date,
-            lastReviewedAt: Date? = nil
+            lastReviewedAt: Date? = nil,
+            reps: Int = 0,
+            lapses: Int = 0,
+            learningSteps: Int = 0,
+            scheduledDays: Double = 0,
+            elapsedDays: Double = 0
         ) {
             self.id = id
             self.question = question
@@ -53,6 +59,11 @@ public extension Card {
             self.difficulty = difficulty
             self.dueAt = dueAt
             self.lastReviewedAt = lastReviewedAt
+            self.reps = reps
+            self.lapses = lapses
+            self.learningSteps = learningSteps
+            self.scheduledDays = scheduledDays
+            self.elapsedDays = elapsedDays
         }
 
         init(from card: Card) {
@@ -65,27 +76,30 @@ public extension Card {
                 stability: card.stability,
                 difficulty: card.difficulty,
                 dueAt: card.dueAt,
-                lastReviewedAt: card.lastReviewedAt
+                lastReviewedAt: card.lastReviewedAt,
+                reps: card.reps ?? 0,
+                lapses: card.lapses ?? 0,
+                learningSteps: card.learningSteps ?? 0,
+                scheduledDays: card.scheduledDays ?? 0,
+                elapsedDays: card.elapsedDays ?? 0
             )
         }
 
         /// Reconstructs a `SchedulingCard` suitable for passing to `FSRS6Engine`.
         ///
-        /// Step-machine fields (`reps`, `lapses`, `learningSteps`,
-        /// `scheduledDays`, `elapsedDays`) are not persisted in M4 and are
-        /// defaulted to 0. This is correct for new cards; reviewed cards lose
-        /// step position on restart, which is acceptable for v1.
+        /// All step-machine fields are persisted (M5.A) so the scheduler
+        /// receives the real position on every call rather than a zeroed proxy.
         public var schedulingCard: SchedulingCard {
             SchedulingCard(
                 state: state,
                 stability: stability,
                 difficulty: difficulty,
                 due: dueAt,
-                reps: 0,
-                lapses: 0,
-                learningSteps: 0,
-                scheduledDays: 0,
-                elapsedDays: 0,
+                reps: reps,
+                lapses: lapses,
+                learningSteps: learningSteps,
+                scheduledDays: scheduledDays,
+                elapsedDays: elapsedDays,
                 lastReview: lastReviewedAt
             )
         }
