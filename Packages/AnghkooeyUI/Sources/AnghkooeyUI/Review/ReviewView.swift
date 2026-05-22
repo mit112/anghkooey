@@ -280,6 +280,7 @@ private struct CardEditSheet: View {
 
     @State private var editedQuestion: String
     @State private var editedAnswer: String
+    @State private var editedTags: [String]
 
     init(isPresented: Binding<Bool>, card: Card.Snapshot, session: ReviewSession) {
         _isPresented = isPresented
@@ -287,6 +288,7 @@ private struct CardEditSheet: View {
         self.session = session
         _editedQuestion = State(initialValue: card.question)
         _editedAnswer = State(initialValue: card.answer)
+        _editedTags = State(initialValue: card.tags)
     }
 
     var body: some View {
@@ -300,6 +302,9 @@ private struct CardEditSheet: View {
                     TextEditor(text: $editedAnswer)
                         .frame(minHeight: 80)
                 }
+                Section("Tags") {
+                    TagEditorView(tags: $editedTags)
+                }
             }
             .navigationTitle("Edit Card")
             .navigationBarTitleDisplayMode(.inline)
@@ -312,7 +317,8 @@ private struct CardEditSheet: View {
                         Task { @MainActor in
                             await session.submitEdit(
                                 question: editedQuestion,
-                                answer: editedAnswer
+                                answer: editedAnswer,
+                                tags: editedTags
                             )
                             isPresented = false
                         }
