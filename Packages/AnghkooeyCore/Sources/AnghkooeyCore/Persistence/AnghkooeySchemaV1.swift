@@ -26,6 +26,9 @@ public enum AnghkooeyMigrationPlan: SchemaMigrationPlan {
 
     public static var stages: [MigrationStage] {
         [
+            // Step-machine fields are optional in V2 so V1-era rows get NULL
+            // (not a validation error). Callers read through Card.Snapshot
+            // which collapses nil → 0 via ?? 0.
             .lightweight(
                 fromVersion: AnghkooeySchemaV1.self,
                 toVersion: AnghkooeySchemaV2.self

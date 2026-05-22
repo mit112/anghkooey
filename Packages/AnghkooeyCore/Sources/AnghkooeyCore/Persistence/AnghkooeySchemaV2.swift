@@ -36,11 +36,14 @@ public extension AnghkooeySchemaV2 {
         public var sourceSpan: String?
 
         // M5.A additions — step-machine state.
-        public var reps: Int = 0
-        public var lapses: Int = 0
-        public var learningSteps: Int = 0
-        public var scheduledDays: Double = 0
-        public var elapsedDays: Double = 0
+        // Stored as Optional so lightweight V1→V2 migration leaves NULL for
+        // V1-era rows without triggering Core Data's non-null validation.
+        // Callers read through Card.Snapshot (non-optional, defaults via ?? 0).
+        public var reps: Int?
+        public var lapses: Int?
+        public var learningSteps: Int?
+        public var scheduledDays: Double?
+        public var elapsedDays: Double?
 
         public init(
             id: UUID = UUID(),
