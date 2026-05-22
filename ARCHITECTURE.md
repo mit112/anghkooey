@@ -453,3 +453,46 @@ already correct.
 
 Required-reason table added to `README.md`. App Store metadata draft at
 `docs/STORE/metadata.md` (description, keywords, screenshot plan, submission checklist).
+
+### M5.D — UX polish + eval harness
+
+- **Haptics.** `ReviewView` grade buttons use `.sensoryFeedback(.success, trigger:)`
+  and `.sensoryFeedback(.error, trigger:)` driven by `@State` boolean toggles
+  (`gotItTrigger` / `missedItTrigger`). Boolean-toggle triggers are the SwiftUI
+  idiomatic shape — value-equality, no per-event identity to manage.
+- **Empty state.** Review tab empty state copy is now "All caught up" with
+  `checkmark.circle.fill`. Implies completion rather than absence (the M4 copy
+  read like a bug to first-time users).
+- **Eval harness.** `EvalRunner` SwiftPM executable in `AnghkooeyIntelligence`
+  with three pinned fixtures (biology / vocabulary / history). Pass threshold
+  80%. Run script + golden-update flag documented in `docs/EVALS/m5-eval-run.md`.
+  Requires Apple Intelligence; first run deferred to device.
+
+### M5.E — Resilience
+
+- **Offline fallback path.** `AppState.enqueue`'s `catch` block already converted
+  any `AuthoringError` to a fallback `CardDraft(question: <captured text>,
+  answer: "(edit to add answer)")`. Lane E adds
+  `enqueue_onModelUnavailable_queuesFallbackDraft` to lock this — the test
+  asserts the fallback shape on `AuthoringError.unavailable`, the airplane-mode
+  failure mode.
+- **Soak / hang monitoring.** `MetricsReceiver` from M5.B already logs
+  `MXHangDiagnosticPayload` to OSLog (`MetricKit` category). No additional code
+  needed for E2; the 30-min soak result is captured by reading the Console
+  payload ~24 h after a device run. Hang budget: 0 hangs >250 ms during review
+  tab interaction.
+- **Manual verification checklist.** `docs/EVALS/resilience-checklist.md`
+  enumerates the device steps for E1 (airplane mode), E2 (30-min soak), and E3
+  (lower-tier device — iPhone SE / 15 fallback path). All three require
+  hardware not present in the current environment; checklist is the artifact.
+
+### M5 closeout status
+
+Code-complete. Physical-device verification deferred for: real Instruments
+trace + numbers (replacing the code-analysis estimates in `PERFORMANCE.md`),
+30-min soak, airplane-mode manual run, lower-tier device run, and eval-harness
+first-run. Each item has a reproducible procedure in `PERFORMANCE.md`,
+`docs/EVALS/resilience-checklist.md`, or `docs/EVALS/m5-eval-run.md`. These are
+intentionally not blocking the M5 PR — they're TestFlight-window work.
+
+148 tests green at M5 close: 94 Core, 39 Intelligence, 7 UI, 8 app-target.

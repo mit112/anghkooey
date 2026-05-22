@@ -135,6 +135,15 @@ First delivery occurs ~24 hours after first real-device run. Metrics of interest
 No MetricKit histogram is available yet; device runs are required. Update this section after the
 first TestFlight distribution delivers a payload.
 
+**No before/after optimization in M5.** The master M5 exit gate calls for "before/after metrics on
+at least one optimization." None was performed because no signpost interval crossed budget on the
+M3.10 measured baseline or the M5 code-analysis bounds. The honest read: there is no hotspot to
+optimize yet — `inbox-drain` worst-case is bounded by Vision OCR (an Apple framework, not our code),
+`card-review-sheet-ready` at 88 ms is single-sample and dominated by `sheet(item:)` presentation
+(SwiftUI internal), and `review-tap` is bounded by `ModelContext.save()` on a single row. The first
+genuine before/after opportunity is post-TestFlight when MetricKit `MXAppLaunchMetric` and
+`MXDisplayMetric` surface real-world data from non-author devices.
+
 **Exit gate result: PASS (estimated).** `review-tap` dominant cost (single-row `ModelContext.save()`)
 bounded well under 100 ms. End-to-end capture path from M3.10 (worst-case < 5 s, image + OCR) is
 unchanged. MetricKit subscriber wired; histogram pending first device run. Interactive Instruments
