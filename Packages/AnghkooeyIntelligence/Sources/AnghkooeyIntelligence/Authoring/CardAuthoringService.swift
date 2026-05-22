@@ -20,6 +20,9 @@ public protocol CardAuthoringService: Sendable {
     /// - Returns: An `AsyncThrowingStream` that yields one `CardDraft` per
     ///   completed Q&A pair as generation progresses.
     func generateDrafts(from text: String) async throws -> AsyncThrowingStream<CardDraft, Error>
+
+    /// Returns a single authored draft for callers that only need one card.
+    func author(from text: String) async throws -> CardDraft
 }
 
 public extension CardAuthoringService {

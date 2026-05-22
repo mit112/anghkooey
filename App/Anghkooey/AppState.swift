@@ -124,12 +124,16 @@ final class AppState: @unchecked Sendable {
     ///
     /// Runs `cardAuthor.author(from:)` to produce a Q&A draft. On failure,
     /// falls back to a stub draft so captured text is never silently lost.
-    /// Implementation is intentionally left as a stub here; see M4.2 for full body.
     func enqueue(resolvedText: String) async {
-        // M4.2 stub: Codex replaces this body with the full cardAuthor call.
-        let fallback = CardDraft(question: resolvedText, answer: "(edit to add answer)")
-        pendingDrafts.append(IdentifiedDraft(draft: fallback))
-        if presentedDraft == nil { advanceQueue() }
+        do {
+            let draft = try await cardAuthor.author(from: resolvedText)
+            pendingDrafts.append(IdentifiedDraft(draft: draft))
+            if presentedDraft == nil { advanceQueue() }
+        } catch {
+            let fallback = CardDraft(question: resolvedText, answer: "(edit to add answer)")
+            pendingDrafts.append(IdentifiedDraft(draft: fallback))
+            if presentedDraft == nil { advanceQueue() }
+        }
     }
 
     // MARK: Private

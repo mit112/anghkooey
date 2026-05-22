@@ -52,19 +52,46 @@ public final class ReviewSession {
 
     /// Fetches all due cards and seeds the review queue.
     public func loadDueQueue() async {
-        // Implementation: Codex M4.7
-        fatalError("ReviewSession.loadDueQueue — awaiting Codex M4.7 implementation")
+        state = .loading
+        do {
+            let cards = try await store.dueCards(asOf: clock())
+            queue = Array(cards.dropFirst())
+            currentCard = cards.first
+            queueRemaining = queue.count
+            isAnswerRevealed = false
+            state = cards.isEmpty ? .empty : .reviewing
+        } catch {
+            state = .error(error.localizedDescription)
+        }
     }
 
     /// Reveals the answer for the current card.
     public func revealAnswer() {
-        // Implementation: Codex M4.7
-        fatalError("ReviewSession.revealAnswer — awaiting Codex M4.7 implementation")
+        guard !isAnswerRevealed else { return }
+        isAnswerRevealed = true
     }
 
     /// Grades the current card and advances to the next, or moves to `.empty`.
     public func submit(grade: ReviewGrade) async {
-        // Implementation: Codex M4.7
-        fatalError("ReviewSession.submit — awaiting Codex M4.7 implementation")
+        guard let card = currentCard else { return }
+        do {
+            let output = try scheduler.next(
+                card: card.schedulingCard,
+                rating: grade.fsrsRating,
+                now: clock()
+            )
+            try await store.apply(output, to: card.id, grade: grade.fsrsRating, now: clock())
+        } catch {
+            // Scheduling errors are non-fatal; advance queue regardless.
+        }
+        if queue.isEmpty {
+            currentCard = nil
+            queueRemaining = 0
+            state = .empty
+        } else {
+            currentCard = queue.removeFirst()
+            queueRemaining = queue.count
+            isAnswerRevealed = false
+        }
     }
 }

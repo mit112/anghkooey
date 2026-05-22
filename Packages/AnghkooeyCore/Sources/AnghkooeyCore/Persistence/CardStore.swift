@@ -146,23 +146,67 @@ public actor CardStore: CardStoreProtocol {
     }
 
     public func create(question: String, answer: String, sourceSpan: String?, now: Date) async throws -> Card.Snapshot {
-        // Implementation: Codex M4.3
-        fatalError("CardStore.create — awaiting Codex M4.3 implementation")
+        let card = Card(
+            id: UUID(),
+            question: question,
+            answer: answer,
+            createdAt: now,
+            updatedAt: now,
+            tags: [],
+            state: .new,
+            stability: 0,
+            difficulty: 0,
+            dueAt: now,
+            lastReviewedAt: nil,
+            reviewLogs: [],
+            sourceSpan: sourceSpan
+        )
+        modelContext.insert(card)
+        try modelContext.save()
+        return Card.Snapshot(from: card)
     }
 
     public func dueCards(asOf now: Date) async throws -> [Card.Snapshot] {
-        // Implementation: Codex M4.3
-        fatalError("CardStore.dueCards — awaiting Codex M4.3 implementation")
+        let predicate = #Predicate<Card> { $0.dueAt <= now }
+        let descriptor = FetchDescriptor<Card>(predicate: predicate)
+        let cards = try modelContext.fetch(descriptor)
+        return cards.map { Card.Snapshot(from: $0) }
     }
 
     public func apply(_ output: SchedulerOutput, to cardID: UUID, grade: Rating, now: Date) async throws {
-        // Implementation: Codex M4.3
-        fatalError("CardStore.apply — awaiting Codex M4.3 implementation")
+        let id = cardID
+        let predicate = #Predicate<Card> { $0.id == id }
+        let descriptor = FetchDescriptor<Card>(predicate: predicate)
+        guard let card = try modelContext.fetch(descriptor).first else { return }
+
+        card.state = output.card.state
+        card.stability = output.card.stability
+        card.difficulty = output.card.difficulty
+        card.dueAt = output.card.due
+        card.lastReviewedAt = now
+        card.updatedAt = now
+
+        let log = ReviewLog(
+            id: UUID(),
+            card: card,
+            reviewedAt: now,
+            rating: output.log.rating,
+            stateBefore: output.log.stateBefore,
+            stabilityBefore: output.log.stabilityBefore,
+            difficultyBefore: output.log.difficultyBefore,
+            elapsedDays: output.log.elapsedDays,
+            scheduledDays: output.log.scheduledDays
+        )
+        modelContext.insert(log)
+        try modelContext.save()
     }
 
     public func count(asOf now: Date) async throws -> (total: Int, due: Int) {
-        // Implementation: Codex M4.3
-        fatalError("CardStore.count — awaiting Codex M4.3 implementation")
+        let allDescriptor = FetchDescriptor<Card>()
+        let dueDescriptor = FetchDescriptor<Card>(predicate: #Predicate<Card> { $0.dueAt <= now })
+        let total = try modelContext.fetchCount(allDescriptor)
+        let due = try modelContext.fetchCount(dueDescriptor)
+        return (total: total, due: due)
     }
 }
 
