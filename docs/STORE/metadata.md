@@ -8,7 +8,8 @@
 
 **Name:** Anghkooey  
 **Subtitle:** Remember Everything  
-**Bundle ID:** `com.[author].anghkooey`  
+**Bundle ID:** `com.mitsheth.anghkooey`  
+**Version:** 1.0 (Build 1)  
 **Primary category:** Education  
 **Secondary category:** Productivity  
 **Content rating:** 4+  
@@ -22,29 +23,31 @@
 ```
 Anghkooey turns anything you capture into a flashcard — automatically.
 
-Share a passage from Safari, snap a photo of your notes, or type a few lines of anything worth remembering. On-device AI (Apple Intelligence) reads it and drafts the flashcards for you. Review, approve, and you're done. No manual card creation. No subscription. No data leaving your phone.
+Share a passage from Safari, snap a photo of your notes, or type anything worth remembering. On-device AI (Apple Intelligence) reads it and drafts the flashcards for you. Review, edit, and approve. No manual card creation. No subscription. No data leaving your phone.
 
 HOW IT WORKS
 
-Capture — Use the Share Sheet from any app to send text or images to Anghkooey. Or open the app and type directly. The on-device AI generates draft flashcards in seconds.
+Capture — Use the Share Sheet from any app to send text or images to Anghkooey. Or open the app and use the camera to scan physical books, whiteboards, or handwritten notes. The on-device AI generates draft flashcards in seconds, entirely on your device.
 
-Review — One tap to accept a draft card. One tap to skip it. Nothing gets added to your deck without your approval.
+Review and approve — Each AI draft shows you the proposed question, answer, and suggested tags. Edit anything directly before accepting. Nothing enters your deck without your approval.
 
-Remember — A proven spaced-repetition algorithm (FSRS-6) schedules each card at exactly the right moment: sooner when you're shaky, later when you've got it. The review session is a single screen — Got it, Missed it, next card.
+Study — A proven spaced-repetition algorithm (FSRS-6) schedules each card at the right moment. Swipe right for Good, left for Again, up for Easy — or tap the four-grade buttons. Swipe down to edit a card mid-session. The app never punishes a missed day.
+
+Mnemonics — Stuck on a card? Tap "Generate Mnemonic" to let on-device AI craft a vivid memory device — a concrete image, acronym, or micro-story that makes the answer stick.
+
+Your Library — Browse every card, filter by tag, and edit directly. AI proposes tags when a card is created; you're always in control.
+
+Grace features — Cushion Mode shows a manageable daily batch when you've fallen behind, so you never face an overwhelming queue. Freeze Mode shifts your schedule forward when life gets in the way.
 
 PRIVACY FIRST
 
-All your cards live on your device in an on-device database. The AI that generates flashcard drafts runs entirely on your iPhone — no server, no account, no subscription. Nothing is uploaded, analyzed, or sold.
-
-DESIGNED FOR REAL USE
-
-Most spaced-repetition apps fail because creating cards is too much work. Anghkooey removes that friction entirely. The AI does the authoring; you just say yes or no. The result is a flashcard deck that grows naturally as you read, study, or explore — without changing how you already consume content.
+All your cards live on your device. The AI runs entirely on your iPhone — no server, no account, no subscription. Nothing is uploaded, analyzed, or sold.
 
 REQUIREMENTS
 
 • iPhone running iOS 26 or later
-• Apple Intelligence required for on-device AI card generation (available on iPhone 15 Pro and later with the appropriate language and region settings)
-• Works offline; AI generation requires the device model to be downloaded
+• Apple Intelligence required for on-device AI card generation (iPhone 15 Pro or later, with Apple Intelligence enabled)
+• Works offline; AI generation requires the on-device model to be downloaded
 ```
 
 ### Keywords (100 char max, comma-separated)
@@ -76,11 +79,12 @@ First release. Capture text or photos from any app, let on-device AI draft flash
 
 Planned screenshot set (6.9" iPhone):
 
-1. **Capture tab** — Share Sheet → Anghkooey → draft cards appearing
-2. **Card review sheet** — a draft card with Accept / Skip buttons
-3. **Review tab** — review session with a card and Got it / Missed it
-4. **Empty review state** — "You're all caught up" with the next review time
-5. **Privacy callout** — on-device AI badge + "Nothing leaves your phone" copy
+1. **Capture tab** — camera view or Share Sheet animation → draft cards appearing
+2. **Card review sheet** — a draft card with question / answer fields and Accept button
+3. **Review session** — card with question shown, four-grade swipe buttons visible
+4. **Library tab** — card list with tag filter chips at the top
+5. **Mnemonic in-session** — answer revealed with "Generate Mnemonic" button visible (or mnemonic text shown)
+6. **Cushion Mode banner** — review tab showing "Showing today's batch — N of M due"
 
 > Screenshots not yet captured. Capture from iPhone 17 Pro simulator once UI is finalized.
 
