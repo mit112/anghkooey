@@ -159,6 +159,12 @@ public protocol CardStoreProtocol: Sendable {
     /// Returns all cards in the store, sorted by `dueAt`. Used by tests and
     /// the forthcoming Library surface.
     func allCards() async throws -> [Card.Snapshot]
+
+    /// Updates the `question` and `answer` of the card identified by `id`.
+    ///
+    /// Passing an unknown `id` is a silent no-op.
+    /// - Throws: `PersistenceError` on a SwiftData write failure.
+    func update(id: UUID, question: String, answer: String) async throws
 }
 
 // MARK: - CardStore (actor skeleton)
@@ -260,6 +266,16 @@ public actor CardStore: CardStoreProtocol {
         let descriptor = FetchDescriptor<Card>(sortBy: [SortDescriptor(\.dueAt)])
         return try modelContext.fetch(descriptor).map { Card.Snapshot(from: $0) }
     }
+
+    public func update(id: UUID, question: String, answer: String) async throws {
+        let predicate = #Predicate<Card> { $0.id == id }
+        let descriptor = FetchDescriptor<Card>(predicate: predicate)
+        guard let card = try modelContext.fetch(descriptor).first else { return }
+        card.question = question
+        card.answer = answer
+        card.updatedAt = .now
+        try modelContext.save()
+    }
 }
 
 // MARK: - MockCardStore
@@ -272,6 +288,7 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
     public private(set) var reviewLogs: [(cardID: UUID, output: SchedulerOutput, grade: Rating)] = []
     public var createError: Error?
     public var applyError: Error?
+    public var updateError: Error?
 
     public init() {}
 
@@ -348,5 +365,27 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
 
     public func allCards() async throws -> [Card.Snapshot] {
         cards.sorted { $0.dueAt < $1.dueAt }
+    }
+
+    public func update(id: UUID, question: String, answer: String) async throws {
+        if let err = updateError { throw err }
+        guard let idx = cards.firstIndex(where: { $0.id == id }) else { return }
+        let old = cards[idx]
+        cards[idx] = Card.Snapshot(
+            id: old.id,
+            question: question,
+            answer: answer,
+            sourceSpan: old.sourceSpan,
+            state: old.state,
+            stability: old.stability,
+            difficulty: old.difficulty,
+            dueAt: old.dueAt,
+            lastReviewedAt: old.lastReviewedAt,
+            reps: old.reps,
+            lapses: old.lapses,
+            learningSteps: old.learningSteps,
+            scheduledDays: old.scheduledDays,
+            elapsedDays: old.elapsedDays
+        )
     }
 }
