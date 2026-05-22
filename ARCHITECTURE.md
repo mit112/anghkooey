@@ -294,3 +294,87 @@ simulator). M5 does the full perf write-up.
 `NSPrivacyAccessedAPICategoryFileTimestamp` with reason code `DDA9.1` for the
 extension's inbox file I/O. The main app's existing `PrivacyInfo.xcprivacy`
 covers Vision/OCR. `CFNotificationCenter` Darwin is not a required-reason API.
+
+---
+
+## M4 — Review Loop
+
+**Branch:** `m4/review-loop`  
+**Status:** contracts complete; Codex implementing M4.2 / M4.3 / M4.7
+
+### Package topology
+
+```
+Anghkooey (app target)
+├── AnghkooeyCore          — CardStore actor, Card.Snapshot, ReviewGrade
+│   └── Persistence/       — CardStore, CardNotifications
+│   └── Scheduling/        — ReviewGrade (FSRS-6 Rating bridge)
+├── AnghkooeyIntelligence  — CardAuthoringService.author(from:) convenience
+└── AnghkooeyUI            — ReviewSession, ReviewView, ReviewScreen
+    └── Review/
+```
+
+### Data flow
+
+```
+[InboxDrainer]
+     │ resolvedText
+     ▼
+AppState.enqueue(resolvedText:) async            — App target
+     │ CardAuthoringService.author(from:)
+     ▼
+IdentifiedDraft ──────────────────────────────► AnghkooeyIntelligence.CardDraft
+     │ sheet(item:)
+     ▼
+CardReviewSheet (Accept / Skip)
+     │ onAccept: AppState.acceptDraft()
+     │           → CardStore.create(question:answer:sourceSpan:now:)
+     │           → Notification.anghkooeyCardAccepted
+     ▼
+ReviewScreen.onReceive(.anghkooeyCardAccepted)
+     │ session.loadDueQueue()
+     ▼
+ReviewSession (AnghkooeyUI)
+     │ currentCard: Card.Snapshot
+     ▼
+ReviewView: question → "Show Answer" → Got it / Missed it
+     │ session.submit(grade:)
+     │ LiveFSRS6Engine.next(card:rating:now:)
+     ▼
+CardStore.apply(output, to: cardID, grade:, now:)
+     │ Card updated + ReviewLog appended
+     ▼
+session.advanceQueue() → next card or .empty
+```
+
+### Module seams
+
+| Boundary | Payload | Direction |
+|----------|---------|-----------|
+| App → AnghkooeyCore | `CardStore.create(question:answer:sourceSpan:now:)` | App → Core |
+| App → AnghkooeyUI | `ReviewScreen(store:)` + `Notification.anghkooeyCardAccepted` | App → UI |
+| AnghkooeyUI → AnghkooeyCore | `CardStoreProtocol`, `FSRS6Engine`, `ReviewGrade` | UI → Core |
+| AnghkooeyIntelligence → App | `IdentifiedDraft(draft: CardDraft)` | Intelligence → App |
+
+### Card.Snapshot pattern
+
+`Card` is a SwiftData `@Model` class and is not `Sendable`. `CardStore` is an
+actor. To avoid escaping SwiftData objects across actor boundaries, `CardStore`
+converts all `Card` instances to `Card.Snapshot` (a `Sendable` struct) before
+returning them. Callers hold snapshots only; they pass the card's `UUID` back to
+`CardStore.apply(_:to:)` when submitting a grade. This pattern keeps SwiftData's
+single-context requirement contained within the actor and makes the CloudKit
+migration (M5+) trivial — the actor's ModelContext swaps; callers don't change.
+
+### M4 schema note
+
+`reps`, `lapses`, `learningSteps`, `scheduledDays`, `elapsedDays` are not stored
+in the M4 `Card` model. `Card.Snapshot.schedulingCard` defaults these to 0.
+Cards in `.review` state have correct `stability`/`difficulty`/`due`; only the
+step-machine position is lost across restarts. Acceptable for v1 single-user
+flow. M5 extends the schema.
+
+### Out-of-scope in M4
+
+Tags, decks, statistics, WidgetKit, CloudKit sync, card editing before accept,
+4-button grading, audio/image cards.
