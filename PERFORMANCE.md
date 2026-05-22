@@ -51,11 +51,15 @@ sheet presentation) ≈ 3.7 s, under the 5 s budget.
   harmless orphans. M5 should switch to a dismiss-and-re-present pattern or
   instrument queue advance separately if per-card latency matters.
 - Two `fopen` errors appeared during image shares (`errno = 2, No such file
-  or directory`). The drainer catches this and calls `didFailItem`; no crash.
-  Root cause: the image `.heic` file written by the extension was not yet
-  visible to the main app when the drainer ran (possible App Group container
-  flush delay). Filed as **M3.10-followup**: add a short retry or fsync fence
-  in `InboxWriter` before the Darwin notification post.
+  or directory`). Root cause (identified during M3 exit review): the
+  drainer's orphan-eviction cleanup phase was racing the extension's write
+  sequence (image → JSON → notify) and deleting freshly-written `.heic`
+  files before their matching JSON arrived on disk. Fixed by adding a 60s
+  mtime grace window to `evictOrphanImages` (`InboxConstants
+  .orphanImageGraceSeconds`); regression test
+  `drainPreservesRecentlyWrittenOrphanImages` locks the behavior. Optional:
+  re-run the device baseline to confirm 0/N `fopen` errors on rapid image
+  shares.
 
 ### M5 — full perf write-up (planned)
 
