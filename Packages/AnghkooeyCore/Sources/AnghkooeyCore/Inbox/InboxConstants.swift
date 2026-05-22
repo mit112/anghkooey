@@ -22,6 +22,12 @@ public enum InboxConstants {
     /// Inbox items older than this are evicted on drain regardless of processing state.
     public static let orphanEvictionDays     = 7
 
+    /// Grace period before an "orphan" image (no matching JSON yet) becomes eligible
+    /// for eviction. Protects against the race where the extension has written the
+    /// image but not yet renamed the JSON descriptor into place when a concurrent
+    /// drain reaches its cleanup phase. See M3.10 device baseline notes.
+    public static let orphanImageGraceSeconds: TimeInterval = 60
+
     /// Fault threshold: drain logs a fault if the inbox exceeds this item count.
     public static let inboxItemLimit         = 50
 

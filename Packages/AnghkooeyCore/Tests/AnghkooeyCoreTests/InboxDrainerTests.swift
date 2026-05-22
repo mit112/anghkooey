@@ -324,11 +324,44 @@ struct InboxDrainerTests {
         let orphanURL = imagesDir.appendingPathComponent("orphan-\(UUID().uuidString).heic")
         try Data(repeating: 0xFF, count: 64).write(to: orphanURL)
 
+        // Backdate the mtime past the grace period — fresh orphans are intentionally
+        // preserved to dodge the extension-write race; see `drainPreservesRecentlyWrittenOrphanImages`.
+        let staleDate = Date(timeIntervalSinceNow: -(InboxConstants.orphanImageGraceSeconds + 5))
+        try FileManager.default.setAttributes(
+            [.modificationDate: staleDate],
+            ofItemAtPath: orphanURL.path
+        )
+
         let delegate = MockDelegate()
         let drainer = InboxDrainer(containerURL: container, ocr: MockOCRService(returning: ""), delegate: delegate)
         await drainer.drain()
 
-        #expect(!FileManager.default.fileExists(atPath: orphanURL.path), "Orphan image with no matching JSON must be deleted")
+        #expect(!FileManager.default.fileExists(atPath: orphanURL.path), "Stale orphan image with no matching JSON must be deleted")
+    }
+
+    @Test func drainPreservesRecentlyWrittenOrphanImages() async throws {
+        // Regression test for the M3.10 race: the extension writes the image
+        // file, then the JSON descriptor; a concurrent drain in its cleanup
+        // phase must NOT delete the image during the brief in-between window,
+        // because the JSON is about to arrive.
+        let container = try makeTempContainer()
+        defer { try? FileManager.default.removeItem(at: container) }
+        let inbox = inboxURL(container)
+        let imagesDir = inbox.appendingPathComponent("images")
+        try FileManager.default.createDirectory(at: imagesDir, withIntermediateDirectories: true)
+
+        let freshOrphanURL = imagesDir.appendingPathComponent("fresh-\(UUID().uuidString).heic")
+        try Data(repeating: 0xAA, count: 64).write(to: freshOrphanURL)
+        // mtime is current "now" — well inside the grace window.
+
+        let delegate = MockDelegate()
+        let drainer = InboxDrainer(containerURL: container, ocr: MockOCRService(returning: ""), delegate: delegate)
+        await drainer.drain()
+
+        #expect(
+            FileManager.default.fileExists(atPath: freshOrphanURL.path),
+            "Fresh orphan image inside the grace window must be preserved — the matching JSON may still be on its way from the extension"
+        )
     }
 
     // MARK: Concurrency

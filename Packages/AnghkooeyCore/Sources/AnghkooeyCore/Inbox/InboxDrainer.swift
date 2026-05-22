@@ -222,13 +222,23 @@ public actor InboxDrainer {
 
         guard let imageURLs = try? FileManager.default.contentsOfDirectory(
             at: imagesURL,
-            includingPropertiesForKeys: nil,
+            includingPropertiesForKeys: [.contentModificationDateKey],
             options: [.skipsHiddenFiles]
         ) else {
             return
         }
 
+        let now = Date()
         for imageURL in imageURLs where imageURL.pathExtension == "heic" {
+            // Skip recently-written images. The extension writes image then JSON;
+            // a drain that races into cleanup between those two steps would
+            // otherwise delete the image before the JSON arrives, losing the share.
+            if let mtime = try? imageURL.resourceValues(forKeys: [.contentModificationDateKey])
+                .contentModificationDate,
+               now.timeIntervalSince(mtime) < InboxConstants.orphanImageGraceSeconds {
+                continue
+            }
+
             let jsonURL = inboxURL.appendingPathComponent(imageURL.deletingPathExtension().lastPathComponent)
                 .appendingPathExtension("json")
 
