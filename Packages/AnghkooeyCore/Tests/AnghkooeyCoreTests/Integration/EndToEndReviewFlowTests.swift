@@ -15,10 +15,7 @@ import SwiftData
 struct EndToEndReviewFlowTests {
 
     private func makeStore() throws -> CardStore {
-        let container = try ModelContainer(
-            for: Schema(AnghkooeySchemaV1.models),
-            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-        )
+        let container = try AnghkooeyModelContainer.makeInMemoryContainer()
         return CardStore(container: container)
     }
 
@@ -58,6 +55,11 @@ struct EndToEndReviewFlowTests {
         // Step 6: FSRS fields were persisted correctly
         #expect(dueInFuture[0].stability == output.card.stability)
         #expect(dueInFuture[0].state == output.card.state)
+
+        // M5.A: step-machine state must be persisted, not zero-defaulted.
+        let finalDue = try await store.dueCards(asOf: .distantFuture)
+        let finalCard = try #require(finalDue.first(where: { $0.id == snap.id }))
+        #expect(finalCard.reps >= 1, "reps should increment across reviews")
     }
 
     @Test("count() returns correct total and due counts")
