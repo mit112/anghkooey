@@ -204,6 +204,11 @@ public actor CardStore: CardStoreProtocol {
         card.difficulty = output.card.difficulty
         card.dueAt = output.card.due
         card.lastReviewedAt = now
+        card.reps = output.card.reps
+        card.lapses = output.card.lapses
+        card.learningSteps = output.card.learningSteps
+        card.scheduledDays = output.card.scheduledDays
+        card.elapsedDays = output.card.elapsedDays
         card.updatedAt = now
 
         let log = ReviewLog(
@@ -277,7 +282,12 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
             stability: output.card.stability,
             difficulty: output.card.difficulty,
             dueAt: output.card.due,
-            lastReviewedAt: now
+            lastReviewedAt: now,
+            reps: output.card.reps,
+            lapses: output.card.lapses,
+            learningSteps: output.card.learningSteps,
+            scheduledDays: output.card.scheduledDays,
+            elapsedDays: output.card.elapsedDays
         )
     }
 

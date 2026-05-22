@@ -118,6 +118,48 @@ struct CardStoreTests {
 
     // MARK: count_returnsTotalAndDueSeparately
 
+    // MARK: applyPersistsStepMachineFields
+
+    @Test func applyPersistsStepMachineFields() async throws {
+        let container = try AnghkooeyModelContainer.makeInMemoryContainer()
+        let store = CardStore(container: container)
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
+
+        let snap = try await store.create(
+            question: "Q", answer: "A", sourceSpan: nil, now: now
+        )
+
+        let updatedCard = SchedulingCard(
+            state: .learning,
+            stability: 2.0,
+            difficulty: 5.0,
+            due: now.addingTimeInterval(600),
+            reps: 1,
+            lapses: 0,
+            learningSteps: 1,
+            scheduledDays: 0.0,
+            elapsedDays: 0.0,
+            lastReview: now
+        )
+        let log = ReviewLogEntry(
+            rating: .good,
+            stateBefore: .new,
+            stabilityBefore: 0,
+            difficultyBefore: 0,
+            elapsedDays: 0,
+            scheduledDays: 0,
+            reviewedAt: now
+        )
+        let output = SchedulerOutput(card: updatedCard, log: log)
+        try await store.apply(output, to: snap.id, grade: .good, now: now)
+
+        let due = try await store.dueCards(asOf: now.addingTimeInterval(10_000))
+        let persisted = try #require(due.first(where: { $0.id == snap.id }))
+        #expect(persisted.reps == 1)
+        #expect(persisted.learningSteps == 1)
+        #expect(persisted.state == .learning)
+    }
+
     @Test("count returns total card count and due count separately")
     func count_returnsTotalAndDueSeparately() async throws {
         let container = try makeInMemoryContainer()
