@@ -18,11 +18,12 @@ public extension Card {
     ///
     /// As of M5.A all FSRS fields including step-machine state are persisted
     /// and round-trip through this snapshot.
-    struct Snapshot: Sendable, Equatable {
+    struct Snapshot: Sendable, Equatable, Identifiable {
         public let id: UUID
         public let question: String
         public let answer: String
         public let sourceSpan: String?
+        public let tags: [String]
         public let state: CardState
         public let stability: Double
         public let difficulty: Double
@@ -39,6 +40,7 @@ public extension Card {
             question: String,
             answer: String,
             sourceSpan: String? = nil,
+            tags: [String] = [],
             state: CardState,
             stability: Double,
             difficulty: Double,
@@ -54,6 +56,7 @@ public extension Card {
             self.question = question
             self.answer = answer
             self.sourceSpan = sourceSpan
+            self.tags = tags
             self.state = state
             self.stability = stability
             self.difficulty = difficulty
@@ -72,6 +75,7 @@ public extension Card {
                 question: card.question,
                 answer: card.answer,
                 sourceSpan: card.sourceSpan,
+                tags: card.tags.map(\.name).sorted(),
                 state: card.state,
                 stability: card.stability,
                 difficulty: card.difficulty,
@@ -327,6 +331,7 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
             question: old.question,
             answer: old.answer,
             sourceSpan: old.sourceSpan,
+            tags: old.tags,
             state: output.card.state,
             stability: output.card.stability,
             difficulty: output.card.difficulty,
@@ -354,6 +359,7 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
                 question: snap.question,
                 answer: snap.answer,
                 sourceSpan: snap.sourceSpan,
+                tags: snap.tags,
                 state: snap.state,
                 stability: snap.stability,
                 difficulty: snap.difficulty,
@@ -381,6 +387,7 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
             question: question,
             answer: answer,
             sourceSpan: old.sourceSpan,
+            tags: old.tags,
             state: old.state,
             stability: old.stability,
             difficulty: old.difficulty,
