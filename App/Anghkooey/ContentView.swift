@@ -25,6 +25,9 @@ struct ContentView: View {
                 .navigationTitle("Capture")
             }
             .tabItem { Label("Capture", systemImage: "camera") }
+
+            SettingsView()
+                .tabItem { Label("Settings", systemImage: "gearshape") }
         }
     }
 }
