@@ -52,6 +52,7 @@ final class AppState: @unchecked Sendable {
     private let drainer: InboxDrainer
     private let bridge: DrainerBridge
     private var notificationToken: InboxNotificationToken?
+    private let cardAuthor: any CardAuthoringService
 
     // Tracks the "card-review-sheet-ready" signpost interval: begun when a
     // draft is assigned to `presentedDraft`, ended on the sheet's onAppear.
@@ -59,7 +60,9 @@ final class AppState: @unchecked Sendable {
 
     // MARK: Init
 
-    init() {
+    init(cardAuthor: any CardAuthoringService = LiveCardAuthoringService()) {
+        self.cardAuthor = cardAuthor
+
         let containerURL = FileManager.default
             .containerURL(forSecurityApplicationGroupIdentifier: InboxConstants.appGroupID)
             ?? FileManager.default.temporaryDirectory
@@ -102,14 +105,21 @@ final class AppState: @unchecked Sendable {
         reviewSheetSignpostState = nil
     }
 
-    // MARK: Private
+    // MARK: Internal (testable via @testable import)
 
-    /// Called by DrainerBridge when the drainer produces resolved text.
-    fileprivate func enqueue(resolvedText: String) {
+    /// Called by DrainerBridge when the drainer resolves text from an inbox item.
+    ///
+    /// Runs `cardAuthor.author(from:)` to produce a Q&A draft. On failure,
+    /// falls back to a stub draft so captured text is never silently lost.
+    /// Implementation is intentionally left as a stub here; see M4.2 for full body.
+    func enqueue(resolvedText: String) async {
+        // M4.2 stub: Codex replaces this body with the full cardAuthor call.
         let fallback = CardDraft(question: resolvedText, answer: "(edit to add answer)")
         pendingDrafts.append(IdentifiedDraft(draft: fallback))
         if presentedDraft == nil { advanceQueue() }
     }
+
+    // MARK: Private
 
     private func advanceQueue() {
         let next = pendingDrafts.isEmpty ? nil : pendingDrafts.removeFirst()

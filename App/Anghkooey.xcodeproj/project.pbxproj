@@ -7,15 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2D9E9B81761E8255480D8A34 /* AnghkooeyIntelligence in Frameworks */ = {isa = PBXBuildFile; productRef = E463D25A57483D22C74E098F /* AnghkooeyIntelligence */; };
 		3C69A02A96CDAEB8DFFB0534 /* CardReviewSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E8F3B74ABF8A6FBD7019DB2 /* CardReviewSheet.swift */; };
 		46A0E6A0C20AE8578112E927 /* AnghkooeyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6303924A04882FA4C900557B /* AnghkooeyApp.swift */; };
 		65C5300478257265174ECB34 /* AnghkooeyUI in Frameworks */ = {isa = PBXBuildFile; productRef = 35F7FD1699C5DB4B94EEF7ED /* AnghkooeyUI */; };
 		A7AE1592FEEDA52EA1AD8284 /* AnghkooeyShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 0A037B8F43852214FC842CDF /* AnghkooeyShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		AE2B092616BDC257E899D84C /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A6AE21F57389F2FA533F696 /* ShareViewController.swift */; };
-		B1A3C5D7E9F1A3B5C7D9E1F3 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C2B4D6E8F0A2B4C6D8E0F2A4 /* PrivacyInfo.xcprivacy */; };
 		BB5809147A8AC7D33F6E8A41 /* AnghkooeyCore in Frameworks */ = {isa = PBXBuildFile; productRef = 6050CC9AE2B0A888BBACD0E2 /* AnghkooeyCore */; };
 		BD158D82F31B74D299DF85F8 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E3ED969F4ECE89B0A25E87 /* ContentView.swift */; };
 		D6002CEE061540D958B46B78 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55F0F922386EE72B02D5FC3F /* AppState.swift */; };
+		EA01604E660F4F05E86D4778 /* AppStateEnqueueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC510E7B9D8F52E50E4CCED4 /* AppStateEnqueueTests.swift */; };
+		B2A4C6D8F0B2A4C6D8F0B2A4 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D3E5F7A1B3D5E7F9A1B3D5E7 /* PrivacyInfo.xcprivacy */; };
+		B1A3C5D7E9F1A3B5C7D9E1F3 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C2B4D6E8F0A2B4C6D8E0F2A4 /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -25,6 +28,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 7F720F6F21CF5127D7884289;
 			remoteInfo = AnghkooeyShare;
+		};
+		CE07B3EF80BBE3C83EA929A5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 94D568656132B33BBE87E20A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 02F92088487C152845F92C84;
+			remoteInfo = Anghkooey;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -44,8 +54,9 @@
 
 /* Begin PBXFileReference section */
 		039A95E01BFF83BC28BA6F22 /* AnghkooeyIntelligence */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AnghkooeyIntelligence; path = ../Packages/AnghkooeyIntelligence; sourceTree = SOURCE_ROOT; };
+		03D1365FE0607DDE7DDF97F8 /* AnghkooeyTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = AnghkooeyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		071F54EC6FF668936C218728 /* AnghkooeyCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AnghkooeyCore; path = ../Packages/AnghkooeyCore; sourceTree = SOURCE_ROOT; };
-		0A037B8F43852214FC842CDF /* AnghkooeyShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AnghkooeyShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		0A037B8F43852214FC842CDF /* AnghkooeyShare.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = AnghkooeyShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		55F0F922386EE72B02D5FC3F /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		5A6AE21F57389F2FA533F696 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		6303924A04882FA4C900557B /* AnghkooeyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnghkooeyApp.swift; sourceTree = "<group>"; };
@@ -55,11 +66,21 @@
 		80E3ED969F4ECE89B0A25E87 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		83CE7E31BDF48A8B35196DB6 /* AnghkooeyUI */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AnghkooeyUI; path = ../Packages/AnghkooeyUI; sourceTree = SOURCE_ROOT; };
 		A35276B7D331FB0334E9C818 /* Anghkooey.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Anghkooey.entitlements; sourceTree = "<group>"; };
+		DC510E7B9D8F52E50E4CCED4 /* AppStateEnqueueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateEnqueueTests.swift; sourceTree = "<group>"; };
+		EA63E5FA330602579BBE4E25 /* Anghkooey.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Anghkooey.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D3E5F7A1B3D5E7F9A1B3D5E7 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		C2B4D6E8F0A2B4C6D8E0F2A4 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		EA63E5FA330602579BBE4E25 /* Anghkooey.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Anghkooey.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		060225AC14E6BB94935D5B02 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2D9E9B81761E8255480D8A34 /* AnghkooeyIntelligence in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		ECD9F8F6385B28F86CD116B5 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -77,6 +98,25 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXResourcesBuildPhase section */
+		E4F6A8B2C4E6F8A2B4C6E8F0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B2A4C6D8F0B2A4C6D8F0B2A4 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D3C5E7F9A1B3C5E7F9A1B3C5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B1A3C5D7E9F1A3B5C7D9E1F3 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXGroup section */
 		16D3A861B07EFD2F644BF73B /* Packages */ = {
@@ -97,6 +137,7 @@
 				55F0F922386EE72B02D5FC3F /* AppState.swift */,
 				7E8F3B74ABF8A6FBD7019DB2 /* CardReviewSheet.swift */,
 				80E3ED969F4ECE89B0A25E87 /* ContentView.swift */,
+				D3E5F7A1B3D5E7F9A1B3D5E7 /* PrivacyInfo.xcprivacy */,
 			);
 			path = Anghkooey;
 			sourceTree = "<group>";
@@ -106,6 +147,7 @@
 			children = (
 				EA63E5FA330602579BBE4E25 /* Anghkooey.app */,
 				0A037B8F43852214FC842CDF /* AnghkooeyShare.appex */,
+				03D1365FE0607DDE7DDF97F8 /* AnghkooeyTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -115,6 +157,7 @@
 			children = (
 				314911AE872155B4BC9640C8 /* Anghkooey */,
 				D64DD303F0A57D93C31498AD /* AnghkooeyShare */,
+				ECEC8715C7BB56CD7BC08C95 /* AnghkooeyTests */,
 				16D3A861B07EFD2F644BF73B /* Packages */,
 				772CA5EFF1AF47C0CF8ADC88 /* Products */,
 			);
@@ -125,10 +168,18 @@
 			children = (
 				712E1AED1C075F0AAC8CF0CA /* AnghkooeyShare-Info.plist */,
 				718E27D7320553CBB6BCA62A /* AnghkooeyShare.entitlements */,
-				C2B4D6E8F0A2B4C6D8E0F2A4 /* PrivacyInfo.xcprivacy */,
 				5A6AE21F57389F2FA533F696 /* ShareViewController.swift */,
+				C2B4D6E8F0A2B4C6D8E0F2A4 /* PrivacyInfo.xcprivacy */,
 			);
 			path = AnghkooeyShare;
+			sourceTree = "<group>";
+		};
+		ECEC8715C7BB56CD7BC08C95 /* AnghkooeyTests */ = {
+			isa = PBXGroup;
+			children = (
+				DC510E7B9D8F52E50E4CCED4 /* AppStateEnqueueTests.swift */,
+			);
+			path = AnghkooeyTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -140,6 +191,7 @@
 			buildPhases = (
 				86F48F1F9CC0C93AC8355A3A /* Sources */,
 				F917D06412004FAA2CDCEB46 /* Frameworks */,
+				E4F6A8B2C4E6F8A2B4C6E8F0 /* Resources */,
 				C101D8F13C1F879865AD4379 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
@@ -174,6 +226,26 @@
 			productName = AnghkooeyShare;
 			productReference = 0A037B8F43852214FC842CDF /* AnghkooeyShare.appex */;
 			productType = "com.apple.product-type.app-extension";
+		};
+		C633685C3DE84BD0C1A8C9F8 /* AnghkooeyTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 45D044BB25B492A18CCFA90E /* Build configuration list for PBXNativeTarget "AnghkooeyTests" */;
+			buildPhases = (
+				9D770B56DDA5DAA296840A11 /* Sources */,
+				060225AC14E6BB94935D5B02 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				54E9A725DFFB71C7A3159CC5 /* PBXTargetDependency */,
+			);
+			name = AnghkooeyTests;
+			packageProductDependencies = (
+				E463D25A57483D22C74E098F /* AnghkooeyIntelligence */,
+			);
+			productName = AnghkooeyTests;
+			productReference = 03D1365FE0607DDE7DDF97F8 /* AnghkooeyTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -213,20 +285,10 @@
 			targets = (
 				02F92088487C152845F92C84 /* Anghkooey */,
 				7F720F6F21CF5127D7884289 /* AnghkooeyShare */,
+				C633685C3DE84BD0C1A8C9F8 /* AnghkooeyTests */,
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXResourcesBuildPhase section */
-		D3C5E7F9A1B3C5E7F9A1B3C5 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				B1A3C5D7E9F1A3B5C7D9E1F3 /* PrivacyInfo.xcprivacy in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		86F48F1F9CC0C93AC8355A3A /* Sources */ = {
@@ -237,6 +299,14 @@
 				D6002CEE061540D958B46B78 /* AppState.swift in Sources */,
 				3C69A02A96CDAEB8DFFB0534 /* CardReviewSheet.swift in Sources */,
 				BD158D82F31B74D299DF85F8 /* ContentView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9D770B56DDA5DAA296840A11 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EA01604E660F4F05E86D4778 /* AppStateEnqueueTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -251,6 +321,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		54E9A725DFFB71C7A3159CC5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 02F92088487C152845F92C84 /* Anghkooey */;
+			targetProxy = CE07B3EF80BBE3C83EA929A5 /* PBXContainerItemProxy */;
+		};
 		ACB84F2DA5F3F07C7A35A296 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 7F720F6F21CF5127D7884289 /* AnghkooeyShare */;
@@ -266,7 +341,6 @@
 				CODE_SIGN_ENTITLEMENTS = Anghkooey/Anghkooey.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 3P89U4WZAB;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
@@ -279,6 +353,25 @@
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		937ADE21CFBFCBFE109F4736 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mitsheth.anghkooey.tests;
+				SDKROOT = iphoneos;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Anghkooey.app/Anghkooey";
 			};
 			name = Release;
 		};
@@ -339,13 +432,31 @@
 			};
 			name = Release;
 		};
+		B92B3646CA1FACC0A6BD6BB6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mitsheth.anghkooey.tests;
+				SDKROOT = iphoneos;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Anghkooey.app/Anghkooey";
+			};
+			name = Debug;
+		};
 		BA5D7AD3A68E119A76CC33C3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = AnghkooeyShare/AnghkooeyShare.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 3P89U4WZAB;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "AnghkooeyShare/AnghkooeyShare-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
@@ -433,7 +544,6 @@
 				CODE_SIGN_ENTITLEMENTS = Anghkooey/Anghkooey.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 3P89U4WZAB;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
@@ -455,7 +565,6 @@
 				CODE_SIGN_ENTITLEMENTS = AnghkooeyShare/AnghkooeyShare.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 3P89U4WZAB;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "AnghkooeyShare/AnghkooeyShare-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
@@ -489,6 +598,15 @@
 			buildConfigurations = (
 				BA5D7AD3A68E119A76CC33C3 /* Debug */,
 				F0E5FDD00EFC4F5862147941 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		45D044BB25B492A18CCFA90E /* Build configuration list for PBXNativeTarget "AnghkooeyTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B92B3646CA1FACC0A6BD6BB6 /* Debug */,
+				937ADE21CFBFCBFE109F4736 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -527,6 +645,10 @@
 		6050CC9AE2B0A888BBACD0E2 /* AnghkooeyCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = AnghkooeyCore;
+		};
+		E463D25A57483D22C74E098F /* AnghkooeyIntelligence */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AnghkooeyIntelligence;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
