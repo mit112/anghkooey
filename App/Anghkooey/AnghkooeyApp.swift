@@ -8,6 +8,7 @@ import AnghkooeyUI
 @main
 struct AnghkooeyApp: App {
     @State private var appState: AppState
+    @State private var freezeController: FreezeController
     @Environment(\.scenePhase) private var scenePhase
     private let metricsReceiver = MetricsReceiver()
 
@@ -28,6 +29,10 @@ struct AnghkooeyApp: App {
             cardAuthor: LiveCardAuthoringService(),
             cardStore: store
         ))
+        _freezeController = State(initialValue: FreezeController(
+            cardStore: store,
+            storage: UserDefaultsFreezeStorage()
+        ))
 
         MXMetricManager.shared.add(metricsReceiver)
     }
@@ -36,6 +41,7 @@ struct AnghkooeyApp: App {
         WindowGroup {
             ContentView()
                 .environment(appState)
+                .environment(freezeController)
                 .task { await appState.drain() }
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .active {
