@@ -592,3 +592,24 @@ Three hardening constraints applied after Codex review:
 ### Test count after lane close
 
 105 Core tests (18 suites) — net +6 from `CardStoreUpdateTests`. 13 app-target tests unchanged.
+
+## M5.5T — Tags UI + Library Surface
+
+**Date:** 2026-05-22
+
+### What shipped
+- `Card.Snapshot.tags: [String]` — populated from the existing `Card.tags: [Tag]` SwiftData relationship. No schema migration was needed; tags were already in V1/V2. The snapshot projects tag names as a sorted `[String]` array. `Card.Snapshot` now also conforms to `Identifiable` (needed by `LibraryView`'s sheet binding).
+- `CardStoreProtocol.create(question:answer:sourceSpan:tags:now:)` — new required method. A protocol extension provides the no-tags variant for all existing call sites (backward-compat, no churn).
+- `CardStoreProtocol.update(id:question:answer:tags:)` — replaces the Q/A-only variant. Callers must pass explicit `tags:`; no backward-compat extension is provided to prevent silently clearing tags at unmigrated call sites.
+- `CardStore.findOrCreateTags(_:)` — private actor method; case-insensitive dedup via `Tag.normalizedName`. V1 does not garbage-collect orphaned tags.
+- **Rollback fix:** `CardStore.apply` and `CardStore.shiftAllDueDates` now call `modelContext.rollback()` before rethrowing a save failure (parity with `update`, per Lane S note).
+- `TagEditorView` — internal SwiftUI struct in `AnghkooeyUI/Shared`; horizontal chip row + add-tag text field. Shared by `CardEditSheet` (review loop) and `LibraryCardEditView`.
+- `LibraryView` — public view in `AnghkooeyUI/Library`; loads all cards via `store.allCards()`, tag filter chips, tap-to-edit.
+- `LibraryCardEditView` — public view; edits Q/A/tags directly via `store.update`; `onSave` callback reloads parent.
+- Library tab added to `ContentView` (4th tab, `books.vertical` icon).
+- `AppState.acceptDraft` now passes `draft.proposedTags` to `cardStore.create` — AI-proposed tags are honored on accept.
+
+### Design decisions
+- **`[String]` not `[Tag]` in Snapshot** — `Card.Snapshot` is a `Sendable` value type crossing actor boundaries. SwiftData `@Model` objects are reference types bound to their `ModelContext`; they cannot safely escape the actor. Tags are projected as sorted display names.
+- **No orphan cleanup** — Tag rows no longer referenced by any card are kept. The tag table is small in v1; a cleanup sweep is deferred to v2.
+- **Backward-compat extension for `create`, not for `update`** — A `create` shim with `tags: []` is safe (new card starts untagged). An `update` shim with `tags: []` would silently clear existing tags at every unmigrated call site; omitting it forces the compiler to catch them.
