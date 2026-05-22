@@ -23,6 +23,24 @@
 - Any UI change (Lane D).
 - Performance instrumentation (Lane B).
 
+**Model routing (per CLAUDE.md + [[project-collaboration-workflow]]):**
+
+| Task | Model | Rationale |
+|------|-------|-----------|
+| 1. Branch / baseline | Sonnet | Shell-only, no code. |
+| 2. Namespace V1.Card | Sonnet | Mechanical refactor; full code provided. |
+| 3. Add SchemaV2 | Sonnet | Paste-the-listing; no judgment. |
+| 4. Typealias + migration plan | Sonnet | Three small edits across known files. |
+| 5. Migration test | **Claude (Sonnet) writes test → Codex implements if `.lightweight` fails** | Contract-first hand-off. Sonnet alone if test passes on first run (likely). |
+| 6. Extend Snapshot | Sonnet | Mechanical addition with defaults. |
+| 7. Persist in `apply` | **Claude (Sonnet) writes failing test → Codex implements `apply` patch** | Canonical Codex hand-off — small, test-gated, well-bounded. |
+| 8. E2E multi-review assertion | Sonnet | One-block assertion added to existing test. |
+| 9. App-target smoke test | Sonnet | xcodebuild + post-`make generate` xcprivacy re-patch. |
+| 10. Docs + memory | Sonnet | Append-only ARCHITECTURE.md + memory write. |
+| 11. PR + memory update | Sonnet | gh CLI + memory file. |
+
+Escalate to **Opus** only if a task gets stuck twice (CLAUDE.md escape hatch). Do not use Opus for routine execution.
+
 ---
 
 ## File Structure
@@ -49,6 +67,7 @@
 
 ## Task 1: Branch and snapshot current baseline
 
+**Model:** Sonnet (shell-only, no code).
 **Files:** none (workspace setup).
 
 - [ ] **Step 1: Verify clean state on `main`**
@@ -85,6 +104,7 @@ git commit --allow-empty -m "chore(m5.a): start schema completion lane"
 
 The goal of this task is purely structural: get the V1 model living inside the V1 namespace so V2 can introduce a parallel `Card`. No fields change.
 
+**Model:** Sonnet (mechanical refactor, full code provided).
 **Files:**
 - Modify: `Packages/AnghkooeyCore/Sources/AnghkooeyCore/Persistence/Card.swift`
 - Modify: `Packages/AnghkooeyCore/Sources/AnghkooeyCore/Persistence/AnghkooeySchemaV1.swift`
@@ -186,6 +206,7 @@ Leave broken; the next two tasks restore the build. Committing a broken intermed
 
 ## Task 3: Add `AnghkooeySchemaV2` with new fields
 
+**Model:** Sonnet (file is paste-the-listing; no judgment).
 **Files:**
 - Create: `Packages/AnghkooeyCore/Sources/AnghkooeyCore/Persistence/AnghkooeySchemaV2.swift`
 
