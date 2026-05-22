@@ -173,6 +173,25 @@
 		};
 /* End PBXGroup section */
 
+/* Begin PBXResourcesBuildPhase section */
+		E4F6A8B2C4E6F8A2B4C6E8F0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B2A4C6D8F0B2A4C6D8F0B2A4 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D3C5E7F9A1B3C5E7F9A1B3C5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B1A3C5D7E9F1A3B5C7D9E1F3 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXNativeTarget section */
 		02F92088487C152845F92C84 /* Anghkooey */ = {
 			isa = PBXNativeTarget;
@@ -180,7 +199,6 @@
 			buildPhases = (
 				86F48F1F9CC0C93AC8355A3A /* Sources */,
 				F917D06412004FAA2CDCEB46 /* Frameworks */,
-				E4F6A8B2C4E6F8A2B4C6E8F0 /* Resources */,
 				C101D8F13C1F879865AD4379 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
@@ -202,7 +220,6 @@
 			buildPhases = (
 				AE8C7FE4FFFAB2EF0393B4DC /* Sources */,
 				ECD9F8F6385B28F86CD116B5 /* Frameworks */,
-				D3C5E7F9A1B3C5E7F9A1B3C5 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -252,6 +269,9 @@
 					7F720F6F21CF5127D7884289 = {
 						ProvisioningStyle = Manual;
 					};
+					C633685C3DE84BD0C1A8C9F8 = {
+						ProvisioningStyle = Manual;
+					};
 				};
 			};
 			buildConfigurationList = 115E7690D5EA716E70B14EF0 /* Build configuration list for PBXProject "Anghkooey" */;
@@ -279,25 +299,6 @@
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXResourcesBuildPhase section */
-		E4F6A8B2C4E6F8A2B4C6E8F0 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				B2A4C6D8F0B2A4C6D8F0B2A4 /* PrivacyInfo.xcprivacy in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		D3C5E7F9A1B3C5E7F9A1B3C5 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				B1A3C5D7E9F1A3B5C7D9E1F3 /* PrivacyInfo.xcprivacy in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		86F48F1F9CC0C93AC8355A3A /* Sources */ = {
@@ -371,6 +372,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -447,6 +451,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
