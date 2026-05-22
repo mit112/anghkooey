@@ -5,7 +5,7 @@ import SwiftData
 /// (UI, AppState, tests) should reference `Card` — never
 /// `AnghkooeySchemaVN.Card` directly — so future migrations don't ripple
 /// through call sites.
-public typealias Card = AnghkooeySchemaV2.Card
+public typealias Card = AnghkooeySchemaV3.Card
 
 // MARK: - Card.Snapshot
 
@@ -34,6 +34,7 @@ public extension Card {
         public let learningSteps: Int
         public let scheduledDays: Double
         public let elapsedDays: Double
+        public let mnemonic: String?
 
         public init(
             id: UUID,
@@ -50,7 +51,8 @@ public extension Card {
             lapses: Int = 0,
             learningSteps: Int = 0,
             scheduledDays: Double = 0,
-            elapsedDays: Double = 0
+            elapsedDays: Double = 0,
+            mnemonic: String? = nil
         ) {
             self.id = id
             self.question = question
@@ -67,6 +69,7 @@ public extension Card {
             self.learningSteps = learningSteps
             self.scheduledDays = scheduledDays
             self.elapsedDays = elapsedDays
+            self.mnemonic = mnemonic
         }
 
         init(from card: Card) {
@@ -85,7 +88,8 @@ public extension Card {
                 lapses: card.lapses ?? 0,
                 learningSteps: card.learningSteps ?? 0,
                 scheduledDays: card.scheduledDays ?? 0,
-                elapsedDays: card.elapsedDays ?? 0
+                elapsedDays: card.elapsedDays ?? 0,
+                mnemonic: card.mnemonic
             )
         }
 
@@ -169,6 +173,12 @@ public protocol CardStoreProtocol: Sendable {
     /// Passing an unknown `id` is a silent no-op.
     /// - Throws: `PersistenceError` on a SwiftData write failure.
     func update(id: UUID, question: String, answer: String, tags: [String]) async throws
+
+    /// Sets the on-device mnemonic for the card identified by `id`.
+    ///
+    /// Passing an unknown `id` is a silent no-op.
+    /// - Throws: `PersistenceError` on a SwiftData write failure.
+    func updateMnemonic(id: UUID, mnemonic: String) async throws
 }
 
 // MARK: - CardStoreProtocol backward-compat extensions
@@ -323,6 +333,20 @@ public actor CardStore: CardStoreProtocol {
             throw error
         }
     }
+
+    public func updateMnemonic(id: UUID, mnemonic: String) async throws {
+        let predicate = #Predicate<Card> { $0.id == id }
+        let descriptor = FetchDescriptor<Card>(predicate: predicate)
+        guard let card = try modelContext.fetch(descriptor).first else { return }
+        card.mnemonic = mnemonic
+        card.updatedAt = .now
+        do {
+            try modelContext.save()
+        } catch {
+            modelContext.rollback()
+            throw error
+        }
+    }
 }
 
 // MARK: - MockCardStore
@@ -380,7 +404,8 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
             lapses: output.card.lapses,
             learningSteps: output.card.learningSteps,
             scheduledDays: output.card.scheduledDays,
-            elapsedDays: output.card.elapsedDays
+            elapsedDays: output.card.elapsedDays,
+            mnemonic: old.mnemonic
         )
     }
 
@@ -408,7 +433,8 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
                 lapses: snap.lapses,
                 learningSteps: snap.learningSteps,
                 scheduledDays: snap.scheduledDays,
-                elapsedDays: snap.elapsedDays
+                elapsedDays: snap.elapsedDays,
+                mnemonic: snap.mnemonic
             )
         }
     }
@@ -436,7 +462,31 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
             lapses: old.lapses,
             learningSteps: old.learningSteps,
             scheduledDays: old.scheduledDays,
-            elapsedDays: old.elapsedDays
+            elapsedDays: old.elapsedDays,
+            mnemonic: old.mnemonic
+        )
+    }
+
+    public func updateMnemonic(id: UUID, mnemonic: String) async throws {
+        guard let idx = cards.firstIndex(where: { $0.id == id }) else { return }
+        let old = cards[idx]
+        cards[idx] = Card.Snapshot(
+            id: old.id,
+            question: old.question,
+            answer: old.answer,
+            sourceSpan: old.sourceSpan,
+            tags: old.tags,
+            state: old.state,
+            stability: old.stability,
+            difficulty: old.difficulty,
+            dueAt: old.dueAt,
+            lastReviewedAt: old.lastReviewedAt,
+            reps: old.reps,
+            lapses: old.lapses,
+            learningSteps: old.learningSteps,
+            scheduledDays: old.scheduledDays,
+            elapsedDays: old.elapsedDays,
+            mnemonic: mnemonic
         )
     }
 }

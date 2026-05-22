@@ -6,10 +6,7 @@ import SwiftData
 // MARK: - Helpers
 
 private func makeInMemoryContainer() throws -> ModelContainer {
-    try ModelContainer(
-        for: Schema(AnghkooeySchemaV1.models),
-        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-    )
+    try AnghkooeyModelContainer.makeInMemoryContainer()
 }
 
 // MARK: - M4.3 contract tests
@@ -96,7 +93,8 @@ struct CardStoreTests {
         defer { try? FileManager.default.removeItem(at: url) }
 
         let config = ModelConfiguration(url: url)
-        let container1 = try ModelContainer(for: Schema(AnghkooeySchemaV1.models), configurations: config)
+        let v3Schema = Schema(versionedSchema: AnghkooeySchemaV3.self)
+        let container1 = try ModelContainer(for: v3Schema, migrationPlan: AnghkooeyMigrationPlan.self, configurations: config)
         let store1 = CardStore(container: container1)
         let now = Date()
         let engine = LiveFSRS6Engine()
@@ -106,7 +104,7 @@ struct CardStoreTests {
         try await store1.apply(output, to: snap.id, grade: .good, now: now)
 
         // Reopen with a fresh container.
-        let container2 = try ModelContainer(for: Schema(AnghkooeySchemaV1.models), configurations: config)
+        let container2 = try ModelContainer(for: v3Schema, migrationPlan: AnghkooeyMigrationPlan.self, configurations: config)
         let store2 = CardStore(container: container2)
 
         let cards = try await store2.dueCards(asOf: output.card.due)

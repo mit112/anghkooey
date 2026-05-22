@@ -12,7 +12,7 @@ public enum AnghkooeyModelContainer {
     /// - Throws: `PersistenceError.containerCreationFailed` if the container
     ///   cannot be created from the V1 schema + in-memory configuration.
     public static func makeInMemoryContainer() throws -> ModelContainer {
-        let schema = Schema(versionedSchema: AnghkooeySchemaV2.self)
+        let schema = Schema(versionedSchema: AnghkooeySchemaV3.self)
         let configuration = ModelConfiguration(
             schema: schema,
             isStoredInMemoryOnly: true
@@ -24,7 +24,7 @@ public enum AnghkooeyModelContainer {
                 migrationPlan: AnghkooeyMigrationPlan.self,
                 configurations: [configuration]
             )
-            CoreLog.persistence.debug("In-memory ModelContainer created (v2 schema)")
+            CoreLog.persistence.debug("In-memory ModelContainer created (v3 schema)")
             return container
         } catch {
             CoreLog.persistence.error(

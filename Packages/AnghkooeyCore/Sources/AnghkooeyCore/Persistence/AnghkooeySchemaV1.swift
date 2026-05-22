@@ -21,7 +21,7 @@ public enum AnghkooeySchemaV1: VersionedSchema {
 /// day one so the call-site shape never changes when V2 lands.
 public enum AnghkooeyMigrationPlan: SchemaMigrationPlan {
     public static var schemas: [any VersionedSchema.Type] {
-        [AnghkooeySchemaV1.self, AnghkooeySchemaV2.self]
+        [AnghkooeySchemaV1.self, AnghkooeySchemaV2.self, AnghkooeySchemaV3.self]
     }
 
     public static var stages: [MigrationStage] {
@@ -32,6 +32,11 @@ public enum AnghkooeyMigrationPlan: SchemaMigrationPlan {
             .lightweight(
                 fromVersion: AnghkooeySchemaV1.self,
                 toVersion: AnghkooeySchemaV2.self
+            ),
+            // mnemonic is Optional in V3 so V2-era rows get NULL — no copy logic needed.
+            .lightweight(
+                fromVersion: AnghkooeySchemaV2.self,
+                toVersion: AnghkooeySchemaV3.self
             )
         ]
     }

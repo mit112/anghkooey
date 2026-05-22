@@ -17,15 +17,15 @@ struct SchemaMigrationTests {
     /// and fails to cast after a lightweight migration. The migration plan is verified
     /// structurally here; the on-device path is tested by the app-target smoke test.
     @Test func migrationPlanStructureIsCorrect() {
-        #expect(AnghkooeyMigrationPlan.schemas.count == 2)
-        #expect(AnghkooeyMigrationPlan.stages.count == 1)
+        #expect(AnghkooeyMigrationPlan.schemas.count == 3)
+        #expect(AnghkooeyMigrationPlan.stages.count == 2)
     }
 
-    @Test func v2ContainerWithMigrationPlanInitializesClean() throws {
-        let v2Schema = Schema(versionedSchema: AnghkooeySchemaV2.self)
-        let config = ModelConfiguration(schema: v2Schema, isStoredInMemoryOnly: true)
+    @Test func v3ContainerWithMigrationPlanInitializesClean() throws {
+        let v3Schema = Schema(versionedSchema: AnghkooeySchemaV3.self)
+        let config = ModelConfiguration(schema: v3Schema, isStoredInMemoryOnly: true)
         let container = try ModelContainer(
-            for: v2Schema,
+            for: v3Schema,
             migrationPlan: AnghkooeyMigrationPlan.self,
             configurations: [config]
         )
