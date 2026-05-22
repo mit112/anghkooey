@@ -1,11 +1,12 @@
 import SwiftUI
+import SwiftData
 import AnghkooeyCore
 import AnghkooeyIntelligence
 import AnghkooeyUI
 
 @main
 struct AnghkooeyApp: App {
-    @State private var appState = AppState()
+    @State private var appState: AppState
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
@@ -13,6 +14,18 @@ struct AnghkooeyApp: App {
         CoreLog.configure(subsystem: subsystem)
         IntelligenceLog.subsystem = subsystem
         UILog.subsystem = subsystem
+
+        // `try!` is intentional: a corrupt SwiftData store on launch is
+        // unrecoverable in v1. Log + crash beats a silent broken state.
+        let container = try! ModelContainer(
+            for: Schema(AnghkooeySchemaV1.models),
+            configurations: ModelConfiguration()
+        )
+        let store = CardStore(container: container)
+        _appState = State(initialValue: AppState(
+            cardAuthor: LiveCardAuthoringService(),
+            cardStore: store
+        ))
     }
 
     var body: some Scene {
@@ -25,11 +38,11 @@ struct AnghkooeyApp: App {
                         Task { await appState.drain() }
                     }
                 }
-                .sheet(item: $appState.presentedCard) { draft in
+                .sheet(item: $appState.presentedDraft) { identified in
                     CardReviewSheet(
-                        draft: draft,
-                        onAccept: { appState.acceptCard() },
-                        onSkip: { appState.skipCard() }
+                        draft: identified,
+                        onAccept: { appState.acceptDraft() },
+                        onSkip: { appState.skipDraft() }
                     )
                     .onAppear { appState.cardReviewSheetDidAppear() }
                 }

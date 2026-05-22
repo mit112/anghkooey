@@ -20,4 +20,29 @@ public protocol CardAuthoringService: Sendable {
     /// - Returns: An `AsyncThrowingStream` that yields one `CardDraft` per
     ///   completed Q&A pair as generation progresses.
     func generateDrafts(from text: String) async throws -> AsyncThrowingStream<CardDraft, Error>
+
+    /// Returns a single authored draft for callers that only need one card.
+    func author(from text: String) async throws -> CardDraft
+}
+
+public extension CardAuthoringService {
+    /// Returns the first `CardDraft` from the generation stream.
+    ///
+    /// Used by `AppState.enqueue` which processes one draft per captured item.
+    /// Throws `AuthoringError.generationFailed` if the stream ends without
+    /// yielding a single draft (e.g. the model produced nothing).
+    func author(from text: String) async throws -> CardDraft {
+        let stream = try await generateDrafts(from: text)
+        for try await draft in stream {
+            return draft
+        }
+        throw AuthoringError.generationFailed(
+            underlying: AuthoringServiceError.emptyStream
+        )
+    }
+}
+
+/// Internal error type for `CardAuthoringService` default implementations.
+enum AuthoringServiceError: Error {
+    case emptyStream
 }

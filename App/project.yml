@@ -83,6 +83,23 @@ targets:
         CODE_SIGN_STYLE: Automatic
         CODE_SIGN_ENTITLEMENTS: AnghkooeyShare/AnghkooeyShare.entitlements
 
+  AnghkooeyTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "26.0"
+    dependencies:
+      - target: Anghkooey
+        embed: false
+      - package: AnghkooeyIntelligence
+    sources:
+      - path: AnghkooeyTests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mitsheth.anghkooey.tests
+        SWIFT_VERSION: "6.0"
+        SWIFT_STRICT_CONCURRENCY: complete
+        IPHONEOS_DEPLOYMENT_TARGET: "26.0"
+
 schemes:
   AnghkooeyShare:
     build:
@@ -101,6 +118,8 @@ schemes:
       config: Debug
     test:
       config: Debug
+      targets:
+        - AnghkooeyTests
     profile:
       config: Release
     archive:

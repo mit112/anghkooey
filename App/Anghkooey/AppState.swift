@@ -3,6 +3,18 @@ import OSLog
 import AnghkooeyCore
 import AnghkooeyIntelligence
 
+// MARK: - IdentifiedDraft
+
+/// Wraps the M2 `CardDraft` with a stable `id` for `sheet(item:)` binding.
+///
+/// `CardDraft` is `@Generable` and therefore not `Identifiable`; this thin
+/// wrapper provides the `Identifiable` conformance the SwiftUI sheet API needs
+/// without mutating the Intelligence module.
+struct IdentifiedDraft: Identifiable {
+    let id = UUID()
+    let draft: CardDraft
+}
+
 // MARK: - Delegate bridge
 
 /// Relays InboxDrainer callbacks to AppState on the main actor.
@@ -30,31 +42,37 @@ private final class DrainerBridge: InboxDrainerDelegate, @unchecked Sendable {
 @MainActor
 final class AppState: @unchecked Sendable {
 
-    // MARK: Card draft model
-
-    struct CardDraft: Identifiable {
-        let id = UUID()
-        let resolvedText: String
-    }
-
     // MARK: Sheet state (observed by AnghkooeyApp)
 
-    var presentedCard: CardDraft?
+    var presentedDraft: IdentifiedDraft?
+
+    // MARK: Observed by ContentView
+
+    /// Persistence layer injected at app startup; `MockCardStore` until M4.9
+    /// wires the real `CardStore` backed by a `ModelContainer`.
+    let cardStore: any CardStoreProtocol
 
     // MARK: Private state
 
-    private var pendingCards: [CardDraft] = []
+    private var pendingDrafts: [IdentifiedDraft] = []
     private let drainer: InboxDrainer
     private let bridge: DrainerBridge
     private var notificationToken: InboxNotificationToken?
+    private let cardAuthor: any CardAuthoringService
 
     // Tracks the "card-review-sheet-ready" signpost interval: begun when a
-    // draft is assigned to `presentedCard`, ended on the sheet's onAppear.
+    // draft is assigned to `presentedDraft`, ended on the sheet's onAppear.
     private var reviewSheetSignpostState: OSSignpostIntervalState?
 
     // MARK: Init
 
-    init() {
+    init(
+        cardAuthor: any CardAuthoringService = LiveCardAuthoringService(),
+        cardStore: any CardStoreProtocol = MockCardStore()
+    ) {
+        self.cardAuthor = cardAuthor
+        self.cardStore = cardStore
+
         let containerURL = FileManager.default
             .containerURL(forSecurityApplicationGroupIdentifier: InboxConstants.appGroupID)
             ?? FileManager.default.temporaryDirectory
@@ -86,8 +104,11 @@ final class AppState: @unchecked Sendable {
 
     // MARK: Sheet queue
 
-    func acceptCard() { advanceQueue() }
-    func skipCard()  { advanceQueue() }
+    func acceptDraft() {
+        advanceQueue()
+        NotificationCenter.default.post(name: .anghkooeyCardAccepted, object: nil)
+    }
+    func skipDraft() { advanceQueue() }
 
     /// Called from `CardReviewSheet.onAppear` to close the
     /// `"card-review-sheet-ready"` signpost interval.
@@ -97,17 +118,29 @@ final class AppState: @unchecked Sendable {
         reviewSheetSignpostState = nil
     }
 
-    // MARK: Private
+    // MARK: Internal (testable via @testable import)
 
-    /// Called by DrainerBridge when the drainer produces resolved text.
-    fileprivate func enqueue(resolvedText: String) {
-        pendingCards.append(CardDraft(resolvedText: resolvedText))
-        if presentedCard == nil { advanceQueue() }
+    /// Called by DrainerBridge when the drainer resolves text from an inbox item.
+    ///
+    /// Runs `cardAuthor.author(from:)` to produce a Q&A draft. On failure,
+    /// falls back to a stub draft so captured text is never silently lost.
+    func enqueue(resolvedText: String) async {
+        do {
+            let draft = try await cardAuthor.author(from: resolvedText)
+            pendingDrafts.append(IdentifiedDraft(draft: draft))
+            if presentedDraft == nil { advanceQueue() }
+        } catch {
+            let fallback = CardDraft(question: resolvedText, answer: "(edit to add answer)")
+            pendingDrafts.append(IdentifiedDraft(draft: fallback))
+            if presentedDraft == nil { advanceQueue() }
+        }
     }
 
+    // MARK: Private
+
     private func advanceQueue() {
-        let next = pendingCards.isEmpty ? nil : pendingCards.removeFirst()
-        presentedCard = next
+        let next = pendingDrafts.isEmpty ? nil : pendingDrafts.removeFirst()
+        presentedDraft = next
         if next != nil {
             let signposter = CoreLog.poiSignposter
             reviewSheetSignpostState = signposter.beginInterval(

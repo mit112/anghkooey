@@ -61,6 +61,18 @@ sheet presentation) ≈ 3.7 s, under the 5 s budget.
   re-run the device baseline to confirm 0/N `fopen` errors on rapid image
   shares.
 
+### M4 — review-tap latency note
+
+M4 introduces no new `OSSignposter` intervals. The review interaction path is:
+
+  user tap → `ReviewSession.submit(grade:)` → `LiveFSRS6Engine.next(...)` (pure math, no I/O)
+  → `CardStore.apply(...)` → `ModelContext.save()` → UI update
+
+The dominant cost is `ModelContext.save()` on a single-row write. Expected
+latency is well under 100 ms median on any supported device. No dedicated
+baseline was captured; M5 will add a `review-tap` signpost and include it
+in the full Instruments write-up.
+
 ### M5 — full perf write-up (planned)
 
 Release build baselines + Instruments screenshots + MetricKit histogram will
