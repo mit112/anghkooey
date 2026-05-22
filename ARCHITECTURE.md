@@ -529,3 +529,31 @@ Freeze toggle plus read-only Cushion thresholds.
 148 + 8 = 156 tests at lane close (3 Cushion + 3 CardStore shift + 5
 FreezeController tests added; ReviewSession constructor change forced no
 existing-test edits because all tests use default cap/threshold values).
+
+### M5.5G — 4-grade rating system
+
+Replaces the 2-button "Got it / Missed it" UI with the full FSRS-6 four-grade
+rating: **Again / Hard / Good / Easy**.
+
+`ReviewGrade` (in `AnghkooeyCore/Scheduling/`) was the only change point.
+`Rating` already had 4 cases; `CardStore.apply(grade:)` already accepted
+`Rating` directly — no persistence layer change was needed. The migration
+strategy used `@available(*, deprecated, renamed:)` shims (`missed → .again`,
+`gotIt → .good`) so the build stayed green while call sites were updated
+incrementally; shims were deleted at lane close.
+
+`ReviewSession.submit(grade: ReviewGrade)` was unchanged — the new
+`fsrsRating` computed property on the expanded enum routes all 4 cases to their
+FSRS counterparts. `MockFSRS6Engine` already handled all 4 `Rating` cases and
+records `output.log.rating = rating`, so new tests for `.hard` and `.easy`
+routes needed no mock changes.
+
+`ReviewView` replaced the 2-button `HStack` with a 2×2 `VStack(HStack, HStack)`
+grid. Tint mapping: Again = `.red`, Hard = `.orange`, Good = default
+(`.borderedProminent`), Easy = `.blue` (`.borderedProminent`). Sensory feedback:
+`.error` for Again, `.impact(weight: .medium)` for Hard, `.success` for
+Good/Easy.
+
+156 → 99 Core tests after lane close (net +2: 5 new ReviewGrade mapping tests
+replaced 3 old 2-case tests; `ReviewSessionTests` grew from 4 to 6 tests
+covering all 4 grade routes plus retained empty-state and idempotency tests).
