@@ -46,6 +46,12 @@ final class AppState: @unchecked Sendable {
 
     var presentedDraft: IdentifiedDraft?
 
+    // MARK: Observed by ContentView
+
+    /// Persistence layer injected at app startup; `MockCardStore` until M4.9
+    /// wires the real `CardStore` backed by a `ModelContainer`.
+    let cardStore: any CardStoreProtocol
+
     // MARK: Private state
 
     private var pendingDrafts: [IdentifiedDraft] = []
@@ -60,8 +66,12 @@ final class AppState: @unchecked Sendable {
 
     // MARK: Init
 
-    init(cardAuthor: any CardAuthoringService = LiveCardAuthoringService()) {
+    init(
+        cardAuthor: any CardAuthoringService = LiveCardAuthoringService(),
+        cardStore: any CardStoreProtocol = MockCardStore()
+    ) {
         self.cardAuthor = cardAuthor
+        self.cardStore = cardStore
 
         let containerURL = FileManager.default
             .containerURL(forSecurityApplicationGroupIdentifier: InboxConstants.appGroupID)
@@ -94,8 +104,11 @@ final class AppState: @unchecked Sendable {
 
     // MARK: Sheet queue
 
-    func acceptDraft() { advanceQueue() }
-    func skipDraft()   { advanceQueue() }
+    func acceptDraft() {
+        advanceQueue()
+        NotificationCenter.default.post(name: .anghkooeyCardAccepted, object: nil)
+    }
+    func skipDraft() { advanceQueue() }
 
     /// Called from `CardReviewSheet.onAppear` to close the
     /// `"card-review-sheet-ready"` signpost interval.
