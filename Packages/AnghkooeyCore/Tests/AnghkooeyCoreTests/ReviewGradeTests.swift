@@ -1,21 +1,31 @@
 import Testing
 @testable import AnghkooeyCore
 
-@Suite("ReviewGrade — M4.4")
+@Suite("ReviewGrade — M5.5G")
 struct ReviewGradeTests {
 
-    @Test("ReviewGrade has exactly 2 cases")
+    @Test("ReviewGrade has exactly 4 cases")
     func caseCount() {
-        #expect(ReviewGrade.allCases.count == 2)
+        #expect(ReviewGrade.allCases.count == 4)
     }
 
-    @Test("missed maps to Rating.again")
-    func missedMapsToAgain() {
-        #expect(ReviewGrade.missed.fsrsRating == .again)
+    @Test("again maps to Rating.again")
+    func againMapsToAgain() {
+        #expect(ReviewGrade.again.fsrsRating == .again)
     }
 
-    @Test("gotIt maps to Rating.good")
-    func gotItMapsToGood() {
-        #expect(ReviewGrade.gotIt.fsrsRating == .good)
+    @Test("hard maps to Rating.hard")
+    func hardMapsToHard() {
+        #expect(ReviewGrade.hard.fsrsRating == .hard)
+    }
+
+    @Test("good maps to Rating.good")
+    func goodMapsToGood() {
+        #expect(ReviewGrade.good.fsrsRating == .good)
+    }
+
+    @Test("easy maps to Rating.easy")
+    func easyMapsToEasy() {
+        #expect(ReviewGrade.easy.fsrsRating == .easy)
     }
 }

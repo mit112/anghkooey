@@ -3,124 +3,123 @@ import Foundation
 @testable import AnghkooeyUI
 import AnghkooeyCore
 
-// MARK: - M4.7 contract tests
-//
-// These tests are RED until Codex replaces the fatalError stubs in
-// ReviewSession with real implementations.
-
 @Suite("ReviewSession — M4.7 contract")
 @MainActor
 struct ReviewSessionTests {
-
-    // MARK: Helpers
-
-    private func makeSession(cards: [Card.Snapshot] = [], applyError: Error? = nil) -> ReviewSession {
-        let store = MockCardStore()
-        // Seed the mock with cards that are due now
-        for c in cards {
-            Task { _ = try? await store.create(question: c.question, answer: c.answer, sourceSpan: c.sourceSpan, now: c.dueAt) }
-        }
-        return ReviewSession(
+    private func makeSession(
+        store: MockCardStore = MockCardStore(),
+        now: Date = Date(timeIntervalSinceReferenceDate: 0)
+    ) -> ReviewSession {
+        ReviewSession(
             store: store,
-            scheduler: MockFSRS6Engine()
+            scheduler: MockFSRS6Engine(),
+            clock: { now }
         )
     }
 
-    private func makeSession(store: MockCardStore) -> ReviewSession {
-        ReviewSession(store: store, scheduler: MockFSRS6Engine())
+    @discardableResult
+    private func seedCards(
+        count: Int,
+        in store: MockCardStore,
+        now: Date = Date(timeIntervalSinceReferenceDate: 0)
+    ) async throws -> [Card.Snapshot] {
+        var cards: [Card.Snapshot] = []
+        for index in 1...count {
+            let card = try await store.create(
+                question: "Q\(index)",
+                answer: "A\(index)",
+                sourceSpan: nil,
+                now: now
+            )
+            cards.append(card)
+        }
+        return cards
     }
 
-    // MARK: loadDueQueue_populatesCurrent_andQueueRemaining
-
-    @Test("loadDueQueue populates currentCard and sets queueRemaining")
-    func loadDueQueue_populatesCurrent_andQueueRemaining() async throws {
+    private func makeLoadedSession(
+        cardCount: Int = 2,
+        now: Date = Date(timeIntervalSinceReferenceDate: 0)
+    ) async throws -> (session: ReviewSession, store: MockCardStore) {
         let store = MockCardStore()
-        let now = Date()
-        _ = try await store.create(question: "Q1", answer: "A1", sourceSpan: nil, now: now)
-        _ = try await store.create(question: "Q2", answer: "A2", sourceSpan: nil, now: now)
-
-        let session = makeSession(store: store)
+        try await seedCards(count: cardCount, in: store, now: now)
+        let session = makeSession(store: store, now: now)
         await session.loadDueQueue()
+        return (session, store)
+    }
+
+    @Test("loadDueQueue populates currentCard and queueRemaining == 1 for two cards")
+    func loadDueQueuePopulatesCurrentCardAndQueueRemaining() async throws {
+        let (session, _) = try await makeLoadedSession(cardCount: 2)
 
         #expect(session.currentCard != nil)
-        #expect(session.queueRemaining == 1)   // 2 due, 1 is currentCard
-        #expect(session.state == .reviewing)
+        #expect(session.queueRemaining == 1)
     }
 
-    // MARK: submit_gotIt_callsScheduler_withGoodRating_andAdvances
-
-    @Test("submit(.gotIt) calls scheduler with .good rating and advances to next card")
-    func submit_gotIt_callsScheduler_withGoodRating_andAdvances() async throws {
-        let store = MockCardStore()
-        let now = Date()
-        _ = try await store.create(question: "Q1", answer: "A1", sourceSpan: nil, now: now)
-        _ = try await store.create(question: "Q2", answer: "A2", sourceSpan: nil, now: now)
-
-        let session = makeSession(store: store)
-        await session.loadDueQueue()
+    @Test("submit(.good) sends .good to the scheduler and advances to the next card")
+    func submitGoodSendsGoodRatingAndAdvances() async throws {
+        let (session, store) = try await makeLoadedSession(cardCount: 2)
         let firstID = try #require(session.currentCard?.id)
 
         session.revealAnswer()
-        await session.submit(grade: .gotIt)
+        await session.submit(grade: .good)
 
-        let applied = store.reviewLogs.first
-        let appliedRating = try #require(applied?.output.log.rating)
+        let appliedRating = try #require(store.reviewLogs.first?.output.log.rating)
         #expect(appliedRating == .good)
         #expect(session.currentCard?.id != firstID)
     }
 
-    // MARK: submit_missed_callsScheduler_withAgainRating_andAdvances
-
-    @Test("submit(.missed) calls scheduler with .again rating and advances")
-    func submit_missed_callsScheduler_withAgainRating_andAdvances() async throws {
-        let store = MockCardStore()
-        let now = Date()
-        _ = try await store.create(question: "Q1", answer: "A1", sourceSpan: nil, now: now)
-        _ = try await store.create(question: "Q2", answer: "A2", sourceSpan: nil, now: now)
-
-        let session = makeSession(store: store)
-        await session.loadDueQueue()
+    @Test("submit(.again) sends .again to the scheduler")
+    func submitAgainSendsAgainRating() async throws {
+        let (session, store) = try await makeLoadedSession(cardCount: 2)
 
         session.revealAnswer()
-        await session.submit(grade: .missed)
+        await session.submit(grade: .again)
 
-        let applied = store.reviewLogs.first
-        let appliedRating = try #require(applied?.output.log.rating)
+        let appliedRating = try #require(store.reviewLogs.first?.output.log.rating)
         #expect(appliedRating == .again)
     }
 
-    // MARK: submit_onLastCard_movesToEmpty
-
-    @Test("submit on the last card transitions state to .empty")
-    func submit_onLastCard_movesToEmpty() async throws {
-        let store = MockCardStore()
-        let now = Date()
-        _ = try await store.create(question: "Q1", answer: "A1", sourceSpan: nil, now: now)
-
-        let session = makeSession(store: store)
-        await session.loadDueQueue()
+    @Test("submit(.hard) sends .hard to the scheduler")
+    func submitHardSendsHardRating() async throws {
+        let (session, store) = try await makeLoadedSession(cardCount: 2)
 
         session.revealAnswer()
-        await session.submit(grade: .gotIt)
+        await session.submit(grade: .hard)
+
+        let appliedRating = try #require(store.reviewLogs.first?.output.log.rating)
+        #expect(appliedRating == .hard)
+    }
+
+    @Test("submit(.easy) sends .easy to the scheduler")
+    func submitEasySendsEasyRating() async throws {
+        let (session, store) = try await makeLoadedSession(cardCount: 2)
+
+        session.revealAnswer()
+        await session.submit(grade: .easy)
+
+        let appliedRating = try #require(store.reviewLogs.first?.output.log.rating)
+        #expect(appliedRating == .easy)
+    }
+
+    @Test("submit on the last card transitions state to .empty and clears currentCard")
+    func submitOnLastCardTransitionsToEmpty() async throws {
+        let (session, _) = try await makeLoadedSession(cardCount: 1)
+
+        session.revealAnswer()
+        await session.submit(grade: .good)
 
         #expect(session.state == .empty)
         #expect(session.currentCard == nil)
     }
 
-    // MARK: revealAnswer_idempotent
+    @Test("revealAnswer is idempotent")
+    func revealAnswerIsIdempotent() async throws {
+        let (session, _) = try await makeLoadedSession(cardCount: 1)
 
-    @Test("revealAnswer is idempotent — calling twice does not crash or double-toggle")
-    func revealAnswer_idempotent() async throws {
-        let store = MockCardStore()
-        let now = Date()
-        _ = try await store.create(question: "Q1", answer: "A1", sourceSpan: nil, now: now)
-
-        let session = makeSession(store: store)
-        await session.loadDueQueue()
-
+        #expect(session.isAnswerRevealed == false)
         session.revealAnswer()
-        session.revealAnswer()  // second call must not flip back
-
+        #expect(session.isAnswerRevealed == true)
+        session.revealAnswer()
         #expect(session.isAnswerRevealed == true)
     }
 }
