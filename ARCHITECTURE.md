@@ -378,3 +378,23 @@ flow. M5 extends the schema.
 
 Tags, decks, statistics, WidgetKit, CloudKit sync, card editing before accept,
 4-button grading, audio/image cards.
+
+## M5 — Polish
+
+### M5.A — Schema V2 (step-machine persistence)
+
+Introduced `AnghkooeySchemaV2.Card` adding `reps`, `lapses`, `learningSteps`,
+`scheduledDays`, `elapsedDays` as optional (`Int?` / `Double?`) columns. Optional
+types are required for lightweight V1 → V2 migration: SwiftData's `.lightweight`
+stage leaves new columns NULL for V1-era rows; nullable avoids Core Data's
+non-optional validation error on migrated rows.
+
+Migration from V1 is `MigrationStage.lightweight`. Downstream code references
+the top-level `public typealias Card = AnghkooeySchemaV2.Card`; future
+migrations swap the alias and add a stage without rippling through call sites.
+
+`Card.Snapshot` exposes non-optional `Int` / `Double` for all five fields (via
+`?? 0`), so callers and tests are unchanged. `Card.Snapshot.schedulingCard` no
+longer zero-fills step-machine state, closing the M4 carry-over noted above.
+`CardStore.apply` and `MockCardStore.apply` persist the new fields from
+`SchedulerOutput`.
