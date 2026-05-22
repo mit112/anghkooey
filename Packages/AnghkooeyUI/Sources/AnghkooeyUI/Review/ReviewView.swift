@@ -13,6 +13,8 @@ import AnghkooeyCore
 public struct ReviewView: View {
 
     @Bindable var session: ReviewSession
+    @State private var gotItTrigger = false
+    @State private var missedItTrigger = false
 
     public init(session: ReviewSession) {
         self.session = session
@@ -109,6 +111,7 @@ public struct ReviewView: View {
     private var gradeButtons: some View {
         HStack(spacing: 12) {
             Button {
+                missedItTrigger.toggle()
                 Task { await session.submit(grade: .missed) }
             } label: {
                 Label("Missed it", systemImage: "xmark")
@@ -119,6 +122,7 @@ public struct ReviewView: View {
             .controlSize(.large)
 
             Button {
+                gotItTrigger.toggle()
                 Task { await session.submit(grade: .gotIt) }
             } label: {
                 Label("Got it", systemImage: "checkmark")
@@ -127,15 +131,17 @@ public struct ReviewView: View {
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
         }
+        .sensoryFeedback(.success, trigger: gotItTrigger)
+        .sensoryFeedback(.error, trigger: missedItTrigger)
     }
 
     // MARK: - Empty
 
     private var emptyBody: some View {
         ContentUnavailableView(
-            "No cards due",
-            systemImage: "checkmark.circle",
-            description: Text("Capture something via the Share Extension to start.")
+            "All caught up",
+            systemImage: "checkmark.circle.fill",
+            description: Text("Come back when your next review is due, or capture something new to grow your deck.")
         )
     }
 }
