@@ -30,6 +30,23 @@ public final class ReviewSession {
     public private(set) var queueRemaining: Int = 0
     public private(set) var state: ReviewSessionState = .loading
 
+    /// Total due cards at last `loadDueQueue` call, before Cushion cap applied.
+    /// Use this to render honest copy: "Showing today's batch — N of `backlogTotal` due".
+    public private(set) var backlogTotal: Int = 0
+
+    /// True when the visible queue was capped by Cushion Mode at last load.
+    public private(set) var isCushionActive: Bool = false
+
+    // MARK: Cushion configuration
+
+    /// Maximum number of cards shown in a single session when cushion fires.
+    /// Default 20 per `foundation.md §4 Grace features`.
+    public let dailyBatchCap: Int
+
+    /// When total due cards exceeds this, cushion fires and caps the queue
+    /// to `dailyBatchCap`. Default 50 per `foundation.md §4`.
+    public let backlogThreshold: Int
+
     // MARK: Private
 
     private let store: any CardStoreProtocol
@@ -42,25 +59,33 @@ public final class ReviewSession {
     public init(
         store: any CardStoreProtocol,
         scheduler: any FSRS6Engine,
-        clock: @Sendable @escaping () -> Date = { .now }
+        clock: @Sendable @escaping () -> Date = { .now },
+        dailyBatchCap: Int = 20,
+        backlogThreshold: Int = 50
     ) {
         self.store = store
         self.scheduler = scheduler
         self.clock = clock
+        self.dailyBatchCap = dailyBatchCap
+        self.backlogThreshold = backlogThreshold
     }
 
     // MARK: Public API
 
-    /// Fetches all due cards and seeds the review queue.
+    /// Fetches all due cards, applies Cushion Mode cap if backlog exceeds threshold,
+    /// and seeds the review queue.
     public func loadDueQueue() async {
         state = .loading
         do {
-            let cards = try await store.dueCards(asOf: clock())
-            queue = Array(cards.dropFirst())
-            currentCard = cards.first
+            let allDue = try await store.dueCards(asOf: clock())
+            backlogTotal = allDue.count
+            isCushionActive = allDue.count > backlogThreshold && allDue.count > dailyBatchCap
+            let visible = isCushionActive ? Array(allDue.prefix(dailyBatchCap)) : allDue
+            queue = Array(visible.dropFirst())
+            currentCard = visible.first
             queueRemaining = queue.count
             isAnswerRevealed = false
-            state = cards.isEmpty ? .empty : .reviewing
+            state = visible.isEmpty ? .empty : .reviewing
         } catch {
             state = .error(error.localizedDescription)
         }
