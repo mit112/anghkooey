@@ -11,7 +11,7 @@ public enum AnghkooeySchemaV1: VersionedSchema {
     public static let versionIdentifier = Schema.Version(1, 0, 0)
 
     public static var models: [any PersistentModel.Type] {
-        [Card.self, ReviewLog.self, Tag.self]
+        [AnghkooeySchemaV1.Card.self, ReviewLog.self, Tag.self]
     }
 }
 
@@ -21,10 +21,15 @@ public enum AnghkooeySchemaV1: VersionedSchema {
 /// day one so the call-site shape never changes when V2 lands.
 public enum AnghkooeyMigrationPlan: SchemaMigrationPlan {
     public static var schemas: [any VersionedSchema.Type] {
-        [AnghkooeySchemaV1.self]
+        [AnghkooeySchemaV1.self, AnghkooeySchemaV2.self]
     }
 
     public static var stages: [MigrationStage] {
-        []
+        [
+            .lightweight(
+                fromVersion: AnghkooeySchemaV1.self,
+                toVersion: AnghkooeySchemaV2.self
+            )
+        ]
     }
 }

@@ -1,6 +1,12 @@
 import Foundation
 import SwiftData
 
+/// Public alias for the current persisted Card model. Downstream code
+/// (UI, AppState, tests) should reference `Card` — never
+/// `AnghkooeySchemaVN.Card` directly — so future migrations don't ripple
+/// through call sites.
+public typealias Card = AnghkooeySchemaV2.Card
+
 // MARK: - Card.Snapshot
 
 public extension Card {
