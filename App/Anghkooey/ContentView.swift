@@ -26,6 +26,11 @@ struct ContentView: View {
             }
             .tabItem { Label("Capture", systemImage: "camera") }
 
+            NavigationStack {
+                LibraryView(store: appState.cardStore)
+            }
+            .tabItem { Label("Library", systemImage: "books.vertical") }
+
             SettingsView()
                 .tabItem { Label("Settings", systemImage: "gearshape") }
         }

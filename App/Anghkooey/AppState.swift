@@ -108,12 +108,14 @@ final class AppState: @unchecked Sendable {
     /// Called by `CardReviewSheet`'s Accept button.
     func acceptDraft(question: String, answer: String) {
         guard let draft = presentedDraft else { return }
+        let tags = draft.draft.proposedTags
         advanceQueue()
         Task {
             try? await cardStore.create(
                 question: question,
                 answer: answer,
                 sourceSpan: draft.draft.sourceSpan,
+                tags: tags,
                 now: .now
             )
         }
