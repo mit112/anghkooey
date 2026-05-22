@@ -613,3 +613,37 @@ Three hardening constraints applied after Codex review:
 - **`[String]` not `[Tag]` in Snapshot** — `Card.Snapshot` is a `Sendable` value type crossing actor boundaries. SwiftData `@Model` objects are reference types bound to their `ModelContext`; they cannot safely escape the actor. Tags are projected as sorted display names.
 - **No orphan cleanup** — Tag rows no longer referenced by any card are kept. The tag table is small in v1; a cleanup sweep is deferred to v2.
 - **Backward-compat extension for `create`, not for `update`** — A `create` shim with `tags: []` is safe (new card starts untagged). An `update` shim with `tags: []` would silently clear existing tags at every unmigrated call site; omitting it forces the compiler to catch them.
+
+---
+
+## M5.5M — Mnemonic Button
+
+**Date:** 2026-05-22
+
+### What shipped
+
+**`AnghkooeySchemaV3`** — new `mnemonic: String?` column on `Card`. `AnghkooeyMigrationPlan` extended to three schemas / two stages; both V1→V2 and V2→V3 are lightweight. `AnghkooeyModelContainer.makeInMemoryContainer()` updated to V3. All V2-era rows receive `NULL` for `mnemonic` on first open. `CardStoreTests` and `SchemaMigrationTests` updated to use V3 schema refs (they had stale V1 container creation that caused a fatal cast with V3.Card).
+
+**`Card.Snapshot.mnemonic: String?`** — projects the stored value across the actor boundary. All `MockCardStore` snapshot-reconstruction sites (`apply`, `shiftAllDueDates`, `update`) pass `mnemonic: old.mnemonic` to preserve the field through in-memory operations.
+
+**`CardStoreProtocol.updateMnemonic(id:mnemonic:)`** — new protocol method in `AnghkooeyCore`. Silent no-op for unknown ids. Rollback on save failure. Implemented in `CardStore` actor and `MockCardStore`.
+
+**`MnemonicService` protocol + `LiveMnemonicService`** in `AnghkooeyIntelligence`. `LiveMnemonicService` calls `LanguageModelSession(instructions:).streamResponse(to:generating:MnemonicResponse.self)` and collects the final `snapshot.content.mnemonic` value after the stream ends. `@Generable MnemonicResponse { var mnemonic: String }` is the structured output type. `MockMnemonicService` returns a fixed string or throws a configured error.
+
+**`ReviewSession`** (in `AnghkooeyUI`) gains `mnemonicService: (any MnemonicService)?` (default nil, backward-compatible init), `currentMnemonic: String?`, `isMnemonicLoading: Bool`, and `isMnemonicAvailable: Bool`. `loadDueQueue` seeds `currentMnemonic` from `currentCard?.mnemonic`. `submit(grade:)` resets it to the next card's stored mnemonic (from the queue snapshot) or nil on empty. `generateMnemonic()` calls the service, sets `currentMnemonic`, then persists via `store.updateMnemonic` (non-fatal on error).
+
+**`ReviewView`** `mnemonicSection` — shown only when `isAnswerRevealed`. Three states: button ("Generate Mnemonic", `.purple` tint) → loading HStack → italic mnemonic text. Wired below `answerSection` in the scroll content.
+
+### Invariants
+
+- `AnghkooeyCore` has no import of `AnghkooeyIntelligence`. `MnemonicService` protocol and `LiveMnemonicService` live in Intelligence; `CardStoreProtocol.updateMnemonic` lives in Core.
+- Mnemonic generation is fully optional: `ReviewSession` without an injected `MnemonicService` never shows the button (`isMnemonicAvailable == false`).
+- Generation failures are non-fatal: the button remains visible for retry; `currentMnemonic` stays nil.
+- The mnemonic persists across sessions: on next `loadDueQueue`, `currentMnemonic` is seeded from the stored `Card.Snapshot.mnemonic`.
+- `make generate` drops xcprivacy from PBXResourcesBuildPhase (xcodegen fragility). Re-apply the Python patch in `project.pbxproj` after each regeneration (6 entries: PBXBuildFile × 2, PBXFileReference × 2, PBXGroup × 2).
+
+### Test counts after lane close
+
+- Core: 120 tests in 20 suites (was 112; +8 from `CardStoreMnemonicTests`)
+- Intelligence: +4 from `MockMnemonicServiceTests` (run via `swift test` in package dir)
+- App target: 21 tests in 4 suites (was 13; +8 from `ReviewSessionMnemonicTests`)
