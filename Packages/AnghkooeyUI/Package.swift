@@ -5,7 +5,7 @@ let package = Package(
     name: "AnghkooeyUI",
     platforms: [
         .iOS(.v26),
-        .macOS(.v15)
+        .macOS(.v26)
     ],
     products: [
         .library(name: "AnghkooeyUI", targets: ["AnghkooeyUI"])

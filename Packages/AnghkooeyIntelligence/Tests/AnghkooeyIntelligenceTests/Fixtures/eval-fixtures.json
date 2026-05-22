@@ -1,0 +1,59 @@
+[
+  {
+    "id": "biology-001",
+    "passage": "Mitosis is the process by which a single cell divides into two genetically identical daughter cells. It consists of four phases: prophase, metaphase, anaphase, and telophase.",
+    "templateVersion": "v1.0",
+    "goldenDrafts": [
+      {
+        "question": "What cellular process results in genetically identical offspring?",
+        "answer": "Mitosis divides a single cell into two genetically identical daughter cells.",
+        "proposedTags": ["biology", "cell-division"],
+        "sourceSpan": "Mitosis is the process by which a single cell divides into two genetically identical daughter cells."
+      },
+      {
+        "question": "What are the four phases of mitosis in order?",
+        "answer": "Mitosis consists of prophase, metaphase, anaphase, and telophase.",
+        "proposedTags": ["biology", "mitosis", "cell-division"],
+        "sourceSpan": "It consists of four phases: prophase, metaphase, anaphase, and telophase."
+      }
+    ]
+  },
+  {
+    "id": "vocab-001",
+    "passage": "Ephemeral means lasting for a very short time. The ephemeral nature of cherry blossoms makes them a symbol of impermanence in Japanese culture.",
+    "templateVersion": "v1.0",
+    "goldenDrafts": [
+      {
+        "question": "What does ephemeral mean?",
+        "answer": "Ephemeral means lasting for a very short time.",
+        "proposedTags": ["vocabulary", "english"],
+        "sourceSpan": "Ephemeral means lasting for a very short time."
+      },
+      {
+        "question": "What do cherry blossoms represent in Japanese culture?",
+        "answer": "Cherry blossoms are a symbol of impermanence in Japanese culture.",
+        "proposedTags": ["culture", "japan", "symbolism"],
+        "sourceSpan": "The ephemeral nature of cherry blossoms makes them a symbol of impermanence in Japanese culture."
+      }
+    ]
+  },
+  {
+    "id": "history-001",
+    "passage": "The Treaty of Versailles was signed in 1919, officially ending World War I. It imposed heavy reparations on Germany and is widely considered a contributing factor to the rise of World War II.",
+    "templateVersion": "v1.0",
+    "goldenDrafts": [
+      {
+        "question": "When was Versailles signed, officially ending World War I?",
+        "answer": "The Treaty of Versailles was signed in 1919.",
+        "proposedTags": ["history", "world-war-1"],
+        "sourceSpan": "The Treaty of Versailles was signed in 1919, officially ending World War I."
+      },
+      {
+        "question": "What heavy burden did Versailles place on Germany?",
+        "answer": "It imposed heavy reparations on Germany.",
+        "proposedTags": ["history", "germany", "versailles"],
+        "sourceSpan": "It imposed heavy reparations on Germany."
+      }
+    ]
+  }
+]

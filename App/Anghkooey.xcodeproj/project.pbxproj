@@ -7,23 +7,67 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3C69A02A96CDAEB8DFFB0534 /* CardReviewSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E8F3B74ABF8A6FBD7019DB2 /* CardReviewSheet.swift */; };
 		46A0E6A0C20AE8578112E927 /* AnghkooeyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6303924A04882FA4C900557B /* AnghkooeyApp.swift */; };
 		65C5300478257265174ECB34 /* AnghkooeyUI in Frameworks */ = {isa = PBXBuildFile; productRef = 35F7FD1699C5DB4B94EEF7ED /* AnghkooeyUI */; };
+		A7AE1592FEEDA52EA1AD8284 /* AnghkooeyShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 0A037B8F43852214FC842CDF /* AnghkooeyShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		AE2B092616BDC257E899D84C /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A6AE21F57389F2FA533F696 /* ShareViewController.swift */; };
+		B1A3C5D7E9F1A3B5C7D9E1F3 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C2B4D6E8F0A2B4C6D8E0F2A4 /* PrivacyInfo.xcprivacy */; };
+		BB5809147A8AC7D33F6E8A41 /* AnghkooeyCore in Frameworks */ = {isa = PBXBuildFile; productRef = 6050CC9AE2B0A888BBACD0E2 /* AnghkooeyCore */; };
 		BD158D82F31B74D299DF85F8 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E3ED969F4ECE89B0A25E87 /* ContentView.swift */; };
-		C0FFEE01DEADBEEF11111111 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C0FFEE02DEADBEEF22222222 /* PrivacyInfo.xcprivacy */; };
+		D6002CEE061540D958B46B78 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55F0F922386EE72B02D5FC3F /* AppState.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		5E4306B26091E4AF36AF970E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 94D568656132B33BBE87E20A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7F720F6F21CF5127D7884289;
+			remoteInfo = AnghkooeyShare;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		C101D8F13C1F879865AD4379 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				A7AE1592FEEDA52EA1AD8284 /* AnghkooeyShare.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		039A95E01BFF83BC28BA6F22 /* AnghkooeyIntelligence */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AnghkooeyIntelligence; path = ../Packages/AnghkooeyIntelligence; sourceTree = SOURCE_ROOT; };
 		071F54EC6FF668936C218728 /* AnghkooeyCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AnghkooeyCore; path = ../Packages/AnghkooeyCore; sourceTree = SOURCE_ROOT; };
+		0A037B8F43852214FC842CDF /* AnghkooeyShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AnghkooeyShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		55F0F922386EE72B02D5FC3F /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		5A6AE21F57389F2FA533F696 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		6303924A04882FA4C900557B /* AnghkooeyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnghkooeyApp.swift; sourceTree = "<group>"; };
+		712E1AED1C075F0AAC8CF0CA /* AnghkooeyShare-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "AnghkooeyShare-Info.plist"; sourceTree = "<group>"; };
+		718E27D7320553CBB6BCA62A /* AnghkooeyShare.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AnghkooeyShare.entitlements; sourceTree = "<group>"; };
+		7E8F3B74ABF8A6FBD7019DB2 /* CardReviewSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardReviewSheet.swift; sourceTree = "<group>"; };
 		80E3ED969F4ECE89B0A25E87 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		83CE7E31BDF48A8B35196DB6 /* AnghkooeyUI */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AnghkooeyUI; path = ../Packages/AnghkooeyUI; sourceTree = SOURCE_ROOT; };
-		C0FFEE02DEADBEEF22222222 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		EA63E5FA330602579BBE4E25 /* Anghkooey.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Anghkooey.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A35276B7D331FB0334E9C818 /* Anghkooey.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Anghkooey.entitlements; sourceTree = "<group>"; };
+		C2B4D6E8F0A2B4C6D8E0F2A4 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		EA63E5FA330602579BBE4E25 /* Anghkooey.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Anghkooey.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		ECD9F8F6385B28F86CD116B5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB5809147A8AC7D33F6E8A41 /* AnghkooeyCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F917D06412004FAA2CDCEB46 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -48,9 +92,11 @@
 		314911AE872155B4BC9640C8 /* Anghkooey */ = {
 			isa = PBXGroup;
 			children = (
+				A35276B7D331FB0334E9C818 /* Anghkooey.entitlements */,
 				6303924A04882FA4C900557B /* AnghkooeyApp.swift */,
+				55F0F922386EE72B02D5FC3F /* AppState.swift */,
+				7E8F3B74ABF8A6FBD7019DB2 /* CardReviewSheet.swift */,
 				80E3ED969F4ECE89B0A25E87 /* ContentView.swift */,
-				C0FFEE02DEADBEEF22222222 /* PrivacyInfo.xcprivacy */,
 			);
 			path = Anghkooey;
 			sourceTree = "<group>";
@@ -59,6 +105,7 @@
 			isa = PBXGroup;
 			children = (
 				EA63E5FA330602579BBE4E25 /* Anghkooey.app */,
+				0A037B8F43852214FC842CDF /* AnghkooeyShare.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -67,9 +114,21 @@
 			isa = PBXGroup;
 			children = (
 				314911AE872155B4BC9640C8 /* Anghkooey */,
+				D64DD303F0A57D93C31498AD /* AnghkooeyShare */,
 				16D3A861B07EFD2F644BF73B /* Packages */,
 				772CA5EFF1AF47C0CF8ADC88 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		D64DD303F0A57D93C31498AD /* AnghkooeyShare */ = {
+			isa = PBXGroup;
+			children = (
+				712E1AED1C075F0AAC8CF0CA /* AnghkooeyShare-Info.plist */,
+				718E27D7320553CBB6BCA62A /* AnghkooeyShare.entitlements */,
+				C2B4D6E8F0A2B4C6D8E0F2A4 /* PrivacyInfo.xcprivacy */,
+				5A6AE21F57389F2FA533F696 /* ShareViewController.swift */,
+			);
+			path = AnghkooeyShare;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -81,11 +140,12 @@
 			buildPhases = (
 				86F48F1F9CC0C93AC8355A3A /* Sources */,
 				F917D06412004FAA2CDCEB46 /* Frameworks */,
-				C0FFEE03DEADBEEF33333333 /* Resources */,
+				C101D8F13C1F879865AD4379 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				ACB84F2DA5F3F07C7A35A296 /* PBXTargetDependency */,
 			);
 			name = Anghkooey;
 			packageProductDependencies = (
@@ -94,6 +154,26 @@
 			productName = Anghkooey;
 			productReference = EA63E5FA330602579BBE4E25 /* Anghkooey.app */;
 			productType = "com.apple.product-type.application";
+		};
+		7F720F6F21CF5127D7884289 /* AnghkooeyShare */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 14CE601DF7EC1B9392209659 /* Build configuration list for PBXNativeTarget "AnghkooeyShare" */;
+			buildPhases = (
+				AE8C7FE4FFFAB2EF0393B4DC /* Sources */,
+				ECD9F8F6385B28F86CD116B5 /* Frameworks */,
+				D3C5E7F9A1B3C5E7F9A1B3C5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AnghkooeyShare;
+			packageProductDependencies = (
+				6050CC9AE2B0A888BBACD0E2 /* AnghkooeyCore */,
+			);
+			productName = AnghkooeyShare;
+			productReference = 0A037B8F43852214FC842CDF /* AnghkooeyShare.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -105,6 +185,9 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					02F92088487C152845F92C84 = {
+						ProvisioningStyle = Automatic;
+					};
+					7F720F6F21CF5127D7884289 = {
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -129,16 +212,17 @@
 			projectRoot = "";
 			targets = (
 				02F92088487C152845F92C84 /* Anghkooey */,
+				7F720F6F21CF5127D7884289 /* AnghkooeyShare */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		C0FFEE03DEADBEEF33333333 /* Resources */ = {
+		D3C5E7F9A1B3C5E7F9A1B3C5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C0FFEE01DEADBEEF11111111 /* PrivacyInfo.xcprivacy in Resources */,
+				B1A3C5D7E9F1A3B5C7D9E1F3 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -150,19 +234,39 @@
 			buildActionMask = 2147483647;
 			files = (
 				46A0E6A0C20AE8578112E927 /* AnghkooeyApp.swift in Sources */,
+				D6002CEE061540D958B46B78 /* AppState.swift in Sources */,
+				3C69A02A96CDAEB8DFFB0534 /* CardReviewSheet.swift in Sources */,
 				BD158D82F31B74D299DF85F8 /* ContentView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AE8C7FE4FFFAB2EF0393B4DC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AE2B092616BDC257E899D84C /* ShareViewController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		ACB84F2DA5F3F07C7A35A296 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7F720F6F21CF5127D7884289 /* AnghkooeyShare */;
+			targetProxy = 5E4306B26091E4AF36AF970E /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		1014D4621B5D4CF58BC0802F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Anghkooey/Anghkooey.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 3P89U4WZAB;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
@@ -235,6 +339,29 @@
 			};
 			name = Release;
 		};
+		BA5D7AD3A68E119A76CC33C3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = AnghkooeyShare/AnghkooeyShare.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 3P89U4WZAB;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "AnghkooeyShare/AnghkooeyShare-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mitsheth.anghkooey.share;
+				SDKROOT = iphoneos;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
 		E1A5E8779837DACD60AF1656 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -303,8 +430,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Anghkooey/Anghkooey.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 3P89U4WZAB;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
@@ -320,6 +449,29 @@
 			};
 			name = Debug;
 		};
+		F0E5FDD00EFC4F5862147941 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = AnghkooeyShare/AnghkooeyShare.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 3P89U4WZAB;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "AnghkooeyShare/AnghkooeyShare-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mitsheth.anghkooey.share;
+				SDKROOT = iphoneos;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -328,6 +480,15 @@
 			buildConfigurations = (
 				E1A5E8779837DACD60AF1656 /* Debug */,
 				9B3FA030679A553E50BAB576 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		14CE601DF7EC1B9392209659 /* Build configuration list for PBXNativeTarget "AnghkooeyShare" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BA5D7AD3A68E119A76CC33C3 /* Debug */,
+				F0E5FDD00EFC4F5862147941 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
@@ -362,6 +523,10 @@
 		35F7FD1699C5DB4B94EEF7ED /* AnghkooeyUI */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = AnghkooeyUI;
+		};
+		6050CC9AE2B0A888BBACD0E2 /* AnghkooeyCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AnghkooeyCore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

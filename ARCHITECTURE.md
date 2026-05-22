@@ -183,3 +183,114 @@ fixture-driven coverage is meaningful, closing the iOS skill gap flagged in
 
 **In-memory container** (`AnghkooeyModelContainer.makeInMemoryContainer()`)
 is used by all persistence tests. No test touches a real on-disk store.
+
+---
+
+## M2 — AnghkooeyIntelligence: Card Authoring + OCR
+
+**Branch:** `m2/foundation-models`
+**Status:** complete
+**Spec:** `docs/superpowers/plans/2026-05-21-m2-intelligence.md`
+
+### Package topology addition
+
+```
+Anghkooey (app target)
+├── AnghkooeyCore      (M1 — schema + FSRS-6)
+└── AnghkooeyIntelligence  (M2)
+    ├── Authoring/     — CardDraft, AuthorResponse, CardAuthoringService, LiveCardAuthoringService, MockCardAuthoringService, SnapshotAccumulator
+    ├── OCR/           — OCRService, LiveOCRService (Vision), MockOCRService
+    ├── Eval/          — EvalFixture, RubricScorer
+    └── Logging/       — IntelligenceLog
+```
+
+`AnghkooeyIntelligence` imports `AnghkooeyCore` for logging patterns only. No SwiftData, SwiftUI, or UIKit imports enforced by `scripts/m1-forbidden-patterns.sh`.
+
+### Card authoring data flow
+
+Text passage → `CardAuthoringService.generateDrafts(from:)` → `AsyncThrowingStream<CardDraft, Error>`. The live implementation calls `LanguageModelSession.streamResponse(to:generating:)` and routes each `ResponseStream<AuthorResponse>.Snapshot` through `SnapshotAccumulator`, which emits `CardDraft` values as each array slot reaches both `question` and `answer` non-empty. One emission per array index; later refinements discarded.
+
+FoundationModels API verified against `arm64-apple-ios-simulator.swiftinterface`: `snapshot.content.drafts` yields `[CardDraft.PartiallyGenerated]` with all fields Optional.
+
+### Eval harness
+
+Two modes:
+- **CI mode** — `swift test` / xcodebuild runs `EvalFixtureGateTests`: `@Test(arguments:)` over `eval-fixtures.json` golden drafts; scores each card against 4 binary rubric criteria (atomic, specific, groundedness, Q≠A); fails build if any card fails. Zero model calls.
+- **Live mode** — `make eval` (from repo root) runs the `EvalRunner` executable on macOS 26 with the real model; prints per-input verdicts; `make eval-update` overwrites golden fixtures only if pass rate ≥ 80%.
+
+### Module seam
+
+`CardDraft` is the output type of `AnghkooeyIntelligence`. `Card(from: CardDraft)` conversion is an `AnghkooeyUI` responsibility (M3), co-located with the user-confirmation ViewModel.
+
+---
+
+## M3 — Capture Pipeline: Share Extension + Inbox + Camera
+
+**Branch:** `m3/capture-share-extension`
+**Status:** code complete (M3.10 baselines pending device run)
+**Spec:** `docs/superpowers/plans/2026-05-21-m3-capture.md`
+**ADR:** `docs/DECISIONS/0003-app-group-inbox.md`
+
+### Capture topology
+
+```
+Anghkooey.xcodeproj
+├── Anghkooey                    (app target — SwiftUI scene + AppState)
+│   └── AVCaptureSession         (Camera/CameraView; MockCaptureSession in sim)
+└── AnghkooeyShare               (Share Extension — UIKit ShareViewController)
+
+Packages/AnghkooeyCore/Inbox/
+├── InboxConstants.swift         (App Group ID, dir layout, limits, schema v1)
+├── InboxItem.swift              (Codable; .text or .imageRef)
+├── InboxWriter.swift            (actor; SHA-256 dedup, atomic rename, Darwin post)
+├── InboxDrainer.swift           (actor; sorts by capturedAt, OCRs imageRefs, evicts orphans)
+└── InboxNotifier.swift          (CFNotificationCenter Darwin observer)
+```
+
+### Cross-process inbox protocol
+
+Share Extension and main app share an App Group container; the inbox lives at
+`<container>/inbox/*.json` (text + image-ref descriptors) and
+`<container>/inbox/images/*.heic`. The extension writes atomically (`*.json.tmp`
+→ rename), then posts a Darwin notification. The main app drains on launch, on
+foreground (`scenePhase == .active`), and on Darwin notification — all routed
+through `InboxDrainer.drain()`, which is actor-serialised so concurrent
+triggers coalesce via a plain `isDraining` guard (no repeat-loop).
+
+`OCRServiceProtocol` lives in `AnghkooeyIntelligence`; `InboxDrainer` accepts
+any conforming implementation. The app composition root wires the live
+`LiveOCRServiceDataAdapter` (Data → CGImage bridge over M2's `LiveOCRService`).
+Drainer tests inject `MockOCRService`.
+
+### Sheet queue + delegate bridge
+
+`AppState` (`@MainActor @Observable`) owns the drainer, a `DrainerBridge`
+relay (private final class implementing `InboxDrainerDelegate`, weak-references
+AppState), and a single `pendingCards: [CardDraft]` queue. Drained text →
+`enqueue` → `advanceQueue` sets `presentedCard`, SwiftUI binds the sheet.
+Accept and Skip both call `advanceQueue` to drain the queue one card at a
+time. `Card(from:)` materialisation is M4's job.
+
+### Latency instrumentation (M3.10)
+
+`CoreLog.poiSignposter` returns an `OSSignposter` on category
+`"PointsOfInterest"` using the host bundle ID as subsystem — shared between
+the extension and the app processes so Instruments groups all three intervals
+on the same Points of Interest track:
+
+| Interval                       | Begin                                                | End                                                  |
+|--------------------------------|------------------------------------------------------|------------------------------------------------------|
+| `share-tap-to-inbox-write`     | `ShareViewController.processSharedContent` entry     | scope exit (after `InboxWriter.write` returns)       |
+| `inbox-drain`                  | `InboxDrainer.drain()` (after isDraining guard)      | scope exit of `drain()`                              |
+| `card-review-sheet-ready`      | `AppState.advanceQueue()` when `presentedCard` set   | `CardReviewSheet.onAppear → cardReviewSheetDidAppear` |
+
+Median share-tap → review-sheet baseline is captured into `PERFORMANCE.md` on
+a physical device (the share sheet and OCR latency do not represent on
+simulator). M5 does the full perf write-up.
+
+### Privacy
+
+`App/AnghkooeyShare/PrivacyInfo.xcprivacy` declares
+`NSPrivacyAccessedAPICategoryFileTimestamp` with reason code `DDA9.1` for the
+extension's inbox file I/O. The main app's existing `PrivacyInfo.xcprivacy`
+covers Vision/OCR. `CFNotificationCenter` Darwin is not a required-reason API.

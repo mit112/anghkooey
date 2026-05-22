@@ -18,6 +18,13 @@ echo "=== AnghkooeyCore tests ==="
 (cd "$WORKSPACE_ROOT/Packages/AnghkooeyCore" && swift test)
 
 echo "=== AnghkooeyIntelligence tests ==="
+# TODO: Switch to xcodebuild once AnghkooeyIntelligence scheme is added in Xcode
+# xcodebuild test \
+#   -scheme AnghkooeyIntelligence \
+#   -destination "$SIMULATOR" \
+#   -resultBundlePath /tmp/anghkooey-m2.xcresult \
+#   CODE_SIGNING_ALLOWED=NO \
+#   -derivedDataPath "$DERIVED"
 (cd "$WORKSPACE_ROOT/Packages/AnghkooeyIntelligence" && swift test)
 
 echo "=== AnghkooeyUI tests ==="
