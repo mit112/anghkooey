@@ -148,6 +148,17 @@ public protocol CardStoreProtocol: Sendable {
 
     /// Returns the total card count and the count of cards due as of `now`.
     func count(asOf now: Date) async throws -> (total: Int, due: Int)
+
+    /// Shifts every card's `dueAt` forward by `days`. Used by Freeze "I'm away"
+    /// to slide the entire deck so the user returns with zero overdue debt.
+    ///
+    /// - Parameter days: Non-negative integer days to add. Passing 0 is a no-op.
+    /// - Throws: `PersistenceError.invalidShift` if `days < 0`.
+    func shiftAllDueDates(byDays days: Int) async throws
+
+    /// Returns all cards in the store, sorted by `dueAt`. Used by tests and
+    /// the forthcoming Library surface.
+    func allCards() async throws -> [Card.Snapshot]
 }
 
 // MARK: - CardStore (actor skeleton)
@@ -233,6 +244,22 @@ public actor CardStore: CardStoreProtocol {
         let due = try modelContext.fetchCount(dueDescriptor)
         return (total: total, due: due)
     }
+
+    public func shiftAllDueDates(byDays days: Int) async throws {
+        guard days >= 0 else { throw PersistenceError.invalidShift(days: days) }
+        guard days > 0 else { return }
+        let interval = TimeInterval(days) * 86_400
+        let all = try modelContext.fetch(FetchDescriptor<Card>())
+        for card in all {
+            card.dueAt = card.dueAt.addingTimeInterval(interval)
+        }
+        try modelContext.save()
+    }
+
+    public func allCards() async throws -> [Card.Snapshot] {
+        let descriptor = FetchDescriptor<Card>(sortBy: [SortDescriptor(\.dueAt)])
+        return try modelContext.fetch(descriptor).map { Card.Snapshot(from: $0) }
+    }
 }
 
 // MARK: - MockCardStore
@@ -293,5 +320,33 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
 
     public func count(asOf now: Date) async throws -> (total: Int, due: Int) {
         (total: cards.count, due: cards.filter { $0.dueAt <= now }.count)
+    }
+
+    public func shiftAllDueDates(byDays days: Int) async throws {
+        guard days >= 0 else { throw PersistenceError.invalidShift(days: days) }
+        guard days > 0 else { return }
+        let interval = TimeInterval(days) * 86_400
+        cards = cards.map { snap in
+            Card.Snapshot(
+                id: snap.id,
+                question: snap.question,
+                answer: snap.answer,
+                sourceSpan: snap.sourceSpan,
+                state: snap.state,
+                stability: snap.stability,
+                difficulty: snap.difficulty,
+                dueAt: snap.dueAt.addingTimeInterval(interval),
+                lastReviewedAt: snap.lastReviewedAt,
+                reps: snap.reps,
+                lapses: snap.lapses,
+                learningSteps: snap.learningSteps,
+                scheduledDays: snap.scheduledDays,
+                elapsedDays: snap.elapsedDays
+            )
+        }
+    }
+
+    public func allCards() async throws -> [Card.Snapshot] {
+        cards.sorted { $0.dueAt < $1.dueAt }
     }
 }
