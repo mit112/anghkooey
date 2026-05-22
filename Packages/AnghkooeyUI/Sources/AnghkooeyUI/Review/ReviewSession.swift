@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 import AnghkooeyCore
 
 // MARK: - ReviewSessionState
@@ -74,6 +75,10 @@ public final class ReviewSession {
     /// Grades the current card and advances to the next, or moves to `.empty`.
     public func submit(grade: ReviewGrade) async {
         guard let card = currentCard else { return }
+        let signposter = CoreLog.poiSignposter
+        let signpostID = signposter.makeSignpostID()
+        let intervalState = signposter.beginInterval("review-tap", id: signpostID)
+        defer { signposter.endInterval("review-tap", intervalState) }
         do {
             let output = try scheduler.next(
                 card: card.schedulingCard,
