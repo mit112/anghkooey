@@ -496,3 +496,36 @@ first-run. Each item has a reproducible procedure in `PERFORMANCE.md`,
 intentionally not blocking the M5 PR — they're TestFlight-window work.
 
 148 tests green at M5 close: 94 Core, 39 Intelligence, 7 UI, 8 app-target.
+
+## M5.5 — V1 Feature Completion
+
+### M5.5C — Cushion Mode + Freeze
+
+Two grace features from `foundation.md §4`.
+
+**Cushion Mode** lives entirely inside `ReviewSession`. `loadDueQueue()` fetches
+all due cards, exposes `backlogTotal` for honest UI copy, and — when
+`backlogTotal > backlogThreshold && backlogTotal > dailyBatchCap` — caps the
+working queue to `dailyBatchCap` (defaults: 20 and 50, both injectable via
+`init` for tests). `isCushionActive` is the boolean the UI uses to show the
+"Showing today's batch — N of M due" banner. This is a queue-shaping decision,
+not a scheduler change — FSRS-6 still sees the true card state. The veil is
+honest by design (per foundation: "be honest about that internally and
+externally").
+
+**Freeze** is a user-toggled "I'm away" state. `FreezeController`
+(`@Observable` `@MainActor`) records `frozenSince` via a `FreezeStorage` seam
+(production: `UserDefaultsFreezeStorage`; tests: `InMemoryFreezeStorage`). On
+`unfreeze(now:)`, elapsed days = `floor((now - frozenSince) / 86_400)`; the
+controller calls `CardStore.shiftAllDueDates(byDays:)` which iterates every
+card in a single SwiftData transaction and adds `days * 86_400` seconds to
+each `dueAt`. Same-day unfreeze is a no-op (0 days). Negative shift is rejected
+with `PersistenceError.invalidShift`.
+
+`CardStoreProtocol` gains `shiftAllDueDates(byDays:)` and `allCards()` (the
+latter also serves the Library surface in Lane T). The Settings tab hosts the
+Freeze toggle plus read-only Cushion thresholds.
+
+148 + 8 = 156 tests at lane close (3 Cushion + 3 CardStore shift + 5
+FreezeController tests added; ReviewSession constructor change forced no
+existing-test edits because all tests use default cap/threshold values).
