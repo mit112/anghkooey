@@ -12,7 +12,15 @@ public enum IntelligenceLog {
     public static var ai: Logger { Logger(subsystem: subsystem, category: "AI") }
     /// Logger for the Vision OCR subsystem.
     public static var ocr: Logger { Logger(subsystem: subsystem, category: "OCR") }
-
     /// Logger for the FoundationModels card authoring subsystem.
     public static var authoring: Logger { Logger(subsystem: subsystem, category: "Authoring") }
+
+    /// Shared `OSSignposter` for intelligence-pipeline latency intervals.
+    ///
+    /// Uses `"PointsOfInterest"` so intervals appear alongside Core's signposts
+    /// on the same Instruments Points of Interest track. Interval names:
+    /// `"ai-draft-generation"`.
+    public static var poiSignposter: OSSignposter {
+        OSSignposter(subsystem: subsystem, category: "PointsOfInterest")
+    }
 }

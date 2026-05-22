@@ -70,6 +70,11 @@ public struct LiveCardAuthoringService: CardAuthoringService {
 
         return AsyncThrowingStream { continuation in
             let task = Task {
+                let signposter = IntelligenceLog.poiSignposter
+                let signpostID = signposter.makeSignpostID()
+                let intervalState = signposter.beginInterval("ai-draft-generation", id: signpostID)
+                defer { signposter.endInterval("ai-draft-generation", intervalState) }
+
                 do {
                     let session = LanguageModelSession(instructions: Self.instructions)
                     let stream = session.streamResponse(to: text, generating: AuthorResponse.self)
