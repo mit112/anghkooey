@@ -105,7 +105,16 @@ final class AppState: @unchecked Sendable {
     // MARK: Sheet queue
 
     func acceptDraft() {
+        guard let draft = presentedDraft else { return }
         advanceQueue()
+        Task {
+            try? await cardStore.create(
+                question: draft.draft.question,
+                answer: draft.draft.answer,
+                sourceSpan: draft.draft.sourceSpan,
+                now: .now
+            )
+        }
         NotificationCenter.default.post(name: .anghkooeyCardAccepted, object: nil)
     }
     func skipDraft() { advanceQueue() }

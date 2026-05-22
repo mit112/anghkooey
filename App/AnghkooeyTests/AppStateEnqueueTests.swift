@@ -81,4 +81,28 @@ struct AppStateEnqueueTests {
         let third = try #require(sut2.presentedDraft)
         #expect(third.draft.question == "Q3")
     }
+
+    // MARK: acceptDraft_persistsCardToStore
+
+    @Test("acceptDraft persists the accepted draft to cardStore")
+    func acceptDraft_persistsCardToStore() async throws {
+        let draft = CardDraft(question: "What is 2+2?", answer: "4")
+        let mockAuthor = MockCardAuthoringService(drafts: [draft])
+        let mockStore = MockCardStore()
+        let sut = AppState(cardAuthor: mockAuthor, cardStore: mockStore)
+
+        await sut.enqueue(resolvedText: "2+2=4")
+        _ = try #require(sut.presentedDraft)
+
+        sut.acceptDraft()
+
+        // Yield so the Task inside acceptDraft has a chance to run.
+        await Task.yield()
+        await Task.yield()
+
+        #expect(mockStore.cards.count == 1)
+        #expect(mockStore.cards.first?.question == "What is 2+2?")
+        #expect(mockStore.cards.first?.answer == "4")
+        #expect(sut.presentedDraft == nil)
+    }
 }
