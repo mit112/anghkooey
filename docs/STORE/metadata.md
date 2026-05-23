@@ -66,9 +66,9 @@ First release. Capture text or photos from any app, let on-device AI draft flash
 
 ## Support & Legal
 
-**Support URL:** `[TBD — needs a support page; use GitHub Issues URL until launch site exists]`  
-**Marketing URL:** `[TBD]`  
-**Privacy Policy URL:** `[TBD — required for App Store submission; must be live before submitting]`
+**Support URL:** `https://github.com/mit112/anghkooey/issues`  
+**Marketing URL:** `[TBD — add after launch site exists]`  
+**Privacy Policy URL:** `https://raw.githubusercontent.com/mit112/anghkooey/main/docs/STORE/PRIVACY_POLICY.md` (raw GitHub URL — acceptable for App Store; or use GitHub Pages once configured)
 
 ---
 
