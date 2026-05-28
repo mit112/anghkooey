@@ -33,6 +33,8 @@
 		II006II006II006II006II06 /* AnghkooeyShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = II007II007II007II007II07 /* AnghkooeyShortcuts.swift */; };
 		II004II004II004II004II04 /* AddToAnghkooeyIntentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = II003II003II003II003II03 /* AddToAnghkooeyIntentTests.swift */; };
 		CC004CC004CC004CC004CC04 /* ClipboardCaptureCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC003CC003CC003CC003CC03 /* ClipboardCaptureCoordinatorTests.swift */; };
+		WW002WW002WW002WW002WW02 /* WidgetGradeReconciler.swift in Sources */ = {isa = PBXBuildFile; fileRef = WW001WW001WW001WW001WW01 /* WidgetGradeReconciler.swift */; };
+		WW004WW004WW004WW004WW04 /* GradeReconciliationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = WW003WW003WW003WW003WW03 /* GradeReconciliationTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -97,6 +99,8 @@
 		II007II007II007II007II07 /* AnghkooeyShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnghkooeyShortcuts.swift; sourceTree = "<group>"; };
 		II003II003II003II003II03 /* AddToAnghkooeyIntentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddToAnghkooeyIntentTests.swift; sourceTree = "<group>"; };
 		CC003CC003CC003CC003CC03 /* ClipboardCaptureCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardCaptureCoordinatorTests.swift; sourceTree = "<group>"; };
+		WW001WW001WW001WW001WW01 /* WidgetGradeReconciler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetGradeReconciler.swift; sourceTree = "<group>"; };
+		WW003WW003WW003WW003WW03 /* GradeReconciliationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradeReconciliationTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -150,6 +154,7 @@
 				5BC74FCA67847F9D7EE391AA /* FreezeController.swift */,
 				DC86FF464394DC7B8C2BA50D /* MetricsReceiver.swift */,
 				473B3A4650CFC7C87202D922 /* SettingsView.swift */,
+				WW001WW001WW001WW001WW01 /* WidgetGradeReconciler.swift */,
 				CC005CC005CC005CC005CC05 /* Clipboard */,
 				II005II005II005II005II05 /* Intents */,
 			);
@@ -198,6 +203,7 @@
 				BB0001AA00001BB0001AA000 /* ReviewTapLatencyTests.swift */,
 				CC003CC003CC003CC003CC03 /* ClipboardCaptureCoordinatorTests.swift */,
 				II003II003II003II003II03 /* AddToAnghkooeyIntentTests.swift */,
+				WW003WW003WW003WW003WW03 /* GradeReconciliationTests.swift */,
 			);
 			path = AnghkooeyTests;
 			sourceTree = "<group>";
@@ -366,6 +372,7 @@
 				CC006CC006CC006CC006CC06 /* ClipboardBanner.swift in Sources */,
 				II002II002II002II002II02 /* AddToAnghkooeyIntent.swift in Sources */,
 					II006II006II006II006II06 /* AnghkooeyShortcuts.swift in Sources */,
+				WW002WW002WW002WW002WW02 /* WidgetGradeReconciler.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -380,6 +387,7 @@
 				BB0001AA00001BB0001AA001 /* ReviewTapLatencyTests.swift in Sources */,
 				CC004CC004CC004CC004CC04 /* ClipboardCaptureCoordinatorTests.swift in Sources */,
 				II004II004II004II004II04 /* AddToAnghkooeyIntentTests.swift in Sources */,
+				WW004WW004WW004WW004WW04 /* GradeReconciliationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

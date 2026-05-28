@@ -59,6 +59,7 @@ final class AppState: @unchecked Sendable {
     private let bridge: DrainerBridge
     private var notificationToken: InboxNotificationToken?
     private let cardAuthor: any CardAuthoringService
+    private let widgetReconciler: WidgetGradeReconciler
 
     // Tracks the "card-review-sheet-ready" signpost interval: begun when a
     // draft is assigned to `presentedDraft`, ended on the sheet's onAppear.
@@ -85,6 +86,10 @@ final class AppState: @unchecked Sendable {
         )
         self.bridge = bridge
         self.drainer = drainer
+        self.widgetReconciler = WidgetGradeReconciler(
+            store: cardStore,
+            bridge: WidgetBridge(containerURL: containerURL)
+        )
 
         // All stored properties are initialized above; self is available.
         bridge.appState = self
@@ -100,6 +105,7 @@ final class AppState: @unchecked Sendable {
 
     func drain() async {
         await drainer.drain()
+        try? await widgetReconciler.reconcile()
     }
 
     // MARK: Sheet queue
@@ -118,6 +124,7 @@ final class AppState: @unchecked Sendable {
                 tags: tags,
                 now: .now
             )
+            try? await widgetReconciler.rewriteSnapshot()
         }
         NotificationCenter.default.post(name: .anghkooeyCardAccepted, object: nil)
     }
