@@ -27,6 +27,7 @@
 		93480E87954897996FA51298 /* WidgetGradeReconciler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05AE6CEC6D1FBAFFB4F9F656 /* WidgetGradeReconciler.swift */; };
 		9E7D95BB2127525A1D3BD776 /* AddToAnghkooeyIntentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 912B355EF6B2C114C9EC763F /* AddToAnghkooeyIntentTests.swift */; };
 		A05524AC1F7FA8D8F1C2D24D /* GradeCardIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58DC8A89BB756CFDD147D74E /* GradeCardIntent.swift */; };
+		A1161DD57B95A46494E6EEFA /* AnkiImporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AD794AD57F5F37BC67AAB49 /* AnkiImporterTests.swift */; };
 		A7AE1592FEEDA52EA1AD8284 /* AnghkooeyShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 0A037B8F43852214FC842CDF /* AnghkooeyShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		ABB53006BD7A54F597BA4FAE /* sample.apkg in Resources */ = {isa = PBXBuildFile; fileRef = 1984AFE61E092F2A64C6836E /* sample.apkg */; };
 		AE10CC0370F7C76BD262A2C7 /* AnkiPackageParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C32F9A6C7C0C292DE3ED8B1C /* AnkiPackageParserTests.swift */; };
@@ -99,6 +100,7 @@
 		1CD36BC6DD0A3A1B128803A5 /* AnghkooeyWidget-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "AnghkooeyWidget-Info.plist"; sourceTree = "<group>"; };
 		2343F02E0386139B64E683EC /* AnghkooeyWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnghkooeyWidgetBundle.swift; sourceTree = "<group>"; };
 		2542710C06ECE7EB817FF4F8 /* SyncPreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncPreference.swift; sourceTree = "<group>"; };
+		2AD794AD57F5F37BC67AAB49 /* AnkiImporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnkiImporterTests.swift; sourceTree = "<group>"; };
 		473B3A4650CFC7C87202D922 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		55F0F922386EE72B02D5FC3F /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		58DC8A89BB756CFDD147D74E /* GradeCardIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradeCardIntent.swift; sourceTree = "<group>"; };
@@ -270,6 +272,7 @@
 			isa = PBXGroup;
 			children = (
 				912B355EF6B2C114C9EC763F /* AddToAnghkooeyIntentTests.swift */,
+				2AD794AD57F5F37BC67AAB49 /* AnkiImporterTests.swift */,
 				9649E9840BC5BA0D460B7FAA /* AnkiNoteMapperTests.swift */,
 				C32F9A6C7C0C292DE3ED8B1C /* AnkiPackageParserTests.swift */,
 				DC510E7B9D8F52E50E4CCED4 /* AppStateEnqueueTests.swift */,
@@ -501,6 +504,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9E7D95BB2127525A1D3BD776 /* AddToAnghkooeyIntentTests.swift in Sources */,
+				A1161DD57B95A46494E6EEFA /* AnkiImporterTests.swift in Sources */,
 				C6CE3B6A74FF27E6CCA0C154 /* AnkiNoteMapperTests.swift in Sources */,
 				AE10CC0370F7C76BD262A2C7 /* AnkiPackageParserTests.swift in Sources */,
 				EA01604E660F4F05E86D4778 /* AppStateEnqueueTests.swift in Sources */,
