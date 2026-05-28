@@ -13,8 +13,15 @@ enum SyncPreference {
     }
 
     static var syncMode: SyncMode {
-        isEnabled
+        // Simulator never has a provisioned CloudKit container, so always use
+        // local mode regardless of the preference flag. CloudKit sync only
+        // activates on a physically signed device build.
+        #if targetEnvironment(simulator)
+        return .local
+        #else
+        return isEnabled
             ? .cloudKit(containerID: AnghkooeyModelContainer.cloudKitContainerID)
             : .local
+        #endif
     }
 }

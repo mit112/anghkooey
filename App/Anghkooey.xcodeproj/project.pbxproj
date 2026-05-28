@@ -7,11 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		14E38B10D19724BE8F36280F /* SyncPreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2542710C06ECE7EB817FF4F8 /* SyncPreference.swift */; };
 		1C5681F0A24B3964F71E900E /* FreezeControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAD05419FDB54EF847E4F217 /* FreezeControllerTests.swift */; };
 		23EB4719C6CDE2DF3A10FDB7 /* MetricsReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC86FF464394DC7B8C2BA50D /* MetricsReceiver.swift */; };
 		258EF0D8985B6D4FF200A34B /* MetricsReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6170637242A7E485A643F715 /* MetricsReceiverTests.swift */; };
 		271C36775D979860DD5D761D /* AnghkooeyWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2343F02E0386139B64E683EC /* AnghkooeyWidgetBundle.swift */; };
-		4832ED59329E481B8F652EFE /* GradeCardIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7F1E411DC3461AA906AED6 /* GradeCardIntent.swift */; };
 		2D9E9B81761E8255480D8A34 /* AnghkooeyCore in Frameworks */ = {isa = PBXBuildFile; productRef = 810E677AFD18B25DCE67D6AF /* AnghkooeyCore */; };
 		3C69A02A96CDAEB8DFFB0534 /* CardReviewSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E8F3B74ABF8A6FBD7019DB2 /* CardReviewSheet.swift */; };
 		46A0E6A0C20AE8578112E927 /* AnghkooeyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6303924A04882FA4C900557B /* AnghkooeyApp.swift */; };
@@ -24,11 +24,11 @@
 		90186F0B4C28883634834192 /* AnghkooeyWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 5F576AE7AD31EBF6528DAC56 /* AnghkooeyWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		93480E87954897996FA51298 /* WidgetGradeReconciler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05AE6CEC6D1FBAFFB4F9F656 /* WidgetGradeReconciler.swift */; };
 		9E7D95BB2127525A1D3BD776 /* AddToAnghkooeyIntentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 912B355EF6B2C114C9EC763F /* AddToAnghkooeyIntentTests.swift */; };
+		A05524AC1F7FA8D8F1C2D24D /* GradeCardIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58DC8A89BB756CFDD147D74E /* GradeCardIntent.swift */; };
 		A7AE1592FEEDA52EA1AD8284 /* AnghkooeyShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 0A037B8F43852214FC842CDF /* AnghkooeyShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		AE2B092616BDC257E899D84C /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A6AE21F57389F2FA533F696 /* ShareViewController.swift */; };
 		BB5809147A8AC7D33F6E8A41 /* AnghkooeyCore in Frameworks */ = {isa = PBXBuildFile; productRef = 6050CC9AE2B0A888BBACD0E2 /* AnghkooeyCore */; };
 		BD158D82F31B74D299DF85F8 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E3ED969F4ECE89B0A25E87 /* ContentView.swift */; };
-		A1B2C3D4E5F6A7B8C9D0E1F2 /* SyncPreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2E1D0C9B8A7F6E5D4C3B2A1 /* SyncPreference.swift */; };
 		D3617197E24653996EEF5832 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 473B3A4650CFC7C87202D922 /* SettingsView.swift */; };
 		D4C6DC87B925B0639F76684A /* FreezeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC74FCA67847F9D7EE391AA /* FreezeController.swift */; };
 		D6002CEE061540D958B46B78 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55F0F922386EE72B02D5FC3F /* AppState.swift */; };
@@ -91,9 +91,10 @@
 		0A037B8F43852214FC842CDF /* AnghkooeyShare.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = AnghkooeyShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		1CD36BC6DD0A3A1B128803A5 /* AnghkooeyWidget-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "AnghkooeyWidget-Info.plist"; sourceTree = "<group>"; };
 		2343F02E0386139B64E683EC /* AnghkooeyWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnghkooeyWidgetBundle.swift; sourceTree = "<group>"; };
-		4F7F1E411DC3461AA906AED6 /* GradeCardIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradeCardIntent.swift; sourceTree = "<group>"; };
+		2542710C06ECE7EB817FF4F8 /* SyncPreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncPreference.swift; sourceTree = "<group>"; };
 		473B3A4650CFC7C87202D922 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		55F0F922386EE72B02D5FC3F /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		58DC8A89BB756CFDD147D74E /* GradeCardIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradeCardIntent.swift; sourceTree = "<group>"; };
 		5A6AE21F57389F2FA533F696 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		5BC74FCA67847F9D7EE391AA /* FreezeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreezeController.swift; sourceTree = "<group>"; };
 		5ED5054838A0E774E245236E /* ClipboardCaptureCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardCaptureCoordinator.swift; sourceTree = "<group>"; };
@@ -105,7 +106,6 @@
 		718E27D7320553CBB6BCA62A /* AnghkooeyShare.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AnghkooeyShare.entitlements; sourceTree = "<group>"; };
 		7E8F3B74ABF8A6FBD7019DB2 /* CardReviewSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardReviewSheet.swift; sourceTree = "<group>"; };
 		80E3ED969F4ECE89B0A25E87 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		F2E1D0C9B8A7F6E5D4C3B2A1 /* SyncPreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncPreference.swift; sourceTree = "<group>"; };
 		83CE7E31BDF48A8B35196DB6 /* AnghkooeyUI */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AnghkooeyUI; path = ../Packages/AnghkooeyUI; sourceTree = SOURCE_ROOT; };
 		8C501104D1E6F49E2BFB6FE8 /* ReviewTapLatencyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewTapLatencyTests.swift; sourceTree = "<group>"; };
 		912B355EF6B2C114C9EC763F /* AddToAnghkooeyIntentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddToAnghkooeyIntentTests.swift; sourceTree = "<group>"; };
@@ -179,10 +179,10 @@
 				55F0F922386EE72B02D5FC3F /* AppState.swift */,
 				7E8F3B74ABF8A6FBD7019DB2 /* CardReviewSheet.swift */,
 				80E3ED969F4ECE89B0A25E87 /* ContentView.swift */,
-				F2E1D0C9B8A7F6E5D4C3B2A1 /* SyncPreference.swift */,
 				5BC74FCA67847F9D7EE391AA /* FreezeController.swift */,
 				DC86FF464394DC7B8C2BA50D /* MetricsReceiver.swift */,
 				473B3A4650CFC7C87202D922 /* SettingsView.swift */,
+				2542710C06ECE7EB817FF4F8 /* SyncPreference.swift */,
 				05AE6CEC6D1FBAFFB4F9F656 /* WidgetGradeReconciler.swift */,
 				F699C42103F2BC786D197A19 /* Clipboard */,
 				6E8482196AA783E060A44A5F /* Intents */,
@@ -229,7 +229,7 @@
 				1CD36BC6DD0A3A1B128803A5 /* AnghkooeyWidget-Info.plist */,
 				098D0C5450147DE402DC643A /* AnghkooeyWidget.entitlements */,
 				2343F02E0386139B64E683EC /* AnghkooeyWidgetBundle.swift */,
-				4F7F1E411DC3461AA906AED6 /* GradeCardIntent.swift */,
+				58DC8A89BB756CFDD147D74E /* GradeCardIntent.swift */,
 				AA000001000000000000AA03 /* PrivacyInfo.xcprivacy */,
 			);
 			path = AnghkooeyWidget;
@@ -278,8 +278,8 @@
 			buildConfigurationList = 67CA97998EAF96096A215C7E /* Build configuration list for PBXNativeTarget "Anghkooey" */;
 			buildPhases = (
 				86F48F1F9CC0C93AC8355A3A /* Sources */,
-				F917D06412004FAA2CDCEB46 /* Frameworks */,
 				AA000001000000000000CC01 /* Resources */,
+				F917D06412004FAA2CDCEB46 /* Frameworks */,
 				C101D8F13C1F879865AD4379 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
@@ -301,8 +301,8 @@
 			buildConfigurationList = 4A9D7227AEBE21B9A7D1499D /* Build configuration list for PBXNativeTarget "AnghkooeyWidget" */;
 			buildPhases = (
 				A5916AC2634611C961D45B6E /* Sources */,
-				FDDC6AE7EA9F2F67E5237851 /* Frameworks */,
 				AA000001000000000000CC03 /* Resources */,
+				FDDC6AE7EA9F2F67E5237851 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -321,8 +321,8 @@
 			buildConfigurationList = 14CE601DF7EC1B9392209659 /* Build configuration list for PBXNativeTarget "AnghkooeyShare" */;
 			buildPhases = (
 				AE8C7FE4FFFAB2EF0393B4DC /* Sources */,
-				ECD9F8F6385B28F86CD116B5 /* Frameworks */,
 				AA000001000000000000CC02 /* Resources */,
+				ECD9F8F6385B28F86CD116B5 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -420,10 +420,10 @@
 				DEEF868DF6F4C88CCE3C7571 /* ClipboardBanner.swift in Sources */,
 				F0E1C867C58E5B0E8205FA7F /* ClipboardCaptureCoordinator.swift in Sources */,
 				BD158D82F31B74D299DF85F8 /* ContentView.swift in Sources */,
-				A1B2C3D4E5F6A7B8C9D0E1F2 /* SyncPreference.swift in Sources */,
 				D4C6DC87B925B0639F76684A /* FreezeController.swift in Sources */,
 				23EB4719C6CDE2DF3A10FDB7 /* MetricsReceiver.swift in Sources */,
 				D3617197E24653996EEF5832 /* SettingsView.swift in Sources */,
+				14E38B10D19724BE8F36280F /* SyncPreference.swift in Sources */,
 				93480E87954897996FA51298 /* WidgetGradeReconciler.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -448,7 +448,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				271C36775D979860DD5D761D /* AnghkooeyWidgetBundle.swift in Sources */,
-				4832ED59329E481B8F652EFE /* GradeCardIntent.swift in Sources */,
+				A05524AC1F7FA8D8F1C2D24D /* GradeCardIntent.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

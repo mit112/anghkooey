@@ -1,5 +1,9 @@
 name: Anghkooey
 options:
+  # CloudKit container (Lane C2 / ADR-0011): iCloud.com.mitsheth.anghkooey
+  # Declared in App/Anghkooey/Anghkooey.entitlements; referenced by
+  # AnghkooeyModelContainer.cloudKitContainerID. Provision in the Apple
+  # Developer portal (CloudKit Dashboard) before archiving with sync enabled.
   bundleIdPrefix: com.mitsheth
   deploymentTarget:
     iOS: "26.0"

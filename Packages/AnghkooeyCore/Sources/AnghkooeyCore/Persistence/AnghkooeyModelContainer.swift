@@ -58,8 +58,16 @@ public enum AnghkooeyModelContainer {
         let configuration: ModelConfiguration
         switch syncMode {
         case .local:
-            configuration = url.map { ModelConfiguration(schema: schema, url: $0) }
-                ?? ModelConfiguration(schema: schema)
+            // Pass cloudKitDatabase: .none explicitly. On iOS 26, when the app
+            // entitlements file declares icloud-container-identifiers, SwiftData
+            // auto-enables CloudKit mirroring on the default ModelConfiguration,
+            // which then fails schema validation (all attributes must be optional).
+            // The explicit .none opt-out suppresses this auto-detection.
+            if let url {
+                configuration = ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none)
+            } else {
+                configuration = ModelConfiguration(schema: schema, cloudKitDatabase: .none)
+            }
         case .cloudKit(let containerID):
             configuration = ModelConfiguration(
                 schema: schema,
