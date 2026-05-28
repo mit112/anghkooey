@@ -29,6 +29,8 @@ targets:
       - package: AnghkooeyUI
       - target: AnghkooeyShare
         embed: true
+      - target: AnghkooeyWidget
+        embed: true
     sources:
       - path: Anghkooey
         excludes:
@@ -88,6 +90,34 @@ targets:
         CODE_SIGN_STYLE: Manual
         CODE_SIGN_ENTITLEMENTS: AnghkooeyShare/AnghkooeyShare.entitlements
 
+  AnghkooeyWidget:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "26.0"
+    dependencies:
+      - package: AnghkooeyCore
+    sources:
+      - path: AnghkooeyWidget
+        excludes:
+          - "**/*.xcprivacy"
+    resources:
+      # Same xcodegen fragility as main app: verify PrivacyInfo.xcprivacy appears in
+      # PBXResourcesBuildPhase after every `make generate`.
+      # Run: grep -c "AnghkooeyWidget/PrivacyInfo" App/Anghkooey.xcodeproj/project.pbxproj
+      # Expected count: 4 (PBXBuildFile, PBXFileReference, PBXGroup, PBXResourcesBuildPhase)
+      - AnghkooeyWidget/PrivacyInfo.xcprivacy
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mitsheth.anghkooey.widget
+        SWIFT_VERSION: "6.0"
+        SWIFT_STRICT_CONCURRENCY: complete
+        IPHONEOS_DEPLOYMENT_TARGET: "26.0"
+        INFOPLIST_FILE: AnghkooeyWidget/AnghkooeyWidget-Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_ENTITLEMENTS: AnghkooeyWidget/AnghkooeyWidget.entitlements
+
   AnghkooeyTests:
     type: bundle.unit-test
     platform: iOS
@@ -114,6 +144,15 @@ schemes:
     build:
       targets:
         AnghkooeyShare: all
+    run:
+      config: Debug
+    archive:
+      config: Release
+
+  AnghkooeyWidget:
+    build:
+      targets:
+        AnghkooeyWidget: all
     run:
       config: Debug
     archive:

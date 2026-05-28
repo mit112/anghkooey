@@ -10,13 +10,19 @@
 		1C5681F0A24B3964F71E900E /* FreezeControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAD05419FDB54EF847E4F217 /* FreezeControllerTests.swift */; };
 		23EB4719C6CDE2DF3A10FDB7 /* MetricsReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC86FF464394DC7B8C2BA50D /* MetricsReceiver.swift */; };
 		258EF0D8985B6D4FF200A34B /* MetricsReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6170637242A7E485A643F715 /* MetricsReceiverTests.swift */; };
+		271C36775D979860DD5D761D /* AnghkooeyWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2343F02E0386139B64E683EC /* AnghkooeyWidgetBundle.swift */; };
 		2D9E9B81761E8255480D8A34 /* AnghkooeyCore in Frameworks */ = {isa = PBXBuildFile; productRef = 810E677AFD18B25DCE67D6AF /* AnghkooeyCore */; };
 		3C69A02A96CDAEB8DFFB0534 /* CardReviewSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E8F3B74ABF8A6FBD7019DB2 /* CardReviewSheet.swift */; };
 		46A0E6A0C20AE8578112E927 /* AnghkooeyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6303924A04882FA4C900557B /* AnghkooeyApp.swift */; };
+		4931BB4B44A1D49822A5597C /* ReviewTapLatencyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C501104D1E6F49E2BFB6FE8 /* ReviewTapLatencyTests.swift */; };
+		5DAF33FB9439E111699C5B6D /* AnghkooeyCore in Frameworks */ = {isa = PBXBuildFile; productRef = DE9B9BE76EB0B805AB5D80E9 /* AnghkooeyCore */; };
 		65C5300478257265174ECB34 /* AnghkooeyUI in Frameworks */ = {isa = PBXBuildFile; productRef = 35F7FD1699C5DB4B94EEF7ED /* AnghkooeyUI */; };
 		6E2B75EF1D532905ED043B04 /* AnghkooeyIntelligence in Frameworks */ = {isa = PBXBuildFile; productRef = E463D25A57483D22C74E098F /* AnghkooeyIntelligence */; };
+		8047F56DEDEDE4CC45B33655 /* AddToAnghkooeyIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92BD2E303E0D0DE839C3B7E /* AddToAnghkooeyIntent.swift */; };
 		838F434C0E47994FB38A3774 /* ReviewSessionMnemonicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFF0371E042B2726F73268FF /* ReviewSessionMnemonicTests.swift */; };
-		BB0001AA00001BB0001AA001 /* ReviewTapLatencyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0001AA00001BB0001AA000 /* ReviewTapLatencyTests.swift */; };
+		90186F0B4C28883634834192 /* AnghkooeyWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 5F576AE7AD31EBF6528DAC56 /* AnghkooeyWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		93480E87954897996FA51298 /* WidgetGradeReconciler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05AE6CEC6D1FBAFFB4F9F656 /* WidgetGradeReconciler.swift */; };
+		9E7D95BB2127525A1D3BD776 /* AddToAnghkooeyIntentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 912B355EF6B2C114C9EC763F /* AddToAnghkooeyIntentTests.swift */; };
 		A7AE1592FEEDA52EA1AD8284 /* AnghkooeyShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 0A037B8F43852214FC842CDF /* AnghkooeyShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		AE2B092616BDC257E899D84C /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A6AE21F57389F2FA533F696 /* ShareViewController.swift */; };
 		BB5809147A8AC7D33F6E8A41 /* AnghkooeyCore in Frameworks */ = {isa = PBXBuildFile; productRef = 6050CC9AE2B0A888BBACD0E2 /* AnghkooeyCore */; };
@@ -24,17 +30,15 @@
 		D3617197E24653996EEF5832 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 473B3A4650CFC7C87202D922 /* SettingsView.swift */; };
 		D4C6DC87B925B0639F76684A /* FreezeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC74FCA67847F9D7EE391AA /* FreezeController.swift */; };
 		D6002CEE061540D958B46B78 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55F0F922386EE72B02D5FC3F /* AppState.swift */; };
+		D65B97A8CF3D2E004B70EA7B /* GradeReconciliationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4CD4A2A610E1C7AE3424E2A /* GradeReconciliationTests.swift */; };
+		DEEF868DF6F4C88CCE3C7571 /* ClipboardBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA7D84144C067F4521BC0B97 /* ClipboardBanner.swift */; };
 		EA01604E660F4F05E86D4778 /* AppStateEnqueueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC510E7B9D8F52E50E4CCED4 /* AppStateEnqueueTests.swift */; };
-		AA000003AA000003AA000003 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA000001AA000001AA000001 /* PrivacyInfo.xcprivacy */; };
-		AA000004AA000004AA000004 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA000002AA000002AA000002 /* PrivacyInfo.xcprivacy */; };
-		CC002CC002CC002CC002CC02 /* ClipboardCaptureCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC001CC001CC001CC001CC01 /* ClipboardCaptureCoordinator.swift */; };
-		CC006CC006CC006CC006CC06 /* ClipboardBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC007CC007CC007CC007CC07 /* ClipboardBanner.swift */; };
-		II002II002II002II002II02 /* AddToAnghkooeyIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = II001II001II001II001II01 /* AddToAnghkooeyIntent.swift */; };
-		II006II006II006II006II06 /* AnghkooeyShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = II007II007II007II007II07 /* AnghkooeyShortcuts.swift */; };
-		II004II004II004II004II04 /* AddToAnghkooeyIntentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = II003II003II003II003II03 /* AddToAnghkooeyIntentTests.swift */; };
-		CC004CC004CC004CC004CC04 /* ClipboardCaptureCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC003CC003CC003CC003CC03 /* ClipboardCaptureCoordinatorTests.swift */; };
-		WW002WW002WW002WW002WW02 /* WidgetGradeReconciler.swift in Sources */ = {isa = PBXBuildFile; fileRef = WW001WW001WW001WW001WW01 /* WidgetGradeReconciler.swift */; };
-		WW004WW004WW004WW004WW04 /* GradeReconciliationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = WW003WW003WW003WW003WW03 /* GradeReconciliationTests.swift */; };
+		F0E1C867C58E5B0E8205FA7F /* ClipboardCaptureCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ED5054838A0E774E245236E /* ClipboardCaptureCoordinator.swift */; };
+		FC26B2EE4475B376727E2BE2 /* AnghkooeyShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68C7356437F150F3733DF0DD /* AnghkooeyShortcuts.swift */; };
+		FCB6CFEC88A0183CD60308F3 /* ClipboardCaptureCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A052FDB039D5DFD8BACF02A7 /* ClipboardCaptureCoordinatorTests.swift */; };
+		AA000001000000000000BB01 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA000001000000000000AA01 /* PrivacyInfo.xcprivacy */; };
+		AA000001000000000000BB02 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA000001000000000000AA02 /* PrivacyInfo.xcprivacy */; };
+		AA000001000000000000BB03 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA000001000000000000AA03 /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -52,6 +56,13 @@
 			remoteGlobalIDString = 02F92088487C152845F92C84;
 			remoteInfo = Anghkooey;
 		};
+		E3E9CAC090465783BA7AEF05 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 94D568656132B33BBE87E20A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5590F6898AB2844890005CC7;
+			remoteInfo = AnghkooeyWidget;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -62,6 +73,7 @@
 			dstSubfolderSpec = 13;
 			files = (
 				A7AE1592FEEDA52EA1AD8284 /* AnghkooeyShare.appex in Embed Foundation Extensions */,
+				90186F0B4C28883634834192 /* AnghkooeyWidget.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -71,36 +83,41 @@
 /* Begin PBXFileReference section */
 		039A95E01BFF83BC28BA6F22 /* AnghkooeyIntelligence */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AnghkooeyIntelligence; path = ../Packages/AnghkooeyIntelligence; sourceTree = SOURCE_ROOT; };
 		03D1365FE0607DDE7DDF97F8 /* AnghkooeyTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = AnghkooeyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		05AE6CEC6D1FBAFFB4F9F656 /* WidgetGradeReconciler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetGradeReconciler.swift; sourceTree = "<group>"; };
 		071F54EC6FF668936C218728 /* AnghkooeyCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AnghkooeyCore; path = ../Packages/AnghkooeyCore; sourceTree = SOURCE_ROOT; };
+		098D0C5450147DE402DC643A /* AnghkooeyWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AnghkooeyWidget.entitlements; sourceTree = "<group>"; };
 		0A037B8F43852214FC842CDF /* AnghkooeyShare.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = AnghkooeyShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		1CD36BC6DD0A3A1B128803A5 /* AnghkooeyWidget-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "AnghkooeyWidget-Info.plist"; sourceTree = "<group>"; };
+		2343F02E0386139B64E683EC /* AnghkooeyWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnghkooeyWidgetBundle.swift; sourceTree = "<group>"; };
 		473B3A4650CFC7C87202D922 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		55F0F922386EE72B02D5FC3F /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		5A6AE21F57389F2FA533F696 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		5BC74FCA67847F9D7EE391AA /* FreezeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreezeController.swift; sourceTree = "<group>"; };
+		5ED5054838A0E774E245236E /* ClipboardCaptureCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardCaptureCoordinator.swift; sourceTree = "<group>"; };
+		5F576AE7AD31EBF6528DAC56 /* AnghkooeyWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = AnghkooeyWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		6170637242A7E485A643F715 /* MetricsReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsReceiverTests.swift; sourceTree = "<group>"; };
 		6303924A04882FA4C900557B /* AnghkooeyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnghkooeyApp.swift; sourceTree = "<group>"; };
+		68C7356437F150F3733DF0DD /* AnghkooeyShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnghkooeyShortcuts.swift; sourceTree = "<group>"; };
 		712E1AED1C075F0AAC8CF0CA /* AnghkooeyShare-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "AnghkooeyShare-Info.plist"; sourceTree = "<group>"; };
 		718E27D7320553CBB6BCA62A /* AnghkooeyShare.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AnghkooeyShare.entitlements; sourceTree = "<group>"; };
 		7E8F3B74ABF8A6FBD7019DB2 /* CardReviewSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardReviewSheet.swift; sourceTree = "<group>"; };
 		80E3ED969F4ECE89B0A25E87 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		83CE7E31BDF48A8B35196DB6 /* AnghkooeyUI */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AnghkooeyUI; path = ../Packages/AnghkooeyUI; sourceTree = SOURCE_ROOT; };
+		8C501104D1E6F49E2BFB6FE8 /* ReviewTapLatencyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewTapLatencyTests.swift; sourceTree = "<group>"; };
+		912B355EF6B2C114C9EC763F /* AddToAnghkooeyIntentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddToAnghkooeyIntentTests.swift; sourceTree = "<group>"; };
+		A052FDB039D5DFD8BACF02A7 /* ClipboardCaptureCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardCaptureCoordinatorTests.swift; sourceTree = "<group>"; };
 		A35276B7D331FB0334E9C818 /* Anghkooey.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Anghkooey.entitlements; sourceTree = "<group>"; };
+		A4CD4A2A610E1C7AE3424E2A /* GradeReconciliationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradeReconciliationTests.swift; sourceTree = "<group>"; };
+		BA7D84144C067F4521BC0B97 /* ClipboardBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardBanner.swift; sourceTree = "<group>"; };
 		BAD05419FDB54EF847E4F217 /* FreezeControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreezeControllerTests.swift; sourceTree = "<group>"; };
+		C92BD2E303E0D0DE839C3B7E /* AddToAnghkooeyIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddToAnghkooeyIntent.swift; sourceTree = "<group>"; };
 		DC510E7B9D8F52E50E4CCED4 /* AppStateEnqueueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateEnqueueTests.swift; sourceTree = "<group>"; };
 		DC86FF464394DC7B8C2BA50D /* MetricsReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsReceiver.swift; sourceTree = "<group>"; };
 		DFF0371E042B2726F73268FF /* ReviewSessionMnemonicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewSessionMnemonicTests.swift; sourceTree = "<group>"; };
-		BB0001AA00001BB0001AA000 /* ReviewTapLatencyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewTapLatencyTests.swift; sourceTree = "<group>"; };
 		EA63E5FA330602579BBE4E25 /* Anghkooey.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Anghkooey.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		AA000001AA000001AA000001 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = file.xcprivacy; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		AA000002AA000002AA000002 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = file.xcprivacy; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		CC001CC001CC001CC001CC01 /* ClipboardCaptureCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardCaptureCoordinator.swift; sourceTree = "<group>"; };
-		CC007CC007CC007CC007CC07 /* ClipboardBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardBanner.swift; sourceTree = "<group>"; };
-		II001II001II001II001II01 /* AddToAnghkooeyIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddToAnghkooeyIntent.swift; sourceTree = "<group>"; };
-		II007II007II007II007II07 /* AnghkooeyShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnghkooeyShortcuts.swift; sourceTree = "<group>"; };
-		II003II003II003II003II03 /* AddToAnghkooeyIntentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddToAnghkooeyIntentTests.swift; sourceTree = "<group>"; };
-		CC003CC003CC003CC003CC03 /* ClipboardCaptureCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardCaptureCoordinatorTests.swift; sourceTree = "<group>"; };
-		WW001WW001WW001WW001WW01 /* WidgetGradeReconciler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetGradeReconciler.swift; sourceTree = "<group>"; };
-		WW003WW003WW003WW003WW03 /* GradeReconciliationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradeReconciliationTests.swift; sourceTree = "<group>"; };
+		AA000001000000000000AA01 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		AA000001000000000000AA02 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		AA000001000000000000AA03 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -129,6 +146,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		FDDC6AE7EA9F2F67E5237851 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5DAF33FB9439E111699C5B6D /* AnghkooeyCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -146,7 +171,6 @@
 			isa = PBXGroup;
 			children = (
 				A35276B7D331FB0334E9C818 /* Anghkooey.entitlements */,
-			AA000001AA000001AA000001 /* PrivacyInfo.xcprivacy */,
 				6303924A04882FA4C900557B /* AnghkooeyApp.swift */,
 				55F0F922386EE72B02D5FC3F /* AppState.swift */,
 				7E8F3B74ABF8A6FBD7019DB2 /* CardReviewSheet.swift */,
@@ -154,11 +178,21 @@
 				5BC74FCA67847F9D7EE391AA /* FreezeController.swift */,
 				DC86FF464394DC7B8C2BA50D /* MetricsReceiver.swift */,
 				473B3A4650CFC7C87202D922 /* SettingsView.swift */,
-				WW001WW001WW001WW001WW01 /* WidgetGradeReconciler.swift */,
-				CC005CC005CC005CC005CC05 /* Clipboard */,
-				II005II005II005II005II05 /* Intents */,
+				05AE6CEC6D1FBAFFB4F9F656 /* WidgetGradeReconciler.swift */,
+				F699C42103F2BC786D197A19 /* Clipboard */,
+				6E8482196AA783E060A44A5F /* Intents */,
+				AA000001000000000000AA01 /* PrivacyInfo.xcprivacy */,
 			);
 			path = Anghkooey;
+			sourceTree = "<group>";
+		};
+		6E8482196AA783E060A44A5F /* Intents */ = {
+			isa = PBXGroup;
+			children = (
+				C92BD2E303E0D0DE839C3B7E /* AddToAnghkooeyIntent.swift */,
+				68C7356437F150F3733DF0DD /* AnghkooeyShortcuts.swift */,
+			);
+			path = Intents;
 			sourceTree = "<group>";
 		};
 		772CA5EFF1AF47C0CF8ADC88 /* Products */ = {
@@ -167,6 +201,7 @@
 				EA63E5FA330602579BBE4E25 /* Anghkooey.app */,
 				0A037B8F43852214FC842CDF /* AnghkooeyShare.appex */,
 				03D1365FE0607DDE7DDF97F8 /* AnghkooeyTests.xctest */,
+				5F576AE7AD31EBF6528DAC56 /* AnghkooeyWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -177,18 +212,30 @@
 				314911AE872155B4BC9640C8 /* Anghkooey */,
 				D64DD303F0A57D93C31498AD /* AnghkooeyShare */,
 				ECEC8715C7BB56CD7BC08C95 /* AnghkooeyTests */,
+				D041DCAC21E7E04BD0159945 /* AnghkooeyWidget */,
 				16D3A861B07EFD2F644BF73B /* Packages */,
 				772CA5EFF1AF47C0CF8ADC88 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		D041DCAC21E7E04BD0159945 /* AnghkooeyWidget */ = {
+			isa = PBXGroup;
+			children = (
+				1CD36BC6DD0A3A1B128803A5 /* AnghkooeyWidget-Info.plist */,
+				098D0C5450147DE402DC643A /* AnghkooeyWidget.entitlements */,
+				2343F02E0386139B64E683EC /* AnghkooeyWidgetBundle.swift */,
+				AA000001000000000000AA03 /* PrivacyInfo.xcprivacy */,
+			);
+			path = AnghkooeyWidget;
 			sourceTree = "<group>";
 		};
 		D64DD303F0A57D93C31498AD /* AnghkooeyShare */ = {
 			isa = PBXGroup;
 			children = (
 				712E1AED1C075F0AAC8CF0CA /* AnghkooeyShare-Info.plist */,
-			AA000002AA000002AA000002 /* PrivacyInfo.xcprivacy */,
 				718E27D7320553CBB6BCA62A /* AnghkooeyShare.entitlements */,
 				5A6AE21F57389F2FA533F696 /* ShareViewController.swift */,
+				AA000001000000000000AA02 /* PrivacyInfo.xcprivacy */,
 			);
 			path = AnghkooeyShare;
 			sourceTree = "<group>";
@@ -196,34 +243,25 @@
 		ECEC8715C7BB56CD7BC08C95 /* AnghkooeyTests */ = {
 			isa = PBXGroup;
 			children = (
+				912B355EF6B2C114C9EC763F /* AddToAnghkooeyIntentTests.swift */,
 				DC510E7B9D8F52E50E4CCED4 /* AppStateEnqueueTests.swift */,
+				A052FDB039D5DFD8BACF02A7 /* ClipboardCaptureCoordinatorTests.swift */,
 				BAD05419FDB54EF847E4F217 /* FreezeControllerTests.swift */,
+				A4CD4A2A610E1C7AE3424E2A /* GradeReconciliationTests.swift */,
 				6170637242A7E485A643F715 /* MetricsReceiverTests.swift */,
 				DFF0371E042B2726F73268FF /* ReviewSessionMnemonicTests.swift */,
-				BB0001AA00001BB0001AA000 /* ReviewTapLatencyTests.swift */,
-				CC003CC003CC003CC003CC03 /* ClipboardCaptureCoordinatorTests.swift */,
-				II003II003II003II003II03 /* AddToAnghkooeyIntentTests.swift */,
-				WW003WW003WW003WW003WW03 /* GradeReconciliationTests.swift */,
+				8C501104D1E6F49E2BFB6FE8 /* ReviewTapLatencyTests.swift */,
 			);
 			path = AnghkooeyTests;
 			sourceTree = "<group>";
 		};
-		CC005CC005CC005CC005CC05 /* Clipboard */ = {
+		F699C42103F2BC786D197A19 /* Clipboard */ = {
 			isa = PBXGroup;
 			children = (
-				CC001CC001CC001CC001CC01 /* ClipboardCaptureCoordinator.swift */,
-				CC007CC007CC007CC007CC07 /* ClipboardBanner.swift */,
+				BA7D84144C067F4521BC0B97 /* ClipboardBanner.swift */,
+				5ED5054838A0E774E245236E /* ClipboardCaptureCoordinator.swift */,
 			);
 			path = Clipboard;
-			sourceTree = "<group>";
-		};
-		II005II005II005II005II05 /* Intents */ = {
-			isa = PBXGroup;
-			children = (
-				II001II001II001II001II01 /* AddToAnghkooeyIntent.swift */,
-					II007II007II007II007II07 /* AnghkooeyShortcuts.swift */,
-			);
-			path = Intents;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -233,15 +271,16 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 67CA97998EAF96096A215C7E /* Build configuration list for PBXNativeTarget "Anghkooey" */;
 			buildPhases = (
-				AA000005AA000005AA000005 /* Resources */,
 				86F48F1F9CC0C93AC8355A3A /* Sources */,
 				F917D06412004FAA2CDCEB46 /* Frameworks */,
+				AA000001000000000000CC01 /* Resources */,
 				C101D8F13C1F879865AD4379 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				ACB84F2DA5F3F07C7A35A296 /* PBXTargetDependency */,
+				B421D46FAD71C89903028D34 /* PBXTargetDependency */,
 			);
 			name = Anghkooey;
 			packageProductDependencies = (
@@ -251,13 +290,33 @@
 			productReference = EA63E5FA330602579BBE4E25 /* Anghkooey.app */;
 			productType = "com.apple.product-type.application";
 		};
+		5590F6898AB2844890005CC7 /* AnghkooeyWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4A9D7227AEBE21B9A7D1499D /* Build configuration list for PBXNativeTarget "AnghkooeyWidget" */;
+			buildPhases = (
+				A5916AC2634611C961D45B6E /* Sources */,
+				FDDC6AE7EA9F2F67E5237851 /* Frameworks */,
+				AA000001000000000000CC03 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AnghkooeyWidget;
+			packageProductDependencies = (
+				DE9B9BE76EB0B805AB5D80E9 /* AnghkooeyCore */,
+			);
+			productName = AnghkooeyWidget;
+			productReference = 5F576AE7AD31EBF6528DAC56 /* AnghkooeyWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		7F720F6F21CF5127D7884289 /* AnghkooeyShare */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 14CE601DF7EC1B9392209659 /* Build configuration list for PBXNativeTarget "AnghkooeyShare" */;
 			buildPhases = (
-				AA000006AA000006AA000006 /* Resources */,
 				AE8C7FE4FFFAB2EF0393B4DC /* Sources */,
 				ECD9F8F6385B28F86CD116B5 /* Frameworks */,
+				AA000001000000000000CC02 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -304,6 +363,9 @@
 					02F92088487C152845F92C84 = {
 						ProvisioningStyle = Manual;
 					};
+					5590F6898AB2844890005CC7 = {
+						ProvisioningStyle = Manual;
+					};
 					7F720F6F21CF5127D7884289 = {
 						ProvisioningStyle = Manual;
 					};
@@ -334,45 +396,28 @@
 				02F92088487C152845F92C84 /* Anghkooey */,
 				7F720F6F21CF5127D7884289 /* AnghkooeyShare */,
 				C633685C3DE84BD0C1A8C9F8 /* AnghkooeyTests */,
+				5590F6898AB2844890005CC7 /* AnghkooeyWidget */,
 			);
 		};
 /* End PBXProject section */
 
-/* Begin PBXResourcesBuildPhase section */
-		AA000005AA000005AA000005 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				AA000003AA000003AA000003 /* PrivacyInfo.xcprivacy in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		AA000006AA000006AA000006 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				AA000004AA000004AA000004 /* PrivacyInfo.xcprivacy in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXResourcesBuildPhase section */
 /* Begin PBXSourcesBuildPhase section */
 		86F48F1F9CC0C93AC8355A3A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8047F56DEDEDE4CC45B33655 /* AddToAnghkooeyIntent.swift in Sources */,
 				46A0E6A0C20AE8578112E927 /* AnghkooeyApp.swift in Sources */,
+				FC26B2EE4475B376727E2BE2 /* AnghkooeyShortcuts.swift in Sources */,
 				D6002CEE061540D958B46B78 /* AppState.swift in Sources */,
 				3C69A02A96CDAEB8DFFB0534 /* CardReviewSheet.swift in Sources */,
+				DEEF868DF6F4C88CCE3C7571 /* ClipboardBanner.swift in Sources */,
+				F0E1C867C58E5B0E8205FA7F /* ClipboardCaptureCoordinator.swift in Sources */,
 				BD158D82F31B74D299DF85F8 /* ContentView.swift in Sources */,
 				D4C6DC87B925B0639F76684A /* FreezeController.swift in Sources */,
 				23EB4719C6CDE2DF3A10FDB7 /* MetricsReceiver.swift in Sources */,
 				D3617197E24653996EEF5832 /* SettingsView.swift in Sources */,
-				CC002CC002CC002CC002CC02 /* ClipboardCaptureCoordinator.swift in Sources */,
-				CC006CC006CC006CC006CC06 /* ClipboardBanner.swift in Sources */,
-				II002II002II002II002II02 /* AddToAnghkooeyIntent.swift in Sources */,
-					II006II006II006II006II06 /* AnghkooeyShortcuts.swift in Sources */,
-				WW002WW002WW002WW002WW02 /* WidgetGradeReconciler.swift in Sources */,
+				93480E87954897996FA51298 /* WidgetGradeReconciler.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -380,14 +425,22 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E7D95BB2127525A1D3BD776 /* AddToAnghkooeyIntentTests.swift in Sources */,
 				EA01604E660F4F05E86D4778 /* AppStateEnqueueTests.swift in Sources */,
+				FCB6CFEC88A0183CD60308F3 /* ClipboardCaptureCoordinatorTests.swift in Sources */,
 				1C5681F0A24B3964F71E900E /* FreezeControllerTests.swift in Sources */,
+				D65B97A8CF3D2E004B70EA7B /* GradeReconciliationTests.swift in Sources */,
 				258EF0D8985B6D4FF200A34B /* MetricsReceiverTests.swift in Sources */,
 				838F434C0E47994FB38A3774 /* ReviewSessionMnemonicTests.swift in Sources */,
-				BB0001AA00001BB0001AA001 /* ReviewTapLatencyTests.swift in Sources */,
-				CC004CC004CC004CC004CC04 /* ClipboardCaptureCoordinatorTests.swift in Sources */,
-				II004II004II004II004II04 /* AddToAnghkooeyIntentTests.swift in Sources */,
-				WW004WW004WW004WW004WW04 /* GradeReconciliationTests.swift in Sources */,
+				4931BB4B44A1D49822A5597C /* ReviewTapLatencyTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A5916AC2634611C961D45B6E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				271C36775D979860DD5D761D /* AnghkooeyWidgetBundle.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -400,6 +453,33 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+/* Begin PBXResourcesBuildPhase section */
+		AA000001000000000000CC01 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000001000000000000BB01 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA000001000000000000CC02 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000001000000000000BB02 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA000001000000000000CC03 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000001000000000000BB03 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 
 /* Begin PBXTargetDependency section */
 		54E9A725DFFB71C7A3159CC5 /* PBXTargetDependency */ = {
@@ -411,6 +491,11 @@
 			isa = PBXTargetDependency;
 			target = 7F720F6F21CF5127D7884289 /* AnghkooeyShare */;
 			targetProxy = 5E4306B26091E4AF36AF970E /* PBXContainerItemProxy */;
+		};
+		B421D46FAD71C89903028D34 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5590F6898AB2844890005CC7 /* AnghkooeyWidget */;
+			targetProxy = E3E9CAC090465783BA7AEF05 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -562,6 +647,50 @@
 			};
 			name = Debug;
 		};
+		BFB8A757FAA63EA38E0F9FDC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = AnghkooeyWidget/AnghkooeyWidget.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "AnghkooeyWidget/AnghkooeyWidget-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mitsheth.anghkooey.widget;
+				SDKROOT = iphoneos;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		D139D74A91A0FE8CA094F1B8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = AnghkooeyWidget/AnghkooeyWidget.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "AnghkooeyWidget/AnghkooeyWidget-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mitsheth.anghkooey.widget;
+				SDKROOT = iphoneos;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		E1A5E8779837DACD60AF1656 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -702,6 +831,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
+		4A9D7227AEBE21B9A7D1499D /* Build configuration list for PBXNativeTarget "AnghkooeyWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BFB8A757FAA63EA38E0F9FDC /* Debug */,
+				D139D74A91A0FE8CA094F1B8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		67CA97998EAF96096A215C7E /* Build configuration list for PBXNativeTarget "Anghkooey" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -738,6 +876,10 @@
 			productName = AnghkooeyCore;
 		};
 		810E677AFD18B25DCE67D6AF /* AnghkooeyCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AnghkooeyCore;
+		};
+		DE9B9BE76EB0B805AB5D80E9 /* AnghkooeyCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = AnghkooeyCore;
 		};
