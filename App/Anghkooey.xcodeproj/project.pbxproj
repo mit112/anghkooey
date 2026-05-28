@@ -27,6 +27,8 @@
 		EA01604E660F4F05E86D4778 /* AppStateEnqueueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC510E7B9D8F52E50E4CCED4 /* AppStateEnqueueTests.swift */; };
 		AA000003AA000003AA000003 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA000001AA000001AA000001 /* PrivacyInfo.xcprivacy */; };
 		AA000004AA000004AA000004 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA000002AA000002AA000002 /* PrivacyInfo.xcprivacy */; };
+		CC002CC002CC002CC002CC02 /* ClipboardCaptureCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC001CC001CC001CC001CC01 /* ClipboardCaptureCoordinator.swift */; };
+		CC004CC004CC004CC004CC04 /* ClipboardCaptureCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC003CC003CC003CC003CC03 /* ClipboardCaptureCoordinatorTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -85,6 +87,8 @@
 		EA63E5FA330602579BBE4E25 /* Anghkooey.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Anghkooey.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA000001AA000001AA000001 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = file.xcprivacy; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		AA000002AA000002AA000002 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = file.xcprivacy; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		CC001CC001CC001CC001CC01 /* ClipboardCaptureCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardCaptureCoordinator.swift; sourceTree = "<group>"; };
+		CC003CC003CC003CC003CC03 /* ClipboardCaptureCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardCaptureCoordinatorTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -138,6 +142,7 @@
 				5BC74FCA67847F9D7EE391AA /* FreezeController.swift */,
 				DC86FF464394DC7B8C2BA50D /* MetricsReceiver.swift */,
 				473B3A4650CFC7C87202D922 /* SettingsView.swift */,
+				CC005CC005CC005CC005CC05 /* Clipboard */,
 			);
 			path = Anghkooey;
 			sourceTree = "<group>";
@@ -182,8 +187,17 @@
 				6170637242A7E485A643F715 /* MetricsReceiverTests.swift */,
 				DFF0371E042B2726F73268FF /* ReviewSessionMnemonicTests.swift */,
 				BB0001AA00001BB0001AA000 /* ReviewTapLatencyTests.swift */,
+				CC003CC003CC003CC003CC03 /* ClipboardCaptureCoordinatorTests.swift */,
 			);
 			path = AnghkooeyTests;
+			sourceTree = "<group>";
+		};
+		CC005CC005CC005CC005CC05 /* Clipboard */ = {
+			isa = PBXGroup;
+			children = (
+				CC001CC001CC001CC001CC01 /* ClipboardCaptureCoordinator.swift */,
+			);
+			path = Clipboard;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -328,6 +342,7 @@
 				D4C6DC87B925B0639F76684A /* FreezeController.swift in Sources */,
 				23EB4719C6CDE2DF3A10FDB7 /* MetricsReceiver.swift in Sources */,
 				D3617197E24653996EEF5832 /* SettingsView.swift in Sources */,
+				CC002CC002CC002CC002CC02 /* ClipboardCaptureCoordinator.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -340,6 +355,7 @@
 				258EF0D8985B6D4FF200A34B /* MetricsReceiverTests.swift in Sources */,
 				838F434C0E47994FB38A3774 /* ReviewSessionMnemonicTests.swift in Sources */,
 				BB0001AA00001BB0001AA001 /* ReviewTapLatencyTests.swift in Sources */,
+				CC004CC004CC004CC004CC04 /* ClipboardCaptureCoordinatorTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
