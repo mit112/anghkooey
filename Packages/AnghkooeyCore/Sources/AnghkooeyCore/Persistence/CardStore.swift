@@ -179,6 +179,13 @@ public protocol CardStoreProtocol: Sendable {
     /// Passing an unknown `id` is a silent no-op.
     /// - Throws: `PersistenceError` on a SwiftData write failure.
     func updateMnemonic(id: UUID, mnemonic: String) async throws
+
+    /// Returns the number of cards whose `stability` is at or above `thresholdDays`.
+    ///
+    /// A card's stability (in days) represents how long FSRS predicts the user
+    /// will retain it; reaching the threshold is the project's definition of
+    /// long-term memory. The default threshold is `LTMConfig.defaultThresholdDays`.
+    func longTermMemoryCount(thresholdDays: Double) async throws -> Int
 }
 
 // MARK: - CardStoreProtocol backward-compat extensions
@@ -187,6 +194,15 @@ public extension CardStoreProtocol {
     /// Creates a card with no tags. Existing call sites compile without change.
     func create(question: String, answer: String, sourceSpan: String?, now: Date) async throws -> Card.Snapshot {
         try await create(question: question, answer: answer, sourceSpan: sourceSpan, tags: [], now: now)
+    }
+
+    /// Default implementation that fetches all cards and filters in memory.
+    ///
+    /// The `CardStore` actor overrides this with a `fetchCount` predicate for
+    /// efficiency. Mock and test implementations get this fallback for free.
+    func longTermMemoryCount(thresholdDays: Double = LTMConfig.defaultThresholdDays) async throws -> Int {
+        let all = try await allCards()
+        return LTMConfig.count(all, thresholdDays: thresholdDays)
     }
 }
 
@@ -346,6 +362,15 @@ public actor CardStore: CardStoreProtocol {
             modelContext.rollback()
             throw error
         }
+    }
+
+    public func longTermMemoryCount(thresholdDays: Double) async throws -> Int {
+        // Local binding required — #Predicate macro cannot capture a parameter
+        // directly; it must reference a local `let` in the enclosing scope.
+        let threshold = thresholdDays
+        let predicate = #Predicate<Card> { $0.stability >= threshold }
+        let descriptor = FetchDescriptor<Card>(predicate: predicate)
+        return try modelContext.fetchCount(descriptor)
     }
 }
 

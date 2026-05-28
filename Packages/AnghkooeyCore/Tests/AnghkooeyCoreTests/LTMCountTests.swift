@@ -56,3 +56,16 @@ struct LTMCountTests {
         #expect(LTMConfig.count(cards, thresholdDays: 21) == 2)
     }
 }
+
+@Suite("LTM count via store")
+@MainActor
+struct LTMStoreCountTests {
+
+    @Test("MockCardStore reports LTM count over threshold")
+    func mockStoreCounts() async throws {
+        let store = MockCardStore()
+        _ = try await store.create(question: "a", answer: "a", sourceSpan: nil, tags: [], now: .now)
+        let count = try await store.longTermMemoryCount(thresholdDays: 21)
+        #expect(count == 0) // a freshly-created card has stability 0
+    }
+}
