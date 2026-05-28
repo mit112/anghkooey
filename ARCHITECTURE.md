@@ -677,3 +677,20 @@ renders a non-intrusive `.safeAreaInset` banner. Accepting routes the text throu
 `AppState.enqueue(resolvedText:)` — the same path as Share Sheet / OCR. Never auto-inserts
 cards. Dismiss or accept marks the hash offered. `InMemoryOfferStore` allows pure-Swift
 test isolation without touching `UserDefaults`.
+
+---
+
+## v1.1 Lane I — AppIntents + Siri Capture
+
+**Date:** 2026-05-27
+**Status:** complete
+
+`AddToAnghkooeyIntent` (AppIntents) accepts a text parameter, writes it via
+`InboxWriter.write(text:sourceApp:"siri")` to the shared App Group inbox
+(`group.com.mitsheth.anghkooey`). On next foreground, the existing `InboxDrainer`
+authors flashcard drafts from it — identical to the Share Sheet path. No new
+entitlements required (App Group already present). `AnghkooeyShortcuts`
+(`AppShortcutsProvider`) donates 4 phrases including `\(.applicationName)` to
+Siri/Spotlight. Closes 2026 iOS skill gap #2 (AppIntents + Siri/Spotlight donation).
+All `static var` protocol witnesses use `nonisolated(unsafe)` for Swift 6
+strict-concurrency compliance.
