@@ -33,6 +33,7 @@
 		AE2B092616BDC257E899D84C /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A6AE21F57389F2FA533F696 /* ShareViewController.swift */; };
 		BB5809147A8AC7D33F6E8A41 /* AnghkooeyCore in Frameworks */ = {isa = PBXBuildFile; productRef = 6050CC9AE2B0A888BBACD0E2 /* AnghkooeyCore */; };
 		BD158D82F31B74D299DF85F8 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E3ED969F4ECE89B0A25E87 /* ContentView.swift */; };
+		C6CE3B6A74FF27E6CCA0C154 /* AnkiNoteMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9649E9840BC5BA0D460B7FAA /* AnkiNoteMapperTests.swift */; };
 		D1F38339D375EA3DC2616DAF /* HTMLSanitizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDF6E399E89202CEDB2D18F8 /* HTMLSanitizerTests.swift */; };
 		D3617197E24653996EEF5832 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 473B3A4650CFC7C87202D922 /* SettingsView.swift */; };
 		D4C6DC87B925B0639F76684A /* FreezeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC74FCA67847F9D7EE391AA /* FreezeController.swift */; };
@@ -115,6 +116,7 @@
 		83CE7E31BDF48A8B35196DB6 /* AnghkooeyUI */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AnghkooeyUI; path = ../Packages/AnghkooeyUI; sourceTree = SOURCE_ROOT; };
 		8C501104D1E6F49E2BFB6FE8 /* ReviewTapLatencyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewTapLatencyTests.swift; sourceTree = "<group>"; };
 		912B355EF6B2C114C9EC763F /* AddToAnghkooeyIntentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddToAnghkooeyIntentTests.swift; sourceTree = "<group>"; };
+		9649E9840BC5BA0D460B7FAA /* AnkiNoteMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnkiNoteMapperTests.swift; sourceTree = "<group>"; };
 		A052FDB039D5DFD8BACF02A7 /* ClipboardCaptureCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardCaptureCoordinatorTests.swift; sourceTree = "<group>"; };
 		A35276B7D331FB0334E9C818 /* Anghkooey.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Anghkooey.entitlements; sourceTree = "<group>"; };
 		A4CD4A2A610E1C7AE3424E2A /* GradeReconciliationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradeReconciliationTests.swift; sourceTree = "<group>"; };
@@ -268,6 +270,7 @@
 			isa = PBXGroup;
 			children = (
 				912B355EF6B2C114C9EC763F /* AddToAnghkooeyIntentTests.swift */,
+				9649E9840BC5BA0D460B7FAA /* AnkiNoteMapperTests.swift */,
 				C32F9A6C7C0C292DE3ED8B1C /* AnkiPackageParserTests.swift */,
 				DC510E7B9D8F52E50E4CCED4 /* AppStateEnqueueTests.swift */,
 				E20946A67B7AE6E86392427A /* CardStoreImportTests.swift */,
@@ -498,6 +501,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9E7D95BB2127525A1D3BD776 /* AddToAnghkooeyIntentTests.swift in Sources */,
+				C6CE3B6A74FF27E6CCA0C154 /* AnkiNoteMapperTests.swift in Sources */,
 				AE10CC0370F7C76BD262A2C7 /* AnkiPackageParserTests.swift in Sources */,
 				EA01604E660F4F05E86D4778 /* AppStateEnqueueTests.swift in Sources */,
 				79C6AA877BE2A5BCD1BC8E7B /* CardStoreImportTests.swift in Sources */,
