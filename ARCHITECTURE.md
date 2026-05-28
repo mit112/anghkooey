@@ -694,3 +694,20 @@ entitlements required (App Group already present). `AnghkooeyShortcuts`
 Siri/Spotlight. Closes 2026 iOS skill gap #2 (AppIntents + Siri/Spotlight donation).
 All `static var` protocol witnesses use `nonisolated(unsafe)` for Swift 6
 strict-concurrency compliance.
+
+---
+
+## v1.1 Lane W — WidgetKit Interactive Review Widget
+
+**Date:** 2026-05-28
+**Status:** complete (device QA pending — see exit gate)
+
+`AnghkooeyWidget` (app-extension target) shows the most-due card and two
+interactive `Button(intent:)` controls ("Again" / "Good") using the iOS 17+
+interactive widget API. The widget never touches SwiftData; it reads
+`widget/due-snapshot.json` via `WidgetBridge` and appends grade decisions to
+`widget/grades.jsonl`. On app foreground, `WidgetGradeReconciler` (wired into
+`AppState.drain()`) replays queued grades through `store.apply(...)`, deduplicates
+by decision UUID (in-memory), then rewrites the snapshot. See ADR-0010 for the
+idempotency design and the cross-relaunch crash-window trade-off. Closes 2026 iOS
+skill gap #3 (WidgetKit + interactive widget buttons).
