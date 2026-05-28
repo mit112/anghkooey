@@ -186,6 +186,21 @@ public protocol CardStoreProtocol: Sendable {
     /// will retain it; reaching the threshold is the project's definition of
     /// long-term memory. The default threshold is `LTMConfig.defaultThresholdDays`.
     func longTermMemoryCount(thresholdDays: Double) async throws -> Int
+
+    /// Returns the first card whose `sourceSpan` equals `span`, or `nil` if none.
+    /// Used by the Anki importer to skip cards already in the store.
+    func findBySourceSpan(_ span: String) async throws -> Card.Snapshot?
+
+    /// Creates a card with a caller-supplied `dueAt` date.
+    /// Used by the Anki importer to preserve Anki scheduling dates.
+    func createImported(
+        question: String,
+        answer: String,
+        sourceSpan: String?,
+        tags: [String],
+        dueAt: Date,
+        now: Date
+    ) async throws -> Card.Snapshot
 }
 
 // MARK: - CardStoreProtocol backward-compat extensions
@@ -372,6 +387,46 @@ public actor CardStore: CardStoreProtocol {
         let descriptor = FetchDescriptor<Card>(predicate: predicate)
         return try modelContext.fetchCount(descriptor)
     }
+
+    public func findBySourceSpan(_ span: String) async throws -> Card.Snapshot? {
+        let predicate = #Predicate<Card> { $0.sourceSpan == span }
+        let descriptor = FetchDescriptor<Card>(predicate: predicate)
+        return try modelContext.fetch(descriptor).first.map { Card.Snapshot(from: $0) }
+    }
+
+    public func createImported(
+        question: String,
+        answer: String,
+        sourceSpan: String?,
+        tags: [String],
+        dueAt: Date,
+        now: Date
+    ) async throws -> Card.Snapshot {
+        let tagObjects = try findOrCreateTags(tags)
+        let card = Card(
+            id: UUID(),
+            question: question,
+            answer: answer,
+            createdAt: now,
+            updatedAt: now,
+            tags: tagObjects,
+            state: .new,
+            stability: 0,
+            difficulty: 0,
+            dueAt: dueAt,
+            lastReviewedAt: nil,
+            reviewLogs: [],
+            sourceSpan: sourceSpan
+        )
+        modelContext.insert(card)
+        do {
+            try modelContext.save()
+        } catch {
+            modelContext.rollback()
+            throw error
+        }
+        return Card.Snapshot(from: card)
+    }
 }
 
 // MARK: - MockCardStore
@@ -513,5 +568,33 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
             elapsedDays: old.elapsedDays,
             mnemonic: mnemonic
         )
+    }
+
+    public func findBySourceSpan(_ span: String) async throws -> Card.Snapshot? {
+        cards.first { $0.sourceSpan == span }
+    }
+
+    public func createImported(
+        question: String,
+        answer: String,
+        sourceSpan: String?,
+        tags: [String],
+        dueAt: Date,
+        now: Date
+    ) async throws -> Card.Snapshot {
+        if let err = createError { throw err }
+        let snap = Card.Snapshot(
+            id: UUID(),
+            question: question,
+            answer: answer,
+            sourceSpan: sourceSpan,
+            tags: tags,
+            state: .new,
+            stability: 0,
+            difficulty: 0,
+            dueAt: dueAt
+        )
+        cards.append(snap)
+        return snap
     }
 }

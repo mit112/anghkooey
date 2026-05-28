@@ -20,6 +20,7 @@
 		5DAF33FB9439E111699C5B6D /* AnghkooeyCore in Frameworks */ = {isa = PBXBuildFile; productRef = DE9B9BE76EB0B805AB5D80E9 /* AnghkooeyCore */; };
 		65C5300478257265174ECB34 /* AnghkooeyUI in Frameworks */ = {isa = PBXBuildFile; productRef = 35F7FD1699C5DB4B94EEF7ED /* AnghkooeyUI */; };
 		6E2B75EF1D532905ED043B04 /* AnghkooeyIntelligence in Frameworks */ = {isa = PBXBuildFile; productRef = E463D25A57483D22C74E098F /* AnghkooeyIntelligence */; };
+		79C6AA877BE2A5BCD1BC8E7B /* CardStoreImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20946A67B7AE6E86392427A /* CardStoreImportTests.swift */; };
 		8047F56DEDEDE4CC45B33655 /* AddToAnghkooeyIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92BD2E303E0D0DE839C3B7E /* AddToAnghkooeyIntent.swift */; };
 		838F434C0E47994FB38A3774 /* ReviewSessionMnemonicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFF0371E042B2726F73268FF /* ReviewSessionMnemonicTests.swift */; };
 		90186F0B4C28883634834192 /* AnghkooeyWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 5F576AE7AD31EBF6528DAC56 /* AnghkooeyWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -120,6 +121,7 @@
 		DC86FF464394DC7B8C2BA50D /* MetricsReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsReceiver.swift; sourceTree = "<group>"; };
 		DDAD0965A49F13A5EF35F4A5 /* SchemaMigrationV4Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchemaMigrationV4Tests.swift; sourceTree = "<group>"; };
 		DFF0371E042B2726F73268FF /* ReviewSessionMnemonicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewSessionMnemonicTests.swift; sourceTree = "<group>"; };
+		E20946A67B7AE6E86392427A /* CardStoreImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardStoreImportTests.swift; sourceTree = "<group>"; };
 		EA63E5FA330602579BBE4E25 /* Anghkooey.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Anghkooey.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA000001000000000000AA01 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		AA000001000000000000AA02 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -253,6 +255,7 @@
 			children = (
 				912B355EF6B2C114C9EC763F /* AddToAnghkooeyIntentTests.swift */,
 				DC510E7B9D8F52E50E4CCED4 /* AppStateEnqueueTests.swift */,
+				E20946A67B7AE6E86392427A /* CardStoreImportTests.swift */,
 				A052FDB039D5DFD8BACF02A7 /* ClipboardCaptureCoordinatorTests.swift */,
 				BAD05419FDB54EF847E4F217 /* FreezeControllerTests.swift */,
 				A4CD4A2A610E1C7AE3424E2A /* GradeReconciliationTests.swift */,
@@ -467,6 +470,7 @@
 			files = (
 				9E7D95BB2127525A1D3BD776 /* AddToAnghkooeyIntentTests.swift in Sources */,
 				EA01604E660F4F05E86D4778 /* AppStateEnqueueTests.swift in Sources */,
+				79C6AA877BE2A5BCD1BC8E7B /* CardStoreImportTests.swift in Sources */,
 				FCB6CFEC88A0183CD60308F3 /* ClipboardCaptureCoordinatorTests.swift in Sources */,
 				1C5681F0A24B3964F71E900E /* FreezeControllerTests.swift in Sources */,
 				D65B97A8CF3D2E004B70EA7B /* GradeReconciliationTests.swift in Sources */,
