@@ -14,6 +14,7 @@ public struct LibraryView: View {
     @State private var selectedTag: String? = nil
     @State private var editingCard: Card.Snapshot? = nil
     @State private var isLoading = false
+    @State private var showingImport = false
 
     public init(store: any CardStoreProtocol) {
         self.store = store
@@ -44,11 +45,27 @@ public struct LibraryView: View {
             }
         }
         .navigationTitle("Library")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showingImport = true
+                } label: {
+                    Label("Import", systemImage: "tray.and.arrow.down")
+                }
+            }
+        }
         .task { await load() }
         .sheet(item: $editingCard) { card in
             LibraryCardEditView(card: card, store: store) {
                 Task { await load() }
             }
+        }
+        .sheet(isPresented: $showingImport) {
+            AnkiImportView(
+                importer: LiveAnkiImporter(store: store),
+                isPresented: $showingImport
+            )
+            .onDisappear { Task { await load() } }
         }
     }
 

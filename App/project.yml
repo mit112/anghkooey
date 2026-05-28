@@ -35,6 +35,34 @@ targets:
         embed: true
       - target: AnghkooeyWidget
         embed: true
+    info:
+      path: Anghkooey/Info.plist
+      properties:
+        CFBundleIdentifier: $(PRODUCT_BUNDLE_IDENTIFIER)
+        CFBundleExecutable: $(EXECUTABLE_NAME)
+        CFBundleName: Anghkooey
+        CFBundleDisplayName: Anghkooey
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        CFBundlePackageType: $(PRODUCT_BUNDLE_PACKAGE_TYPE)
+        LSRequiresIPhoneOS: true
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UTImportedTypeDeclarations:
+          - UTTypeIdentifier: com.ankimobile.apkg
+            UTTypeConformsTo:
+              - public.zip-archive
+            UTTypeTagSpecification:
+              public.filename-extension:
+                - apkg
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: Anki Package
+            LSItemContentTypes:
+              - com.ankimobile.apkg
+            CFBundleTypeRole: Viewer
     sources:
       - path: Anghkooey
         excludes:
@@ -55,8 +83,6 @@ targets:
         SWIFT_VERSION: "6.0"
         SWIFT_STRICT_CONCURRENCY: complete
         IPHONEOS_DEPLOYMENT_TARGET: "26.0"
-        INFOPLIST_FILE: ""
-        GENERATE_INFOPLIST_FILE: YES
         # Ad-hoc signing so both app + appex get the same "-" cert on simulator CI.
         # Physical device builds override this via the Xcode UI / automatic signing.
         CODE_SIGN_IDENTITY: "-"
