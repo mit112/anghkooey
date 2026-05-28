@@ -133,6 +133,9 @@ targets:
       - package: AnghkooeyIntelligence
     sources:
       - path: AnghkooeyTests
+    resources:
+      - path: AnghkooeyTests/Fixtures
+        type: copy
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.mitsheth.anghkooey.tests

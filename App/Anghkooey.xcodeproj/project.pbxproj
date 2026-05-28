@@ -28,6 +28,8 @@
 		9E7D95BB2127525A1D3BD776 /* AddToAnghkooeyIntentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 912B355EF6B2C114C9EC763F /* AddToAnghkooeyIntentTests.swift */; };
 		A05524AC1F7FA8D8F1C2D24D /* GradeCardIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58DC8A89BB756CFDD147D74E /* GradeCardIntent.swift */; };
 		A7AE1592FEEDA52EA1AD8284 /* AnghkooeyShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 0A037B8F43852214FC842CDF /* AnghkooeyShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		ABB53006BD7A54F597BA4FAE /* sample.apkg in Resources */ = {isa = PBXBuildFile; fileRef = 1984AFE61E092F2A64C6836E /* sample.apkg */; };
+		AE10CC0370F7C76BD262A2C7 /* AnkiPackageParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C32F9A6C7C0C292DE3ED8B1C /* AnkiPackageParserTests.swift */; };
 		AE2B092616BDC257E899D84C /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A6AE21F57389F2FA533F696 /* ShareViewController.swift */; };
 		BB5809147A8AC7D33F6E8A41 /* AnghkooeyCore in Frameworks */ = {isa = PBXBuildFile; productRef = 6050CC9AE2B0A888BBACD0E2 /* AnghkooeyCore */; };
 		BD158D82F31B74D299DF85F8 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E3ED969F4ECE89B0A25E87 /* ContentView.swift */; };
@@ -92,6 +94,7 @@
 		071F54EC6FF668936C218728 /* AnghkooeyCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AnghkooeyCore; path = ../Packages/AnghkooeyCore; sourceTree = SOURCE_ROOT; };
 		098D0C5450147DE402DC643A /* AnghkooeyWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AnghkooeyWidget.entitlements; sourceTree = "<group>"; };
 		0A037B8F43852214FC842CDF /* AnghkooeyShare.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = AnghkooeyShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		1984AFE61E092F2A64C6836E /* sample.apkg */ = {isa = PBXFileReference; path = sample.apkg; sourceTree = "<group>"; };
 		1CD36BC6DD0A3A1B128803A5 /* AnghkooeyWidget-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "AnghkooeyWidget-Info.plist"; sourceTree = "<group>"; };
 		2343F02E0386139B64E683EC /* AnghkooeyWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnghkooeyWidgetBundle.swift; sourceTree = "<group>"; };
 		2542710C06ECE7EB817FF4F8 /* SyncPreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncPreference.swift; sourceTree = "<group>"; };
@@ -117,6 +120,7 @@
 		A4CD4A2A610E1C7AE3424E2A /* GradeReconciliationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradeReconciliationTests.swift; sourceTree = "<group>"; };
 		BA7D84144C067F4521BC0B97 /* ClipboardBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardBanner.swift; sourceTree = "<group>"; };
 		BAD05419FDB54EF847E4F217 /* FreezeControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreezeControllerTests.swift; sourceTree = "<group>"; };
+		C32F9A6C7C0C292DE3ED8B1C /* AnkiPackageParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnkiPackageParserTests.swift; sourceTree = "<group>"; };
 		C92BD2E303E0D0DE839C3B7E /* AddToAnghkooeyIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddToAnghkooeyIntent.swift; sourceTree = "<group>"; };
 		DC510E7B9D8F52E50E4CCED4 /* AppStateEnqueueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateEnqueueTests.swift; sourceTree = "<group>"; };
 		DC86FF464394DC7B8C2BA50D /* MetricsReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsReceiver.swift; sourceTree = "<group>"; };
@@ -175,6 +179,14 @@
 				83CE7E31BDF48A8B35196DB6 /* AnghkooeyUI */,
 			);
 			name = Packages;
+			sourceTree = "<group>";
+		};
+		17BE507D2139FC8C94322A60 /* Fixtures */ = {
+			isa = PBXGroup;
+			children = (
+				1984AFE61E092F2A64C6836E /* sample.apkg */,
+			);
+			path = Fixtures;
 			sourceTree = "<group>";
 		};
 		314911AE872155B4BC9640C8 /* Anghkooey */ = {
@@ -256,6 +268,7 @@
 			isa = PBXGroup;
 			children = (
 				912B355EF6B2C114C9EC763F /* AddToAnghkooeyIntentTests.swift */,
+				C32F9A6C7C0C292DE3ED8B1C /* AnkiPackageParserTests.swift */,
 				DC510E7B9D8F52E50E4CCED4 /* AppStateEnqueueTests.swift */,
 				E20946A67B7AE6E86392427A /* CardStoreImportTests.swift */,
 				A052FDB039D5DFD8BACF02A7 /* ClipboardCaptureCoordinatorTests.swift */,
@@ -266,6 +279,7 @@
 				DFF0371E042B2726F73268FF /* ReviewSessionMnemonicTests.swift */,
 				8C501104D1E6F49E2BFB6FE8 /* ReviewTapLatencyTests.swift */,
 				DDAD0965A49F13A5EF35F4A5 /* SchemaMigrationV4Tests.swift */,
+				17BE507D2139FC8C94322A60 /* Fixtures */,
 			);
 			path = AnghkooeyTests;
 			sourceTree = "<group>";
@@ -353,6 +367,7 @@
 			buildConfigurationList = 45D044BB25B492A18CCFA90E /* Build configuration list for PBXNativeTarget "AnghkooeyTests" */;
 			buildPhases = (
 				9D770B56DDA5DAA296840A11 /* Sources */,
+				EB8A11E0D0AE56D311485B46 /* Resources */,
 				060225AC14E6BB94935D5B02 /* Frameworks */,
 			);
 			buildRules = (
@@ -446,6 +461,17 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXResourcesBuildPhase section */
+		EB8A11E0D0AE56D311485B46 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ABB53006BD7A54F597BA4FAE /* sample.apkg in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		86F48F1F9CC0C93AC8355A3A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -472,6 +498,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9E7D95BB2127525A1D3BD776 /* AddToAnghkooeyIntentTests.swift in Sources */,
+				AE10CC0370F7C76BD262A2C7 /* AnkiPackageParserTests.swift in Sources */,
 				EA01604E660F4F05E86D4778 /* AppStateEnqueueTests.swift in Sources */,
 				79C6AA877BE2A5BCD1BC8E7B /* CardStoreImportTests.swift in Sources */,
 				FCB6CFEC88A0183CD60308F3 /* ClipboardCaptureCoordinatorTests.swift in Sources */,
