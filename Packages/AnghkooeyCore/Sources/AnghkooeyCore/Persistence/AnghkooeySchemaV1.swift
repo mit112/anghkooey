@@ -11,7 +11,10 @@ public enum AnghkooeySchemaV1: VersionedSchema {
     public static let versionIdentifier = Schema.Version(1, 0, 0)
 
     public static var models: [any PersistentModel.Type] {
-        [AnghkooeySchemaV1.Card.self, ReviewLog.self, Tag.self]
+        // ReviewLog and Tag are unversioned; they only appear in the latest
+        // schema (V3). Listing them in every version causes CoreData to see
+        // duplicate checksums and throw NSInvalidArgumentException at init.
+        [AnghkooeySchemaV1.Card.self]
     }
 }
 

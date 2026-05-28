@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftData
 import MetricKit
 import UIKit
 import AnghkooeyCore
@@ -22,10 +21,7 @@ struct AnghkooeyApp: App {
 
         // `try!` is intentional: a corrupt SwiftData store on launch is
         // unrecoverable in v1. Log + crash beats a silent broken state.
-        let container = try! ModelContainer(
-            for: Schema(AnghkooeySchemaV1.models),
-            configurations: ModelConfiguration()
-        )
+        let container = try! AnghkooeyModelContainer.makeContainer(syncMode: SyncPreference.syncMode)
         let store = CardStore(container: container)
         _appState = State(initialValue: AppState(
             cardAuthor: LiveCardAuthoringService(),
