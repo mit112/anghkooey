@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		14E38B10D19724BE8F36280F /* SyncPreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2542710C06ECE7EB817FF4F8 /* SyncPreference.swift */; };
+		1AF0E3AEA54D4E9C01AFAA11 /* SchemaMigrationV4Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAD0965A49F13A5EF35F4A5 /* SchemaMigrationV4Tests.swift */; };
 		1C5681F0A24B3964F71E900E /* FreezeControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAD05419FDB54EF847E4F217 /* FreezeControllerTests.swift */; };
 		23EB4719C6CDE2DF3A10FDB7 /* MetricsReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC86FF464394DC7B8C2BA50D /* MetricsReceiver.swift */; };
 		258EF0D8985B6D4FF200A34B /* MetricsReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6170637242A7E485A643F715 /* MetricsReceiverTests.swift */; };
@@ -117,6 +118,7 @@
 		C92BD2E303E0D0DE839C3B7E /* AddToAnghkooeyIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddToAnghkooeyIntent.swift; sourceTree = "<group>"; };
 		DC510E7B9D8F52E50E4CCED4 /* AppStateEnqueueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateEnqueueTests.swift; sourceTree = "<group>"; };
 		DC86FF464394DC7B8C2BA50D /* MetricsReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsReceiver.swift; sourceTree = "<group>"; };
+		DDAD0965A49F13A5EF35F4A5 /* SchemaMigrationV4Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchemaMigrationV4Tests.swift; sourceTree = "<group>"; };
 		DFF0371E042B2726F73268FF /* ReviewSessionMnemonicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewSessionMnemonicTests.swift; sourceTree = "<group>"; };
 		EA63E5FA330602579BBE4E25 /* Anghkooey.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Anghkooey.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA000001000000000000AA01 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -257,6 +259,7 @@
 				6170637242A7E485A643F715 /* MetricsReceiverTests.swift */,
 				DFF0371E042B2726F73268FF /* ReviewSessionMnemonicTests.swift */,
 				8C501104D1E6F49E2BFB6FE8 /* ReviewTapLatencyTests.swift */,
+				DDAD0965A49F13A5EF35F4A5 /* SchemaMigrationV4Tests.swift */,
 			);
 			path = AnghkooeyTests;
 			sourceTree = "<group>";
@@ -278,9 +281,10 @@
 			buildConfigurationList = 67CA97998EAF96096A215C7E /* Build configuration list for PBXNativeTarget "Anghkooey" */;
 			buildPhases = (
 				86F48F1F9CC0C93AC8355A3A /* Sources */,
-				AA000001000000000000CC01 /* Resources */,
 				F917D06412004FAA2CDCEB46 /* Frameworks */,
 				C101D8F13C1F879865AD4379 /* Embed Foundation Extensions */,
+			
+				AA000001000000000000CC01 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -301,8 +305,9 @@
 			buildConfigurationList = 4A9D7227AEBE21B9A7D1499D /* Build configuration list for PBXNativeTarget "AnghkooeyWidget" */;
 			buildPhases = (
 				A5916AC2634611C961D45B6E /* Sources */,
-				AA000001000000000000CC03 /* Resources */,
 				FDDC6AE7EA9F2F67E5237851 /* Frameworks */,
+			
+				AA000001000000000000CC03 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -321,8 +326,9 @@
 			buildConfigurationList = 14CE601DF7EC1B9392209659 /* Build configuration list for PBXNativeTarget "AnghkooeyShare" */;
 			buildPhases = (
 				AE8C7FE4FFFAB2EF0393B4DC /* Sources */,
-				AA000001000000000000CC02 /* Resources */,
 				ECD9F8F6385B28F86CD116B5 /* Frameworks */,
+			
+				AA000001000000000000CC02 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -407,6 +413,33 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		AA000001000000000000CC01 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000001000000000000BB01 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA000001000000000000CC02 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000001000000000000BB02 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA000001000000000000CC03 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA000001000000000000BB03 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		86F48F1F9CC0C93AC8355A3A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -440,6 +473,7 @@
 				258EF0D8985B6D4FF200A34B /* MetricsReceiverTests.swift in Sources */,
 				838F434C0E47994FB38A3774 /* ReviewSessionMnemonicTests.swift in Sources */,
 				4931BB4B44A1D49822A5597C /* ReviewTapLatencyTests.swift in Sources */,
+				1AF0E3AEA54D4E9C01AFAA11 /* SchemaMigrationV4Tests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -461,33 +495,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-/* Begin PBXResourcesBuildPhase section */
-		AA000001000000000000CC01 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				AA000001000000000000BB01 /* PrivacyInfo.xcprivacy in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		AA000001000000000000CC02 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				AA000001000000000000BB02 /* PrivacyInfo.xcprivacy in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		AA000001000000000000CC03 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				AA000001000000000000BB03 /* PrivacyInfo.xcprivacy in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXResourcesBuildPhase section */
-
 
 /* Begin PBXTargetDependency section */
 		54E9A725DFFB71C7A3159CC5 /* PBXTargetDependency */ = {
