@@ -44,9 +44,32 @@ final class ClipboardCaptureCoordinator {
         self.ringCapacity = ringCapacity
     }
 
-    func consider(clipboardText: String) { fatalError("Codex: implement") }
-    func acceptOffer() { fatalError("Codex: implement") }
-    func dismissOffer() { fatalError("Codex: implement") }
+    func consider(clipboardText: String) {
+        let trimmed = clipboardText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.count >= minLength else { return }
+        let hash = Self.hash(for: clipboardText)
+        guard !offerStore.offeredHashes.contains(hash) else { return }
+        pendingOffer = ClipboardOffer(text: clipboardText)
+    }
+
+    func acceptOffer() {
+        guard let offer = pendingOffer else { return }
+        onRoute?(offer.text)
+        offerStore.offeredHashes.append(Self.hash(for: offer.text))
+        while offerStore.offeredHashes.count > ringCapacity {
+            offerStore.offeredHashes.removeFirst()
+        }
+        pendingOffer = nil
+    }
+
+    func dismissOffer() {
+        guard let offer = pendingOffer else { return }
+        offerStore.offeredHashes.append(Self.hash(for: offer.text))
+        while offerStore.offeredHashes.count > ringCapacity {
+            offerStore.offeredHashes.removeFirst()
+        }
+        pendingOffer = nil
+    }
 
     static func hash(for text: String) -> String {
         let norm = text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
