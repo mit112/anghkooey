@@ -647,3 +647,18 @@ Three hardening constraints applied after Codex review:
 - Core: 120 tests in 20 suites (was 112; +8 from `CardStoreMnemonicTests`)
 - Intelligence: +4 from `MockMnemonicServiceTests` (run via `swift test` in package dir)
 - App target: 21 tests in 4 suites (was 13; +8 from `ReviewSessionMnemonicTests`)
+
+---
+
+## v1.1 Lane K — Cumulative LTM Metric
+
+**Date:** 2026-05-27
+**Status:** complete
+
+`LTMConfig` (AnghkooeyCore/Scheduling) defines a stability-threshold metric:
+a card counts as "committed to long-term memory" once FSRS-6 `stability >= 21`
+days. `CardStore.longTermMemoryCount(thresholdDays:)` uses a `fetchCount`
+predicate; the protocol default reduces over `allCards()`. `ReviewSession.ltmCount`
+loads alongside the due queue; `ReviewView` shows "N committed to long-term
+memory". Independent of due date and Cushion Mode — by design, it never shrinks
+on a missed day. (foundation §3 principle 3.)

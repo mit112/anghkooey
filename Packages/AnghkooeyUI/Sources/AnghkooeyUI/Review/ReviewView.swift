@@ -45,10 +45,25 @@ public struct ReviewView: View {
         }
     }
 
+    // MARK: - LTM banner (shared across reviewing + empty states)
+
+    @ViewBuilder
+    private var ltmBanner: some View {
+        if session.ltmCount > 0 {
+            Label("\(session.ltmCount) committed to long-term memory", systemImage: "brain.head.profile")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .accessibilityIdentifier("ltm-count-label")
+        }
+    }
+
     // MARK: - Reviewing
 
     private var reviewingBody: some View {
         VStack(spacing: 0) {
+            ltmBanner
+                .padding(.top, 8)
+
             if session.isCushionActive {
                 HStack(spacing: 8) {
                     Image(systemName: "cup.and.saucer.fill")
@@ -296,11 +311,14 @@ public struct ReviewView: View {
     // MARK: - Empty
 
     private var emptyBody: some View {
-        ContentUnavailableView(
-            "All caught up",
-            systemImage: "checkmark.circle.fill",
-            description: Text("Come back when your next review is due, or capture something new to grow your deck.")
-        )
+        VStack(spacing: 12) {
+            ltmBanner
+            ContentUnavailableView(
+                "All caught up",
+                systemImage: "checkmark.circle.fill",
+                description: Text("Come back when your next review is due, or capture something new to grow your deck.")
+            )
+        }
     }
 }
 

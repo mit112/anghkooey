@@ -44,6 +44,10 @@ public final class ReviewSession {
     /// True while `generateMnemonic()` is in flight.
     public private(set) var isMnemonicLoading: Bool = false
 
+    /// Number of cards with FSRS stability ≥ `LTMConfig.defaultThresholdDays`.
+    /// Updated alongside the due queue on every `loadDueQueue()` call.
+    public private(set) var ltmCount: Int = 0
+
     /// True when a `MnemonicService` was injected — `ReviewView` uses this to
     /// conditionally render the "Generate Mnemonic" button.
     public var isMnemonicAvailable: Bool { mnemonicService != nil }
@@ -101,6 +105,7 @@ public final class ReviewSession {
             isAnswerRevealed = false
             state = visible.isEmpty ? .empty : .reviewing
             currentMnemonic = currentCard?.mnemonic
+            ltmCount = (try? await store.longTermMemoryCount(thresholdDays: LTMConfig.defaultThresholdDays)) ?? ltmCount
             isMnemonicLoading = false
         } catch {
             state = .error(error.localizedDescription)
