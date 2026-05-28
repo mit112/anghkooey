@@ -29,6 +29,8 @@
 		AA000004AA000004AA000004 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA000002AA000002AA000002 /* PrivacyInfo.xcprivacy */; };
 		CC002CC002CC002CC002CC02 /* ClipboardCaptureCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC001CC001CC001CC001CC01 /* ClipboardCaptureCoordinator.swift */; };
 		CC006CC006CC006CC006CC06 /* ClipboardBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC007CC007CC007CC007CC07 /* ClipboardBanner.swift */; };
+		II002II002II002II002II02 /* AddToAnghkooeyIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = II001II001II001II001II01 /* AddToAnghkooeyIntent.swift */; };
+		II004II004II004II004II04 /* AddToAnghkooeyIntentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = II003II003II003II003II03 /* AddToAnghkooeyIntentTests.swift */; };
 		CC004CC004CC004CC004CC04 /* ClipboardCaptureCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC003CC003CC003CC003CC03 /* ClipboardCaptureCoordinatorTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -90,6 +92,8 @@
 		AA000002AA000002AA000002 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = file.xcprivacy; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		CC001CC001CC001CC001CC01 /* ClipboardCaptureCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardCaptureCoordinator.swift; sourceTree = "<group>"; };
 		CC007CC007CC007CC007CC07 /* ClipboardBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardBanner.swift; sourceTree = "<group>"; };
+		II001II001II001II001II01 /* AddToAnghkooeyIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddToAnghkooeyIntent.swift; sourceTree = "<group>"; };
+		II003II003II003II003II03 /* AddToAnghkooeyIntentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddToAnghkooeyIntentTests.swift; sourceTree = "<group>"; };
 		CC003CC003CC003CC003CC03 /* ClipboardCaptureCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardCaptureCoordinatorTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -145,6 +149,7 @@
 				DC86FF464394DC7B8C2BA50D /* MetricsReceiver.swift */,
 				473B3A4650CFC7C87202D922 /* SettingsView.swift */,
 				CC005CC005CC005CC005CC05 /* Clipboard */,
+				II005II005II005II005II05 /* Intents */,
 			);
 			path = Anghkooey;
 			sourceTree = "<group>";
@@ -190,6 +195,7 @@
 				DFF0371E042B2726F73268FF /* ReviewSessionMnemonicTests.swift */,
 				BB0001AA00001BB0001AA000 /* ReviewTapLatencyTests.swift */,
 				CC003CC003CC003CC003CC03 /* ClipboardCaptureCoordinatorTests.swift */,
+				II003II003II003II003II03 /* AddToAnghkooeyIntentTests.swift */,
 			);
 			path = AnghkooeyTests;
 			sourceTree = "<group>";
@@ -201,6 +207,14 @@
 				CC007CC007CC007CC007CC07 /* ClipboardBanner.swift */,
 			);
 			path = Clipboard;
+			sourceTree = "<group>";
+		};
+		II005II005II005II005II05 /* Intents */ = {
+			isa = PBXGroup;
+			children = (
+				II001II001II001II001II01 /* AddToAnghkooeyIntent.swift */,
+			);
+			path = Intents;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -347,6 +361,7 @@
 				D3617197E24653996EEF5832 /* SettingsView.swift in Sources */,
 				CC002CC002CC002CC002CC02 /* ClipboardCaptureCoordinator.swift in Sources */,
 				CC006CC006CC006CC006CC06 /* ClipboardBanner.swift in Sources */,
+				II002II002II002II002II02 /* AddToAnghkooeyIntent.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -360,6 +375,7 @@
 				838F434C0E47994FB38A3774 /* ReviewSessionMnemonicTests.swift in Sources */,
 				BB0001AA00001BB0001AA001 /* ReviewTapLatencyTests.swift in Sources */,
 				CC004CC004CC004CC004CC04 /* ClipboardCaptureCoordinatorTests.swift in Sources */,
+				II004II004II004II004II04 /* AddToAnghkooeyIntentTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
