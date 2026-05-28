@@ -6,6 +6,7 @@ import AnghkooeyUI
 struct ContentView: View {
 
     @Environment(AppState.self) private var appState
+    @Environment(ClipboardCaptureCoordinator.self) private var clipboardCoordinator
 
     var body: some View {
         TabView {
@@ -33,6 +34,10 @@ struct ContentView: View {
 
             SettingsView()
                 .tabItem { Label("Settings", systemImage: "gearshape") }
+        }
+        .safeAreaInset(edge: .top) {
+            ClipboardBanner(coordinator: clipboardCoordinator)
+                .animation(.snappy, value: clipboardCoordinator.pendingOffer)
         }
     }
 }

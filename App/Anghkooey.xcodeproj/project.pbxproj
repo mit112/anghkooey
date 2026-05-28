@@ -28,6 +28,7 @@
 		AA000003AA000003AA000003 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA000001AA000001AA000001 /* PrivacyInfo.xcprivacy */; };
 		AA000004AA000004AA000004 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA000002AA000002AA000002 /* PrivacyInfo.xcprivacy */; };
 		CC002CC002CC002CC002CC02 /* ClipboardCaptureCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC001CC001CC001CC001CC01 /* ClipboardCaptureCoordinator.swift */; };
+		CC006CC006CC006CC006CC06 /* ClipboardBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC007CC007CC007CC007CC07 /* ClipboardBanner.swift */; };
 		CC004CC004CC004CC004CC04 /* ClipboardCaptureCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC003CC003CC003CC003CC03 /* ClipboardCaptureCoordinatorTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -88,6 +89,7 @@
 		AA000001AA000001AA000001 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = file.xcprivacy; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		AA000002AA000002AA000002 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = file.xcprivacy; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		CC001CC001CC001CC001CC01 /* ClipboardCaptureCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardCaptureCoordinator.swift; sourceTree = "<group>"; };
+		CC007CC007CC007CC007CC07 /* ClipboardBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardBanner.swift; sourceTree = "<group>"; };
 		CC003CC003CC003CC003CC03 /* ClipboardCaptureCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardCaptureCoordinatorTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -196,6 +198,7 @@
 			isa = PBXGroup;
 			children = (
 				CC001CC001CC001CC001CC01 /* ClipboardCaptureCoordinator.swift */,
+				CC007CC007CC007CC007CC07 /* ClipboardBanner.swift */,
 			);
 			path = Clipboard;
 			sourceTree = "<group>";
@@ -343,6 +346,7 @@
 				23EB4719C6CDE2DF3A10FDB7 /* MetricsReceiver.swift in Sources */,
 				D3617197E24653996EEF5832 /* SettingsView.swift in Sources */,
 				CC002CC002CC002CC002CC02 /* ClipboardCaptureCoordinator.swift in Sources */,
+				CC006CC006CC006CC006CC06 /* ClipboardBanner.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

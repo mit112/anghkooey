@@ -662,3 +662,18 @@ predicate; the protocol default reduces over `allCards()`. `ReviewSession.ltmCou
 loads alongside the due queue; `ReviewView` shows "N committed to long-term
 memory". Independent of due date and Cushion Mode — by design, it never shrinks
 on a missed day. (foundation §3 principle 3.)
+
+---
+
+## v1.1 Lane A — Ambient Clipboard Capture
+
+**Date:** 2026-05-27
+**Status:** complete
+
+`ClipboardCaptureCoordinator` (`@Observable @MainActor`) inspects `UIPasteboard.general.string`
+on every app foreground. Text ≥ 20 chars whose SHA-256 hash (trimmed+lowercased) is not in
+a `UserDefaults`-backed FIFO ring (capacity 50) surfaces a `pendingOffer`. `ClipboardBanner`
+renders a non-intrusive `.safeAreaInset` banner. Accepting routes the text through
+`AppState.enqueue(resolvedText:)` — the same path as Share Sheet / OCR. Never auto-inserts
+cards. Dismiss or accept marks the hash offered. `InMemoryOfferStore` allows pure-Swift
+test isolation without touching `UserDefaults`.

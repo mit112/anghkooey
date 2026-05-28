@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import MetricKit
+import UIKit
 import AnghkooeyCore
 import AnghkooeyIntelligence
 import AnghkooeyUI
@@ -9,6 +10,7 @@ import AnghkooeyUI
 struct AnghkooeyApp: App {
     @State private var appState: AppState
     @State private var freezeController: FreezeController
+    @State private var clipboardCoordinator = ClipboardCaptureCoordinator(offerStore: UserDefaultsOfferStore())
     @Environment(\.scenePhase) private var scenePhase
     private let metricsReceiver = MetricsReceiver()
 
@@ -42,10 +44,19 @@ struct AnghkooeyApp: App {
             ContentView()
                 .environment(appState)
                 .environment(freezeController)
+                .environment(clipboardCoordinator)
                 .task { await appState.drain() }
+                .task {
+                    clipboardCoordinator.onRoute = { text in
+                        Task { await appState.enqueue(resolvedText: text) }
+                    }
+                }
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .active {
                         Task { await appState.drain() }
+                        if let text = UIPasteboard.general.string {
+                            clipboardCoordinator.consider(clipboardText: text)
+                        }
                     }
                 }
                 .sheet(item: $appState.presentedDraft) { identified in
