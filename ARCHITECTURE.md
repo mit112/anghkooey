@@ -711,3 +711,21 @@ interactive widget API. The widget never touches SwiftData; it reads
 by decision UUID (in-memory), then rewrites the snapshot. See ADR-0010 for the
 idempotency design and the cross-relaunch crash-window trade-off. Closes 2026 iOS
 skill gap #3 (WidgetKit + interactive widget buttons).
+
+---
+
+## v1.1 Lane C2 — CloudKit Private DB Sync
+
+**Date:** 2026-05-28
+**Status:** code-complete; device sync QA deferred (two-device test requires
+provisioned CloudKit container — see ADR-0011 exit gate)
+
+`SyncMode` enum (`.local` / `.cloudKit(containerID:)`) selects the storage backend
+at launch. `AnghkooeyModelContainer.makeContainer(syncMode:)` uses the same
+`AnghkooeySchemaV3` + `AnghkooeyMigrationPlan` for both modes. `SyncPreference`
+reads/writes a `UserDefaults` bool; the app reads it once in `init()`. A Settings
+toggle exposes the preference with a relaunch note. Also fixed: (1) the latent V1-
+schema / no-migration-plan bug in `AnghkooeyApp.init()`; (2) duplicate-checksum
+crash from `ReviewLog`/`Tag` appearing in multiple schema versions; (3) iOS 26
+auto-CloudKit activation requires `cloudKitDatabase: .none` for local mode.
+Closes 2026 iOS skill gap #4. See ADR-0011.

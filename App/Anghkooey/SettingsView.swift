@@ -34,6 +34,16 @@ struct SettingsView: View {
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
+
+                Section("iCloud Sync") {
+                    Toggle("Sync across my devices", isOn: Binding(
+                        get: { SyncPreference.isEnabled },
+                        set: { SyncPreference.isEnabled = $0 }
+                    ))
+                    Text("Your cards stay on this device by default. Turn this on to sync to your private iCloud (only you can read it). Restart Anghkooey for the change to take effect.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
             }
             .navigationTitle("Settings")
         }
