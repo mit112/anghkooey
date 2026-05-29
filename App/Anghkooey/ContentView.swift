@@ -14,7 +14,7 @@ struct ContentView: View {
     var body: some View {
         TabView {
             NavigationStack {
-                ReviewScreen(store: appState.cardStore)
+                ReviewScreen(store: appState.cardStore, scheduler: appState.scheduler)
             }
             .tabItem { Label("Review", systemImage: "rectangle.on.rectangle") }
 

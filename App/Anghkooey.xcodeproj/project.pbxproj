@@ -24,6 +24,7 @@
 		79C6AA877BE2A5BCD1BC8E7B /* CardStoreImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20946A67B7AE6E86392427A /* CardStoreImportTests.swift */; };
 		A1B2C3D4E5F6A1B2C3D4E5F6 /* CardStoreClozeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A1B2C3D4E5F7 /* CardStoreClozeTests.swift */; };
 		B1C2D3E4F5A6B1C2D3E4F5A6 /* CardStoreOptimizationLogsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E4F5A6B1C2D3E4F5A7 /* CardStoreOptimizationLogsTests.swift */; };
+		C2D3E4F5A6B7C2D3E4F5A6B7 /* AppStateSchedulerResolutionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D3E4F5A6B7C2D3E4F5A6B8 /* AppStateSchedulerResolutionTests.swift */; };
 		D7A1B2C3D4E5F6A7B8C9D0E2 /* ClozeAuthoringViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7A1B2C3D4E5F6A7B8C9D0E1 /* ClozeAuthoringViewModelTests.swift */; };
 		8047F56DEDEDE4CC45B33655 /* AddToAnghkooeyIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92BD2E303E0D0DE839C3B7E /* AddToAnghkooeyIntent.swift */; };
 		838F434C0E47994FB38A3774 /* ReviewSessionMnemonicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFF0371E042B2726F73268FF /* ReviewSessionMnemonicTests.swift */; };
@@ -145,6 +146,7 @@
 		E20946A67B7AE6E86392427A /* CardStoreImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardStoreImportTests.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6A1B2C3D4E5F7 /* CardStoreClozeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardStoreClozeTests.swift; sourceTree = "<group>"; };
 		B1C2D3E4F5A6B1C2D3E4F5A7 /* CardStoreOptimizationLogsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardStoreOptimizationLogsTests.swift; sourceTree = "<group>"; };
+		C2D3E4F5A6B7C2D3E4F5A6B8 /* AppStateSchedulerResolutionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateSchedulerResolutionTests.swift; sourceTree = "<group>"; };
 		D7A1B2C3D4E5F6A7B8C9D0E1 /* ClozeAuthoringViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClozeAuthoringViewModelTests.swift; sourceTree = "<group>"; };
 		EA63E5FA330602579BBE4E25 /* Anghkooey.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Anghkooey.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EDF6E399E89202CEDB2D18F8 /* HTMLSanitizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLSanitizerTests.swift; sourceTree = "<group>"; };
@@ -295,6 +297,7 @@
 				E20946A67B7AE6E86392427A /* CardStoreImportTests.swift */,
 					A1B2C3D4E5F6A1B2C3D4E5F7 /* CardStoreClozeTests.swift */,
 					B1C2D3E4F5A6B1C2D3E4F5A7 /* CardStoreOptimizationLogsTests.swift */,
+					C2D3E4F5A6B7C2D3E4F5A6B8 /* AppStateSchedulerResolutionTests.swift */,
 					D7A1B2C3D4E5F6A7B8C9D0E1 /* ClozeAuthoringViewModelTests.swift */,
 				A052FDB039D5DFD8BACF02A7 /* ClipboardCaptureCoordinatorTests.swift */,
 				5B5DEC5926D8513370FD52E5 /* CloudKitV5SchemaTests.swift */,
@@ -534,6 +537,7 @@
 				79C6AA877BE2A5BCD1BC8E7B /* CardStoreImportTests.swift in Sources */,
 					A1B2C3D4E5F6A1B2C3D4E5F6 /* CardStoreClozeTests.swift in Sources */,
 					B1C2D3E4F5A6B1C2D3E4F5A6 /* CardStoreOptimizationLogsTests.swift in Sources */,
+					C2D3E4F5A6B7C2D3E4F5A6B7 /* AppStateSchedulerResolutionTests.swift in Sources */,
 					D7A1B2C3D4E5F6A7B8C9D0E2 /* ClozeAuthoringViewModelTests.swift in Sources */,
 				FCB6CFEC88A0183CD60308F3 /* ClipboardCaptureCoordinatorTests.swift in Sources */,
 				582792F95044259D37BC944E /* CloudKitV5SchemaTests.swift in Sources */,

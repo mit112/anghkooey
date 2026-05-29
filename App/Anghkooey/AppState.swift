@@ -59,7 +59,12 @@ final class AppState: @unchecked Sendable {
     private let bridge: DrainerBridge
     private var notificationToken: InboxNotificationToken?
     private let cardAuthor: any CardAuthoringService
-    private let widgetReconciler: WidgetGradeReconciler
+    private var widgetReconciler: WidgetGradeReconciler
+    private let optimizedParamsStore: OptimizedParametersStore
+    private let widgetContainerURL: URL
+
+    /// The resolved FSRS engine — default params until enough history accumulates.
+    private(set) var scheduler: any FSRS6Engine = LiveFSRS6Engine()
 
     // Tracks the "card-review-sheet-ready" signpost interval: begun when a
     // draft is assigned to `presentedDraft`, ended on the sheet's onAppear.
@@ -86,6 +91,8 @@ final class AppState: @unchecked Sendable {
         )
         self.bridge = bridge
         self.drainer = drainer
+        self.widgetContainerURL = containerURL
+        self.optimizedParamsStore = OptimizedParametersStore(containerURL: containerURL)
         self.widgetReconciler = WidgetGradeReconciler(
             store: cardStore,
             bridge: WidgetBridge(containerURL: containerURL)
@@ -106,6 +113,22 @@ final class AppState: @unchecked Sendable {
     func drain() async {
         await drainer.drain()
         try? await widgetReconciler.reconcile()
+        await refreshScheduler()
+    }
+
+    /// Resolves optimized-or-default FSRS params from accumulated history and
+    /// rebuilds the scheduler + widget reconciler. Call on launch and after
+    /// each drain or optimization run.
+    func refreshScheduler() async {
+        let rows = (try? await cardStore.optimizationReviewLogs()) ?? []
+        let eligible = OptimizationDataset(rows: rows).eligibleSampleCount
+        let params = optimizedParamsStore.resolveParameters(eligibleSampleCount: eligible)
+        let engine = LiveFSRS6Engine(parameters: params)
+        self.scheduler = engine
+        self.widgetReconciler = WidgetGradeReconciler(
+            store: cardStore,
+            bridge: WidgetBridge(containerURL: widgetContainerURL),
+            scheduler: engine)
     }
 
     // MARK: Sheet queue
