@@ -506,6 +506,8 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
     public var createError: Error?
     public var applyError: Error?
     public var updateError: Error?
+    /// When set, `optimizationReviewLogs()` returns this instead of the computed result.
+    public var optimizationReviewLogsOverride: [OptimizationReviewLogRow]?
 
     public init() {}
 
@@ -611,7 +613,8 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
     }
 
     public func optimizationReviewLogs() async throws -> [OptimizationReviewLogRow] {
-        reviewLogs.map { entry in
+        if let override = optimizationReviewLogsOverride { return override }
+        return reviewLogs.map { entry in
             OptimizationReviewLogRow(
                 cardID: entry.cardID,
                 reviewedAt: entry.output.log.reviewedAt,
