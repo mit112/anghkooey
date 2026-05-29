@@ -213,6 +213,11 @@ public protocol CardStoreProtocol: Sendable {
     /// Fans a cloze template into one card per deletion, all sharing a fresh
     /// `clozeGroupID`. Each card's `question`/`answer` are pre-rendered.
     func createClozeCards(from template: ClozeTemplate, tags: [String], now: Date) async throws -> [Card.Snapshot]
+
+    /// Returns a narrow projection of every `ReviewLog`, sorted by
+    /// `(cardID, reviewedAt)`, for the FSRS optimizer. Projects only the four
+    /// fields `OptimizationDataset` needs — never walks full `Card` graphs.
+    func optimizationReviewLogs() async throws -> [OptimizationReviewLogRow]
 }
 
 // MARK: - CardStoreProtocol backward-compat extensions
@@ -373,6 +378,21 @@ public actor CardStore: CardStoreProtocol {
     public func allCards() async throws -> [Card.Snapshot] {
         let descriptor = FetchDescriptor<Card>(sortBy: [SortDescriptor(\.dueAt)])
         return try modelContext.fetch(descriptor).map { Card.Snapshot(from: $0) }
+    }
+
+    public func optimizationReviewLogs() async throws -> [OptimizationReviewLogRow] {
+        let descriptor = FetchDescriptor<ReviewLog>(sortBy: [SortDescriptor(\.reviewedAt)])
+        let logs = try modelContext.fetch(descriptor)
+        let rows: [OptimizationReviewLogRow] = logs.compactMap { log in
+            guard let cardID = log.card?.id else { return nil }
+            return OptimizationReviewLogRow(
+                cardID: cardID, reviewedAt: log.reviewedAt,
+                rating: log.rating, elapsedDays: log.elapsedDays)
+        }
+        return rows.sorted {
+            $0.cardID == $1.cardID ? $0.reviewedAt < $1.reviewedAt
+                                   : $0.cardID.uuidString < $1.cardID.uuidString
+        }
     }
 
     public func update(id: UUID, question: String, answer: String, tags: [String]) async throws {
@@ -588,6 +608,18 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
 
     public func allCards() async throws -> [Card.Snapshot] {
         cards.sorted { $0.dueAt < $1.dueAt }
+    }
+
+    public func optimizationReviewLogs() async throws -> [OptimizationReviewLogRow] {
+        reviewLogs.map { entry in
+            OptimizationReviewLogRow(
+                cardID: entry.cardID,
+                reviewedAt: entry.output.log.reviewedAt,
+                rating: entry.grade,
+                elapsedDays: entry.output.log.elapsedDays)
+        }
+        .sorted { $0.cardID == $1.cardID ? $0.reviewedAt < $1.reviewedAt
+                                         : $0.cardID.uuidString < $1.cardID.uuidString }
     }
 
     public func update(id: UUID, question: String, answer: String, tags: [String]) async throws {
