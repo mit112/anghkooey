@@ -84,7 +84,7 @@ struct AnkiImporterTests {
         for try await _ in importer.importPackage(at: sampleApkgURL, now: .now, maxCards: 5_000) {}
         // note 1001: type=2, due=100, crt=1700000000 → expected 1700000000 + 100*86400
         let expectedDue = Date(timeIntervalSince1970: 1_700_000_000 + 100 * 86_400)
-        let card = store.cards.first { $0.sourceSpan == "anki:1001" }
+        let card = store.cards.first { $0.sourceSpan == "anki:1001:0" }
         #expect(card?.dueAt == expectedDue)
     }
 
