@@ -46,9 +46,6 @@ public enum ClozeMarkupParser {
 
                 let content = String(String.UnicodeScalarView(contentScalars))
                 if let deletion = try parseMarkerContent(content) {
-                    if deletion.index <= 0 {
-                        throw ClozeParseError.nonPositiveIndex(deletion.index)
-                    }
                     if seenIndices.contains(deletion.index) {
                         throw ClozeParseError.duplicateIndex(deletion.index)
                     }
@@ -157,6 +154,8 @@ public enum ClozeMarkupParser {
                     } else {
                         result += answer
                     }
+                } else {
+                    result += "{{\(content)}}"
                 }
             } else {
                 result.unicodeScalars.append(chars[i])
@@ -167,6 +166,7 @@ public enum ClozeMarkupParser {
         return result
     }
 
+    // Operates on Character (not Unicode.Scalar) — content is ASCII-structured (cN::answer::hint).
     private static func extractIndexAndAnswer(from content: String) -> (Int, String)? {
         var parts: [String] = []
         var current = ""
