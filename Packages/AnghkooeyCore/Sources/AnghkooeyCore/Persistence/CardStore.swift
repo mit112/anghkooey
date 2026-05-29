@@ -579,7 +579,9 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
                 learningSteps: snap.learningSteps,
                 scheduledDays: snap.scheduledDays,
                 elapsedDays: snap.elapsedDays,
-                mnemonic: snap.mnemonic
+                mnemonic: snap.mnemonic,
+                clozeGroupID: snap.clozeGroupID,
+                clozeBuriedUntil: snap.clozeBuriedUntil
             )
         }
     }
@@ -608,7 +610,9 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
             learningSteps: old.learningSteps,
             scheduledDays: old.scheduledDays,
             elapsedDays: old.elapsedDays,
-            mnemonic: old.mnemonic
+            mnemonic: old.mnemonic,
+            clozeGroupID: old.clozeGroupID,
+            clozeBuriedUntil: old.clozeBuriedUntil
         )
     }
 
@@ -631,7 +635,9 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
             learningSteps: old.learningSteps,
             scheduledDays: old.scheduledDays,
             elapsedDays: old.elapsedDays,
-            mnemonic: mnemonic
+            mnemonic: mnemonic,
+            clozeGroupID: old.clozeGroupID,
+            clozeBuriedUntil: old.clozeBuriedUntil
         )
     }
 
