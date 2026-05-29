@@ -3,9 +3,9 @@ import AnghkooeyCore
 import AnghkooeyIntelligence
 import AnghkooeyUI
 
-enum CaptureMode { case qa, cloze }
-
 struct ContentView: View {
+
+    private enum CaptureMode { case qa, cloze }
 
     @Environment(AppState.self) private var appState
     @Environment(ClipboardCaptureCoordinator.self) private var clipboardCoordinator
@@ -37,6 +37,8 @@ struct ContentView: View {
                             }
                         )
                     } else {
+                        // TODO: Replace with LiveClozeAuthoringService() once FoundationModels device
+                        // entitlement is provisioned. Mock returns empty drafts (stubbed = []).
                         ClozeAuthoringView(
                             store: appState.cardStore,
                             authoringService: MockClozeAuthoringService()

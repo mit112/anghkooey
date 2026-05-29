@@ -8,9 +8,12 @@ import AnghkooeyIntelligence
 @Observable
 @MainActor
 public final class ClozeAuthoringViewModel {
-    public var markedText: String = ""
+    public var markedText: String = "" {
+        didSet { updatePreview() }
+    }
     public var isGenerating: Bool = false
     public var detectedDeletions: [ClozeDeletion] = []
+    public var errorMessage: String? = nil
 
     private let store: any CardStoreProtocol
 
@@ -18,13 +21,17 @@ public final class ClozeAuthoringViewModel {
         self.store = store
     }
 
-    public var canAccept: Bool {
-        (try? ClozeMarkupParser.parse(markedText)) != nil
-    }
+    public var canAccept: Bool { !detectedDeletions.isEmpty }
 
     public func accept(tags: [String] = [], now: Date = .now) async throws {
+        errorMessage = nil
         let template = try ClozeMarkupParser.parse(markedText)
-        _ = try await store.createClozeCards(from: template, tags: tags, now: now)
+        do {
+            _ = try await store.createClozeCards(from: template, tags: tags, now: now)
+        } catch {
+            errorMessage = error.localizedDescription
+            throw error
+        }
         markedText = ""
         detectedDeletions = []
     }
@@ -55,7 +62,6 @@ public struct ClozeAuthoringView: View {
             TextEditor(text: $vm.markedText)
                 .frame(minHeight: 120)
                 .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.3)))
-                .onChange(of: vm.markedText) { _, _ in vm.updatePreview() }
 
             if !vm.detectedDeletions.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
@@ -80,12 +86,22 @@ public struct ClozeAuthoringView: View {
                 Spacer()
 
                 Button("Accept") {
-                    Task { @MainActor in
-                        try? await vm.accept(tags: tags)
+                    Task {
+                        do {
+                            try await vm.accept(tags: tags)
+                        } catch {
+                            // errorMessage already set on vm by accept()
+                        }
                     }
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(!vm.canAccept)
+            }
+
+            if let msg = vm.errorMessage {
+                Text(msg)
+                    .font(.caption)
+                    .foregroundStyle(.red)
             }
         }
         .padding()
