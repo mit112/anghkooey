@@ -17,6 +17,7 @@
 		3C69A02A96CDAEB8DFFB0534 /* CardReviewSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E8F3B74ABF8A6FBD7019DB2 /* CardReviewSheet.swift */; };
 		46A0E6A0C20AE8578112E927 /* AnghkooeyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6303924A04882FA4C900557B /* AnghkooeyApp.swift */; };
 		4931BB4B44A1D49822A5597C /* ReviewTapLatencyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C501104D1E6F49E2BFB6FE8 /* ReviewTapLatencyTests.swift */; };
+		582792F95044259D37BC944E /* CloudKitV5SchemaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5DEC5926D8513370FD52E5 /* CloudKitV5SchemaTests.swift */; };
 		5DAF33FB9439E111699C5B6D /* AnghkooeyCore in Frameworks */ = {isa = PBXBuildFile; productRef = DE9B9BE76EB0B805AB5D80E9 /* AnghkooeyCore */; };
 		65C5300478257265174ECB34 /* AnghkooeyUI in Frameworks */ = {isa = PBXBuildFile; productRef = 35F7FD1699C5DB4B94EEF7ED /* AnghkooeyUI */; };
 		6E2B75EF1D532905ED043B04 /* AnghkooeyIntelligence in Frameworks */ = {isa = PBXBuildFile; productRef = E463D25A57483D22C74E098F /* AnghkooeyIntelligence */; };
@@ -108,6 +109,7 @@
 		55F0F922386EE72B02D5FC3F /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		58DC8A89BB756CFDD147D74E /* GradeCardIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradeCardIntent.swift; sourceTree = "<group>"; };
 		5A6AE21F57389F2FA533F696 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
+		5B5DEC5926D8513370FD52E5 /* CloudKitV5SchemaTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitV5SchemaTests.swift; sourceTree = "<group>"; };
 		5BC74FCA67847F9D7EE391AA /* FreezeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreezeController.swift; sourceTree = "<group>"; };
 		5ED5054838A0E774E245236E /* ClipboardCaptureCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardCaptureCoordinator.swift; sourceTree = "<group>"; };
 		5F576AE7AD31EBF6528DAC56 /* AnghkooeyWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = AnghkooeyWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -282,6 +284,7 @@
 				DC510E7B9D8F52E50E4CCED4 /* AppStateEnqueueTests.swift */,
 				E20946A67B7AE6E86392427A /* CardStoreImportTests.swift */,
 				A052FDB039D5DFD8BACF02A7 /* ClipboardCaptureCoordinatorTests.swift */,
+				5B5DEC5926D8513370FD52E5 /* CloudKitV5SchemaTests.swift */,
 				BAD05419FDB54EF847E4F217 /* FreezeControllerTests.swift */,
 				A4CD4A2A610E1C7AE3424E2A /* GradeReconciliationTests.swift */,
 				EDF6E399E89202CEDB2D18F8 /* HTMLSanitizerTests.swift */,
@@ -515,6 +518,7 @@
 				EA01604E660F4F05E86D4778 /* AppStateEnqueueTests.swift in Sources */,
 				79C6AA877BE2A5BCD1BC8E7B /* CardStoreImportTests.swift in Sources */,
 				FCB6CFEC88A0183CD60308F3 /* ClipboardCaptureCoordinatorTests.swift in Sources */,
+				582792F95044259D37BC944E /* CloudKitV5SchemaTests.swift in Sources */,
 				1C5681F0A24B3964F71E900E /* FreezeControllerTests.swift in Sources */,
 				D65B97A8CF3D2E004B70EA7B /* GradeReconciliationTests.swift in Sources */,
 				D1F38339D375EA3DC2616DAF /* HTMLSanitizerTests.swift in Sources */,
