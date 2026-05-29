@@ -9,7 +9,7 @@ struct MappedCard {
     let sourceSpan: String   // "anki:<noteId>:<cardOrd>"
 }
 
-enum AnkiNoteMapper {
+public enum AnkiNoteMapper {
 
     /// Returns the stable source-span identifier for one card ordinal from an Anki note.
     public static func sourceSpan(noteID: Int, cardOrd: Int) -> String {
