@@ -37,6 +37,7 @@
 		BD158D82F31B74D299DF85F8 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E3ED969F4ECE89B0A25E87 /* ContentView.swift */; };
 		C6CE3B6A74FF27E6CCA0C154 /* AnkiNoteMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9649E9840BC5BA0D460B7FAA /* AnkiNoteMapperTests.swift */; };
 		C6E53CFF60B17F8A49163A0C /* SchemaMigrationV5Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3444A07A3C879498B6BFA02D /* SchemaMigrationV5Tests.swift */; };
+		CF23B824F937A853DF4C5C24 /* ClozeMarkupParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10541EABA7F5E2AF4A8A0343 /* ClozeMarkupParserTests.swift */; };
 		D1F38339D375EA3DC2616DAF /* HTMLSanitizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDF6E399E89202CEDB2D18F8 /* HTMLSanitizerTests.swift */; };
 		D3617197E24653996EEF5832 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 473B3A4650CFC7C87202D922 /* SettingsView.swift */; };
 		D4C6DC87B925B0639F76684A /* FreezeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC74FCA67847F9D7EE391AA /* FreezeController.swift */; };
@@ -98,6 +99,7 @@
 		071F54EC6FF668936C218728 /* AnghkooeyCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AnghkooeyCore; path = ../Packages/AnghkooeyCore; sourceTree = SOURCE_ROOT; };
 		098D0C5450147DE402DC643A /* AnghkooeyWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AnghkooeyWidget.entitlements; sourceTree = "<group>"; };
 		0A037B8F43852214FC842CDF /* AnghkooeyShare.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = AnghkooeyShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		10541EABA7F5E2AF4A8A0343 /* ClozeMarkupParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClozeMarkupParserTests.swift; sourceTree = "<group>"; };
 		1984AFE61E092F2A64C6836E /* sample.apkg */ = {isa = PBXFileReference; path = sample.apkg; sourceTree = "<group>"; };
 		1CD36BC6DD0A3A1B128803A5 /* AnghkooeyWidget-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "AnghkooeyWidget-Info.plist"; sourceTree = "<group>"; };
 		2343F02E0386139B64E683EC /* AnghkooeyWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnghkooeyWidgetBundle.swift; sourceTree = "<group>"; };
@@ -285,6 +287,7 @@
 				E20946A67B7AE6E86392427A /* CardStoreImportTests.swift */,
 				A052FDB039D5DFD8BACF02A7 /* ClipboardCaptureCoordinatorTests.swift */,
 				5B5DEC5926D8513370FD52E5 /* CloudKitV5SchemaTests.swift */,
+				10541EABA7F5E2AF4A8A0343 /* ClozeMarkupParserTests.swift */,
 				BAD05419FDB54EF847E4F217 /* FreezeControllerTests.swift */,
 				A4CD4A2A610E1C7AE3424E2A /* GradeReconciliationTests.swift */,
 				EDF6E399E89202CEDB2D18F8 /* HTMLSanitizerTests.swift */,
@@ -519,6 +522,7 @@
 				79C6AA877BE2A5BCD1BC8E7B /* CardStoreImportTests.swift in Sources */,
 				FCB6CFEC88A0183CD60308F3 /* ClipboardCaptureCoordinatorTests.swift in Sources */,
 				582792F95044259D37BC944E /* CloudKitV5SchemaTests.swift in Sources */,
+				CF23B824F937A853DF4C5C24 /* ClozeMarkupParserTests.swift in Sources */,
 				1C5681F0A24B3964F71E900E /* FreezeControllerTests.swift in Sources */,
 				D65B97A8CF3D2E004B70EA7B /* GradeReconciliationTests.swift in Sources */,
 				D1F38339D375EA3DC2616DAF /* HTMLSanitizerTests.swift in Sources */,
