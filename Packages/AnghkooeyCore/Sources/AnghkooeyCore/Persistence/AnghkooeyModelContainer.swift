@@ -19,7 +19,7 @@ public enum AnghkooeyModelContainer {
     /// Builds an in-memory `ModelContainer` for tests and SwiftUI previews.
     ///
     /// - Throws: `PersistenceError.containerCreationFailed` if the container
-    ///   cannot be created from the V1 schema + in-memory configuration.
+    ///   cannot be created from the V5 schema + in-memory configuration.
     public static func makeInMemoryContainer() throws -> ModelContainer {
         let schema = Schema(versionedSchema: AnghkooeySchemaV5.self)
         let configuration = ModelConfiguration(
@@ -49,7 +49,7 @@ public enum AnghkooeyModelContainer {
 
     /// Builds the on-disk production container for the given sync mode.
     ///
-    /// Both `.local` and `.cloudKit` use `AnghkooeySchemaV4` + `AnghkooeyMigrationPlan`
+    /// Both `.local` and `.cloudKit` use `AnghkooeySchemaV5` + `AnghkooeyMigrationPlan`
     /// so flipping the toggle never changes the schema — only the storage backend.
     ///
     /// - Parameter url: Explicit store URL (for tests). When `nil`, SwiftData uses
