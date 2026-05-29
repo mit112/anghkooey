@@ -43,7 +43,8 @@ public enum CoreLog {
     /// Uses the `"PointsOfInterest"` category so intervals appear in the
     /// Instruments **Points of Interest** track. Interval names used by
     /// M3 capture: `"inbox-drain"`, `"share-tap-to-inbox-write"`,
-    /// `"card-review-sheet-ready"`.
+    /// `"card-review-sheet-ready"`. M8 optimization: `"fsrs-optimization"`
+    /// (one interval per personal-parameter optimization run).
     public static var poiSignposter: OSSignposter {
         OSSignposter(subsystem: subsystem, category: "PointsOfInterest")
     }
