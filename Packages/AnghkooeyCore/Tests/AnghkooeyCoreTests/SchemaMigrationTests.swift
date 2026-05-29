@@ -17,15 +17,21 @@ struct SchemaMigrationTests {
     /// and fails to cast after a lightweight migration. The migration plan is verified
     /// structurally here; the on-device path is tested by the app-target smoke test.
     @Test func migrationPlanStructureIsCorrect() {
-        #expect(AnghkooeyMigrationPlan.schemas.count == 3)
-        #expect(AnghkooeyMigrationPlan.stages.count == 2)
+        // V1→V2 (LTM), V2→V3 (mnemonic), V3→V4 (Anki import), V4→V5 (cloze).
+        #expect(AnghkooeyMigrationPlan.schemas.count == 5)
+        #expect(AnghkooeyMigrationPlan.stages.count == 4)
     }
 
-    @Test func v3ContainerWithMigrationPlanInitializesClean() throws {
-        let v3Schema = Schema(versionedSchema: AnghkooeySchemaV3.self)
-        let config = ModelConfiguration(schema: v3Schema, isStoredInMemoryOnly: true)
+    @Test func currentSchemaContainerWithMigrationPlanInitializesClean() throws {
+        // Open at the CURRENT schema (V5) so the `Card` typealias (= V5.Card)
+        // fetch is type-consistent. Declaring an older schema version here while
+        // fetching V5.Card crashes SwiftData's PersistentIdentifier registry
+        // when this test is co-resident with other V5 tests in the same process
+        // (see feedback_swiftdata_versioned_namespacing).
+        let schema = Schema(versionedSchema: AnghkooeySchemaV5.self)
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
         let container = try ModelContainer(
-            for: v3Schema,
+            for: schema,
             migrationPlan: AnghkooeyMigrationPlan.self,
             configurations: [config]
         )
