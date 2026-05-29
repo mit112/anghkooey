@@ -1,6 +1,9 @@
 import SwiftUI
+import AnghkooeyCore
+import AnghkooeyUI
 
 struct SettingsView: View {
+    @Environment(AppState.self) private var appState
     @Environment(FreezeController.self) private var freeze
 
     var body: some View {
@@ -33,6 +36,17 @@ struct SettingsView: View {
                     Text("While frozen, no cards become due. When you turn this off, your deck slides forward by however many days you were away — no overdue debt.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+                }
+
+                Section("Schedule optimization") {
+                    NavigationLink("Optimize my schedule") {
+                        OptimizeScheduleView(
+                            store: appState.cardStore,
+                            paramsStore: appState.optimizedParamsStore,
+                            onOptimized: { await appState.refreshScheduler() }
+                        )
+                        .navigationTitle("Optimize Schedule")
+                    }
                 }
 
                 Section("iCloud Sync") {

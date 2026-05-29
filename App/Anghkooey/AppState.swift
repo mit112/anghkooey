@@ -60,7 +60,7 @@ final class AppState: @unchecked Sendable {
     private var notificationToken: InboxNotificationToken?
     private let cardAuthor: any CardAuthoringService
     private var widgetReconciler: WidgetGradeReconciler
-    private let optimizedParamsStore: OptimizedParametersStore
+    let optimizedParamsStore: OptimizedParametersStore
     private let widgetContainerURL: URL
 
     /// The resolved FSRS engine — default params until enough history accumulates.
