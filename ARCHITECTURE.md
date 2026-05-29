@@ -871,6 +871,8 @@ run. Default-arg call sites cannot be `async`, which is why resolution lives in
 **UI.** `OptimizeScheduleView` + `OptimizeScheduleViewModel` (AnghkooeyUI) surface the
 locked "unlocks at N reviews" empty state, the trigger, a progress bar, and the
 before/after summary, calling back to `AppState.refreshScheduler()` on completion.
+Hosted in `SettingsView` under a "Schedule optimization" `NavigationLink`; reads
+`appState.cardStore` and `appState.optimizedParamsStore` directly.
 
 **Parity oracle.** `scripts/fsrs-optimizer/` generates the loss-based parity fixture with
 a self-contained stdlib FD-Adam oracle running the same algorithm (py-fsrs's torch
