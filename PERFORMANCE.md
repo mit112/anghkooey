@@ -150,3 +150,46 @@ measured at 0.163 ms max; total path including `ModelContext.save()` estimated <
 under the 100 ms budget. End-to-end capture path from M3.10 (worst-case < 5 s, image + OCR) is
 unchanged. MetricKit subscriber wired; histogram pending first device run. Interactive Instruments
 baseline (Points of Interest track screenshot) pending first real-device TestFlight run.
+
+---
+
+## M8 — Personal FSRS-6 Optimization
+
+**Signpost interval:** `"fsrs-optimization"` (Points of Interest track), one interval per
+optimization run, wrapping the entire `LiveFSRSOptimizer.optimize(_:from:progress:)` call.
+
+**What the run does.** Pretrain `w[0..3]` (per-rating-bucket 1-D Adam, 200 iters) → 60
+mini-batch Adam epochs (batch 256, lr 0.01) over the 21-weight vector, each epoch computing
+a central finite-difference gradient (21 weights × 2 evals × full-batch replay) of the
+binary-cross-entropy loss over the user's replayed review history. This is CPU-bound,
+pure-value-type computation — no I/O, no allocation hot loop.
+
+**Measured trace.** Reproducible benchmark `OptimizerPerfMeasurement` (Core test target,
+`.disabled` so it does not run in the suite; remove the trait to re-run). Real
+`LiveFSRSOptimizer` over a real `SyntheticReviews` collection — **not** `MockFSRSOptimizer`.
+Environment: macOS arm64 via `swift test` (Apple Silicon), Debug build.
+
+| Cards | Eligible samples | Wall-clock | Resident memory | Baseline → Optimized BCE |
+|------:|-----------------:|-----------:|----------------:|--------------------------|
+| 200   | 1 786            | 2.39 s     | ~12 MB          | 0.28191 → 0.27863        |
+| 400   | 3 564            | 3.06 s     | ~12 MB          | 0.27716 → 0.27488        |
+
+**Reading the trace.** Wall-clock grows sub-linearly with eligible-sample count (the
+per-epoch gradient cost is dominated by the fixed 60 epochs × 42 evals, not by dataset
+size within this range), and **resident memory is flat at ~12 MB** — the replay carries
+only `(d, s)` scalars per card and a 21-element weight vector, allocating nothing
+proportional to history length. Both sizes clear the 512-eligible gate comfortably, so
+the table reflects the gated production path, not a toy input.
+
+**On-device budget verdict.** A 2–3 s, ~12 MB, user-initiated, one-shot computation is
+well within a "tap *Optimize my schedule* and watch a progress bar" interaction — no
+background scheduling, no memory pressure, no battery concern. The A-series device will be
+somewhat slower than this Apple-Silicon Mac figure, but the flat memory profile and the
+single-digit-second wall-clock leave ample headroom. This is the genuine before/after
+optimization opportunity that M5's exit notes correctly said did not yet exist: M8 is the
+first milestone with a measurable on-device numerical workload, and it fits.
+
+**Deferred.** On-device Instruments capture of the `"fsrs-optimization"` Points-of-Interest
+interval (screenshot + device wall-clock) is part of M8 device QA, consistent with the
+project's code-complete / device-QA-pending pattern. The signpost is wired and will fire on
+device with no further code change.

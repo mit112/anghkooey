@@ -826,3 +826,53 @@ and the CloudKit V5 container gate (T2).
 **Pre-existing failure (not M7):** `AnkiImporterTests.import_reviewCard_preservesDueDate`
 fails (`card.dueAt` nil vs expected `2024-02-22`). This pre-dates M7 and is
 unrelated to cloze — tracked separately.
+
+## M8 — Personal FSRS-6 Optimization
+
+M8 fits the 21 FSRS-6 weights to the user's own review history on device, gated at
+≥512 eligible samples and applied globally to scheduling. Design rationale and the
+numerical-stability decisions are in **ADR-0005**; the performance trace is in
+**PERFORMANCE.md §M8**. This section records the structure.
+
+**One math surface (the load-bearing decision).** `LiveFSRSOptimizer` computes the
+loss by *replaying* each card's history through the existing, parity-verified
+`LiveFSRS6Engine` primitives (`forgettingCurve`, `nextMemoryState`) under a candidate
+weight vector — it never re-implements the FSRS formulas. A single private
+`forEachEligible` replay drives `meanLoss`, the finite-difference gradient, and
+`achievedRetention`. A scheduler bug and an optimizer bug therefore cannot diverge.
+
+**Replay-based dataset (no leaked state).** `OptimizationDataset` reconstructs ordered
+per-card `[ReviewSample]` sequences from a narrow `OptimizationReviewLogRow` projection
+carrying only `(cardID, reviewedAt, rating, elapsedDays)`. It deliberately drops the
+logged `stabilityBefore`/`difficultyBefore` — those were computed under default `w` and
+are wrong for any candidate `w`; state is replayed inside the loss instead. Eligibility
+(`index > 0 && elapsedDays > 0`) and the per-card sequence cap live here.
+
+**Optimization pipeline.** `optimize(_:from:progress:)`:
+1. `meanLoss` under `.default` → baseline.
+2. `pretrainInitialStability` fits `w[0..3]` per first-review rating bucket (1-D Adam).
+3. 60 mini-batch Adam epochs over the 21-weight vector; central finite-difference
+   gradient with per-parameter relative epsilon; per-step clamping to FSRS-6 ranges;
+   `SeededGenerator` (SplitMix64) for reproducible shuffles.
+4. `meanLoss` under fitted `w` → optimized; deltas + `achievedRetention`.
+The whole run is wrapped in the `"fsrs-optimization"` `OSSignposter` interval.
+
+**Storage + resolution flow.** `OptimizedParametersStore` persists only the 21-element
+`w` as JSON in the app-group container (so the widget reads the same set), rebuilding it
+onto the ADR-0002-immutable `.default` via `FSRSParameters.withWeights`.
+`resolveParameters(eligibleSampleCount:)` returns the stored set at/above the 512 gate
+and `.default` otherwise. `AppState.refreshScheduler()` owns resolution: it reads
+`CardStore.optimizationReviewLogs()`, counts eligible samples, resolves the engine, and
+rebuilds both the `ReviewScreen` scheduler (via `ContentView`) and the
+`WidgetGradeReconciler`. It runs on launch, after each drain, and after an optimization
+run. Default-arg call sites cannot be `async`, which is why resolution lives in
+`AppState` rather than at the `LiveFSRS6Engine()` defaults.
+
+**UI.** `OptimizeScheduleView` + `OptimizeScheduleViewModel` (AnghkooeyUI) surface the
+locked "unlocks at N reviews" empty state, the trigger, a progress bar, and the
+before/after summary, calling back to `AppState.refreshScheduler()` on completion.
+
+**Parity oracle.** `scripts/fsrs-optimizer/` generates the loss-based parity fixture with
+a self-contained stdlib FD-Adam oracle running the same algorithm (py-fsrs's torch
+optimizer was unavailable on the build machine — see ADR-0005 for the deviation and its
+honest tradeoff). Validation is loss-based, never weight-equality.
