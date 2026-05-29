@@ -13,9 +13,18 @@ let package = Package(
             targets: ["AnghkooeyCore"]
         )
     ],
+    dependencies: [
+        .package(url: "https://github.com/weichsel/ZIPFoundation.git", exact: "0.9.20")
+    ],
     targets: [
         .target(
-            name: "AnghkooeyCore"
+            name: "AnghkooeyCore",
+            dependencies: [
+                .product(name: "ZIPFoundation", package: "ZIPFoundation")
+            ],
+            linkerSettings: [
+                .linkedLibrary("sqlite3")
+            ]
         ),
         .testTarget(
             name: "AnghkooeyCoreTests",
@@ -23,7 +32,5 @@ let package = Package(
             resources: [.process("Fixtures")]
         )
     ],
-    // Strict concurrency is enforced implicitly by Swift 6 language mode (.v6).
-    // No .enableExperimentalFeature("StrictConcurrency") is needed.
     swiftLanguageModes: [.v6]
 )

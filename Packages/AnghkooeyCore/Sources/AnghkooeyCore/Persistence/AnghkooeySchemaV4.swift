@@ -1,22 +1,15 @@
 import Foundation
 import SwiftData
 
-/// V3 of the Anghkooey persistence schema.
-///
-/// Adds the `mnemonic` field to `Card`. All additions carry safe defaults
-/// (Optional) so V2 → V3 is a lightweight migration — no copy logic needed.
-public enum AnghkooeySchemaV3: VersionedSchema {
-    public static let versionIdentifier = Schema.Version(3, 0, 0)
+public enum AnghkooeySchemaV4: VersionedSchema {
+    public static let versionIdentifier = Schema.Version(4, 0, 0)
 
     public static var models: [any PersistentModel.Type] {
-        // ReviewLog and Tag are unversioned; only list them in V5 (the latest
-        // schema) to avoid duplicate-checksum crash in CoreData migration.
-        [AnghkooeySchemaV3.Card.self]
+        [AnghkooeySchemaV4.Card.self]
     }
 }
 
-public extension AnghkooeySchemaV3 {
-    /// V3 of the Card model. Adds the `mnemonic` column.
+public extension AnghkooeySchemaV4 {
     @Model
     public final class Card {
         @Attribute(.unique) public var id: UUID
@@ -34,16 +27,14 @@ public extension AnghkooeySchemaV3 {
         @Relationship(deleteRule: .cascade, inverse: \ReviewLog.card)
         public var reviewLogs: [ReviewLog]
 
+        // V4: sourceSpan promoted to card-level field (was present in V3, V4 is migration anchor for import)
         public var sourceSpan: String?
 
-        // V2 step-machine fields — Optional for lightweight V1→V2 migration
         public var reps: Int?
         public var lapses: Int?
         public var learningSteps: Int?
         public var scheduledDays: Double?
         public var elapsedDays: Double?
-
-        // V3 mnemonic — Optional so V2-era rows get NULL (not a validation error)
         public var mnemonic: String?
 
         public init(

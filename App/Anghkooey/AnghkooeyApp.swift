@@ -5,11 +5,17 @@ import AnghkooeyCore
 import AnghkooeyIntelligence
 import AnghkooeyUI
 
+// URL is not Identifiable by default; this conformance lets .sheet(item:) accept a URL.
+extension URL: @retroactive Identifiable {
+    public var id: String { absoluteString }
+}
+
 @main
 struct AnghkooeyApp: App {
     @State private var appState: AppState
     @State private var freezeController: FreezeController
     @State private var clipboardCoordinator = ClipboardCaptureCoordinator(offerStore: UserDefaultsOfferStore())
+    @State private var pendingImportURL: URL?
     @Environment(\.scenePhase) private var scenePhase
     private let metricsReceiver = MetricsReceiver()
 
@@ -54,6 +60,20 @@ struct AnghkooeyApp: App {
                             clipboardCoordinator.consider(clipboardText: text)
                         }
                     }
+                }
+                .onOpenURL { url in
+                    if url.pathExtension.lowercased() == "apkg" {
+                        pendingImportURL = url
+                    }
+                }
+                .sheet(item: $pendingImportURL) { url in
+                    AnkiImportView(
+                        importer: LiveAnkiImporter(store: appState.cardStore),
+                        isPresented: Binding(
+                            get: { pendingImportURL != nil },
+                            set: { if !$0 { pendingImportURL = nil } }
+                        )
+                    )
                 }
                 .sheet(item: $appState.presentedDraft) { identified in
                     CardReviewSheet(

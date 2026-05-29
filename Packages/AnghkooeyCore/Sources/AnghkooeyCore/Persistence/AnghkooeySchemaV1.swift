@@ -12,7 +12,7 @@ public enum AnghkooeySchemaV1: VersionedSchema {
 
     public static var models: [any PersistentModel.Type] {
         // ReviewLog and Tag are unversioned; they only appear in the latest
-        // schema (V3). Listing them in every version causes CoreData to see
+        // schema (V5). Listing them in every version causes CoreData to see
         // duplicate checksums and throw NSInvalidArgumentException at init.
         [AnghkooeySchemaV1.Card.self]
     }
@@ -24,7 +24,7 @@ public enum AnghkooeySchemaV1: VersionedSchema {
 /// day one so the call-site shape never changes when V2 lands.
 public enum AnghkooeyMigrationPlan: SchemaMigrationPlan {
     public static var schemas: [any VersionedSchema.Type] {
-        [AnghkooeySchemaV1.self, AnghkooeySchemaV2.self, AnghkooeySchemaV3.self]
+        [AnghkooeySchemaV1.self, AnghkooeySchemaV2.self, AnghkooeySchemaV3.self, AnghkooeySchemaV4.self, AnghkooeySchemaV5.self]
     }
 
     public static var stages: [MigrationStage] {
@@ -40,6 +40,16 @@ public enum AnghkooeyMigrationPlan: SchemaMigrationPlan {
             .lightweight(
                 fromVersion: AnghkooeySchemaV2.self,
                 toVersion: AnghkooeySchemaV3.self
+            ),
+            // Adding .indexed to sourceSpan — index-only change, no data movement needed.
+            .lightweight(
+                fromVersion: AnghkooeySchemaV3.self,
+                toVersion: AnghkooeySchemaV4.self
+            ),
+            // V5 adds cloze metadata fields, all Optional → V4 rows get NULL. No data movement.
+            .lightweight(
+                fromVersion: AnghkooeySchemaV4.self,
+                toVersion: AnghkooeySchemaV5.self
             )
         ]
     }

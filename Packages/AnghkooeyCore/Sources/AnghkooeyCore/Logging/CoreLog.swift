@@ -35,6 +35,9 @@ public enum CoreLog {
     /// Logger for the capture-inbox pipeline (category `"CaptureInbox"`).
     public static var captureInbox: Logger { Logger(subsystem: subsystem, category: "CaptureInbox") }
 
+    /// Logger for the Anki import pipeline (category `"AnkiImport"`).
+    public static var ankiImport: Logger { Logger(subsystem: subsystem, category: "AnkiImport") }
+
     /// Shared `OSSignposter` for capture-pipeline latency intervals.
     ///
     /// Uses the `"PointsOfInterest"` category so intervals appear in the
