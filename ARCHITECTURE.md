@@ -729,3 +729,100 @@ schema / no-migration-plan bug in `AnghkooeyApp.init()`; (2) duplicate-checksum
 crash from `ReviewLog`/`Tag` appearing in multiple schema versions; (3) iOS 26
 auto-CloudKit activation requires `cloudKitDatabase: .none` for local mode.
 Closes 2026 iOS skill gap #4. See ADR-0011.
+
+## M7 — Cloze Deletion Cards
+
+**Branch:** `m7/cloze-cards`
+**Status:** code-complete; device QA pending (simulator UI interaction is
+unreliable in CI — no `simctl`/MCP tap, AppleScript flaky — so the
+TextEditor → parse-preview → Accept loop is verified by unit tests, not
+on-device taps)
+**ADR:** `docs/DECISIONS/0004-cloze-data-model.md`
+
+M7 adds Anki-style cloze deletion cards. The design constraint was to leave the
+FSRS-6 scheduler and the swipe-to-grade review UI **completely unchanged** — both
+already consume a `Card` as two opaque pre-rendered strings (`question`/`answer`).
+The data model decision (one `Card` per deletion, baked strings, sibling group)
+is recorded in ADR-0004.
+
+### Package topology additions
+
+```
+AnghkooeyCore/
+└── Cloze/
+    ├── ClozeTemplate.swift        — ClozeDeletion, ClozeTemplate, ClozeParseError value types
+    └── ClozeMarkupParser.swift    — pure grammar authority for {{cN::answer::hint}}
+
+AnghkooeyIntelligence/
+└── Cloze/
+    ├── ClozeDraft.swift           — @Generable; markedText + proposedTags
+    ├── ClozeResponse.swift        — @Generable; items: [ClozeDraft]
+    ├── ClozeAuthoringService.swift
+    ├── LiveClozeAuthoringService.swift
+    └── MockClozeAuthoringService.swift
+
+AnghkooeyUI/
+└── Cloze/
+    └── ClozeAuthoringView.swift   — ClozeAuthoringViewModel (@Observable) + ClozeAuthoringView
+```
+
+### Schema
+
+`AnghkooeySchemaV5` adds 5 Optional cloze fields to `Card` — `cardType`,
+`clozeGroupID`, `clozeIndex`, `clozeSourceText`, `clozeBuriedUntil`. V4→V5 is a
+lightweight migration (new Optional fields default to nil on existing rows). Q&A
+cards leave all five nil. `AnghkooeyModelContainer` registers V5 as the current
+schema and adds the V4→V5 stage to the migration plan.
+
+### Data flow
+
+```
+passage text
+  → ClozeAuthoringService.generateClozeDrafts(from:)   (Intelligence; @Generable ClozeDraft)
+  → user edits markup in ClozeAuthoringView            (UI; live parse preview)
+  → ClozeMarkupParser.parse(markedText)                (Core; produces ClozeTemplate)
+  → CardStore.createClozeCards(from:tags:now:)         (Core; fans out N siblings)
+  → N sibling Cards sharing a clozeGroupID
+```
+
+On review, `CardStore.apply` buries the unreviewed siblings of the graded card
+until the next local day via `clozeBuriedUntil`, preventing same-session answer
+leak between deletions of the same passage.
+
+A Q&A / Cloze segmented control in ContentView's Capture tab routes between the
+camera/OCR Q&A path and the text-editor cloze path. `MockClozeAuthoringService`
+is wired in ContentView with a TODO for `LiveClozeAuthoringService`.
+
+### Invariants
+
+- **`ClozeMarkupParser` is the single grammar authority** for `{{cN::answer::hint}}`.
+  AI output, the manual editor, and future Anki import all parse through it;
+  unknown spans pass through verbatim. It rejects all 7 error cases (noDeletions,
+  unclosedMarker, nestedMarker, duplicateIndex, nonPositiveIndex, emptyAnswer,
+  tooManyDeletions).
+- **Cloze cards are immutable post-creation.** No edit path in `CardStore.update`
+  (stays Q&A-oriented) or the Library UI. Re-authoring replaces the group.
+- **`dueCards` uses the `distantPast` sentinel pattern** for the `#Predicate` over
+  the Optional `clozeBuriedUntil` — SwiftData's `#Predicate` cannot express
+  `nil`-as-not-buried directly, so nil is coalesced to `distantPast`.
+- **Review UI and FSRS scheduler are unchanged** — they see pre-rendered
+  `question`/`answer` strings and have no awareness of cloze structure.
+
+### AnkiNoteMapper (T5)
+
+Ordinal-aware source identity so multiple cards from one Anki cloze note map to
+distinct siblings; Anki cloze note types are skipped on import (cloze import is a
+later increment — for now they do not silently produce malformed Q&A cards).
+
+### Tests
+
+85 tests across 20 suites; **84 pass.** New in M7: 11 `ClozeMarkupParserTests`
+(T3), 2 `CardStoreClozeTests` (T4 — fan-out + `reviewingOneSiblingBuriesOthersUntilNextDay`),
+2 `ClozeAuthoringViewModelTests` (T7 — `acceptFansOutSiblings`,
+`rendersQuestionHidingTargetRevealingSiblings`), plus `SchemaMigrationV5Tests`
+(`migrationPlanHasFiveSchemasAndFourStages`, `v4RowsGainNilClozeFieldsUnderV5`)
+and the CloudKit V5 container gate (T2).
+
+**Pre-existing failure (not M7):** `AnkiImporterTests.import_reviewCard_preservesDueDate`
+fails (`card.dueAt` nil vs expected `2024-02-22`). This pre-dates M7 and is
+unrelated to cloze — tracked separately.
