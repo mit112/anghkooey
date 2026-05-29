@@ -5,7 +5,7 @@ import SwiftData
 /// (UI, AppState, tests) should reference `Card` — never
 /// `AnghkooeySchemaVN.Card` directly — so future migrations don't ripple
 /// through call sites.
-public typealias Card = AnghkooeySchemaV4.Card
+public typealias Card = AnghkooeySchemaV5.Card
 
 // MARK: - Card.Snapshot
 

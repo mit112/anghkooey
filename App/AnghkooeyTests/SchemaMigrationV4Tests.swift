@@ -6,8 +6,9 @@ import SwiftData
 struct SchemaMigrationV4Tests {
 
     @Test func migrationPlanHasFourSchemasAndThreeStages() {
-        #expect(AnghkooeyMigrationPlan.schemas.count == 4)
-        #expect(AnghkooeyMigrationPlan.stages.count == 3)
+        // V5 has been added; this test now reflects the full plan shape.
+        #expect(AnghkooeyMigrationPlan.schemas.count == 5)
+        #expect(AnghkooeyMigrationPlan.stages.count == 4)
     }
 
     @Test func v4ContainerInitializesClean() throws {

@@ -5,7 +5,7 @@ public enum AnghkooeySchemaV4: VersionedSchema {
     public static let versionIdentifier = Schema.Version(4, 0, 0)
 
     public static var models: [any PersistentModel.Type] {
-        [AnghkooeySchemaV4.Card.self, ReviewLog.self, Tag.self]
+        [AnghkooeySchemaV4.Card.self]
     }
 }
 

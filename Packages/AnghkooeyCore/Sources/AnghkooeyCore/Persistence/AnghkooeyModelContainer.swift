@@ -21,7 +21,7 @@ public enum AnghkooeyModelContainer {
     /// - Throws: `PersistenceError.containerCreationFailed` if the container
     ///   cannot be created from the V1 schema + in-memory configuration.
     public static func makeInMemoryContainer() throws -> ModelContainer {
-        let schema = Schema(versionedSchema: AnghkooeySchemaV4.self)
+        let schema = Schema(versionedSchema: AnghkooeySchemaV5.self)
         let configuration = ModelConfiguration(
             schema: schema,
             isStoredInMemoryOnly: true,
@@ -34,7 +34,7 @@ public enum AnghkooeyModelContainer {
                 migrationPlan: AnghkooeyMigrationPlan.self,
                 configurations: [configuration]
             )
-            CoreLog.persistence.debug("In-memory ModelContainer created (v4 schema)")
+            CoreLog.persistence.debug("In-memory ModelContainer created (v5 schema)")
             return container
         } catch {
             CoreLog.persistence.error(
@@ -55,7 +55,7 @@ public enum AnghkooeyModelContainer {
     /// - Parameter url: Explicit store URL (for tests). When `nil`, SwiftData uses
     ///   its default Application Support location.
     public static func makeContainer(syncMode: SyncMode, url: URL? = nil) throws -> ModelContainer {
-        let schema = Schema(versionedSchema: AnghkooeySchemaV4.self)
+        let schema = Schema(versionedSchema: AnghkooeySchemaV5.self)
         let configuration: ModelConfiguration
         switch syncMode {
         case .local:
