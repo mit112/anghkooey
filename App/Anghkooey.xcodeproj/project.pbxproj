@@ -23,6 +23,7 @@
 		6E2B75EF1D532905ED043B04 /* AnghkooeyIntelligence in Frameworks */ = {isa = PBXBuildFile; productRef = E463D25A57483D22C74E098F /* AnghkooeyIntelligence */; };
 		79C6AA877BE2A5BCD1BC8E7B /* CardStoreImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20946A67B7AE6E86392427A /* CardStoreImportTests.swift */; };
 		A1B2C3D4E5F6A1B2C3D4E5F6 /* CardStoreClozeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A1B2C3D4E5F7 /* CardStoreClozeTests.swift */; };
+		D7A1B2C3D4E5F6A7B8C9D0E2 /* ClozeAuthoringViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7A1B2C3D4E5F6A7B8C9D0E1 /* ClozeAuthoringViewModelTests.swift */; };
 		8047F56DEDEDE4CC45B33655 /* AddToAnghkooeyIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92BD2E303E0D0DE839C3B7E /* AddToAnghkooeyIntent.swift */; };
 		838F434C0E47994FB38A3774 /* ReviewSessionMnemonicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFF0371E042B2726F73268FF /* ReviewSessionMnemonicTests.swift */; };
 		90186F0B4C28883634834192 /* AnghkooeyWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 5F576AE7AD31EBF6528DAC56 /* AnghkooeyWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -142,6 +143,7 @@
 		DFF0371E042B2726F73268FF /* ReviewSessionMnemonicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewSessionMnemonicTests.swift; sourceTree = "<group>"; };
 		E20946A67B7AE6E86392427A /* CardStoreImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardStoreImportTests.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F6A1B2C3D4E5F7 /* CardStoreClozeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardStoreClozeTests.swift; sourceTree = "<group>"; };
+		D7A1B2C3D4E5F6A7B8C9D0E1 /* ClozeAuthoringViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClozeAuthoringViewModelTests.swift; sourceTree = "<group>"; };
 		EA63E5FA330602579BBE4E25 /* Anghkooey.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Anghkooey.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EDF6E399E89202CEDB2D18F8 /* HTMLSanitizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLSanitizerTests.swift; sourceTree = "<group>"; };
 		AA000001000000000000AA01 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -290,6 +292,7 @@
 				DC510E7B9D8F52E50E4CCED4 /* AppStateEnqueueTests.swift */,
 				E20946A67B7AE6E86392427A /* CardStoreImportTests.swift */,
 					A1B2C3D4E5F6A1B2C3D4E5F7 /* CardStoreClozeTests.swift */,
+					D7A1B2C3D4E5F6A7B8C9D0E1 /* ClozeAuthoringViewModelTests.swift */,
 				A052FDB039D5DFD8BACF02A7 /* ClipboardCaptureCoordinatorTests.swift */,
 				5B5DEC5926D8513370FD52E5 /* CloudKitV5SchemaTests.swift */,
 				B0CC79B996E9B8B2CF2DFC0D /* ClozeAuthoringServiceTests.swift */,
@@ -527,6 +530,7 @@
 				EA01604E660F4F05E86D4778 /* AppStateEnqueueTests.swift in Sources */,
 				79C6AA877BE2A5BCD1BC8E7B /* CardStoreImportTests.swift in Sources */,
 					A1B2C3D4E5F6A1B2C3D4E5F6 /* CardStoreClozeTests.swift in Sources */,
+					D7A1B2C3D4E5F6A7B8C9D0E2 /* ClozeAuthoringViewModelTests.swift in Sources */,
 				FCB6CFEC88A0183CD60308F3 /* ClipboardCaptureCoordinatorTests.swift in Sources */,
 				582792F95044259D37BC944E /* CloudKitV5SchemaTests.swift in Sources */,
 				F0B8CFE921BE7F3C4C57296E /* ClozeAuthoringServiceTests.swift in Sources */,
