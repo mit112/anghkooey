@@ -45,16 +45,16 @@ public enum ClozeMarkupParser {
                 insideMarker = false
 
                 let content = String(String.UnicodeScalarView(contentScalars))
-                let deletion = try parseMarkerContent(content)
-
-                if deletion.index <= 0 {
-                    throw ClozeParseError.nonPositiveIndex(deletion.index)
+                if let deletion = try parseMarkerContent(content) {
+                    if deletion.index <= 0 {
+                        throw ClozeParseError.nonPositiveIndex(deletion.index)
+                    }
+                    if seenIndices.contains(deletion.index) {
+                        throw ClozeParseError.duplicateIndex(deletion.index)
+                    }
+                    seenIndices.insert(deletion.index)
+                    deletions.append(deletion)
                 }
-                if seenIndices.contains(deletion.index) {
-                    throw ClozeParseError.duplicateIndex(deletion.index)
-                }
-                seenIndices.insert(deletion.index)
-                deletions.append(deletion)
             } else {
                 i += 1
             }
@@ -87,7 +87,9 @@ public enum ClozeMarkupParser {
 
     // MARK: - Private helpers
 
-    private static func parseMarkerContent(_ content: String) throws -> ClozeDeletion {
+    /// Returns `nil` if the marker doesn't match the `cN::answer` grammar (treat as plain text).
+    /// Throws only for structurally invalid `cN` markers (empty answer, non-positive index, etc.).
+    private static func parseMarkerContent(_ content: String) throws -> ClozeDeletion? {
         // Split on '::' — first: cN, second: answer, optional third: hint
         var parts: [String] = []
         var current = ""
@@ -105,25 +107,17 @@ public enum ClozeMarkupParser {
         }
         parts.append(current)
 
-        guard parts.count >= 2 else {
-            // Malformed marker — treat as no deletions? Actually we should error.
-            // But spec says the grammar is {{cN::answer}} so < 2 parts is invalid.
-            // For simplicity: if no "::" found and content starts with 'c', error.
-            throw ClozeParseError.noDeletions
-        }
+        // Not enough parts — not a cN marker; skip silently.
+        guard parts.count >= 2 else { return nil }
 
         let label = parts[0] // e.g. "c1"
         let answer = parts[1]
         let hint: String? = parts.count >= 3 ? parts[2] : nil
 
-        // Parse index from label
-        guard label.hasPrefix("c") else {
-            throw ClozeParseError.noDeletions
-        }
+        // Label doesn't start with 'c' or has non-integer suffix — skip silently (plain text).
+        guard label.hasPrefix("c") else { return nil }
         let indexStr = String(label.dropFirst())
-        guard let index = Int(indexStr) else {
-            throw ClozeParseError.noDeletions
-        }
+        guard let index = Int(indexStr) else { return nil }
 
         if index <= 0 {
             throw ClozeParseError.nonPositiveIndex(index)

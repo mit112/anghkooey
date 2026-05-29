@@ -57,4 +57,15 @@ import Testing
     @Test func rejectsNonPositiveIndex() {
         #expect(throws: ClozeParseError.nonPositiveIndex(0)) { try ClozeMarkupParser.parse("{{c0::a}}") }
     }
+    @Test func rejectsNestedMarker() {
+        #expect(throws: ClozeParseError.nestedMarker) {
+            try ClozeMarkupParser.parse("{{c1::{{c2::nested}}}}")
+        }
+    }
+    @Test func rejectsTooManyDeletions() throws {
+        let markup = (1...21).map { "{{c\($0)::word\($0)}}" }.joined(separator: " ")
+        #expect(throws: ClozeParseError.tooManyDeletions(count: 21, max: 20)) {
+            try ClozeMarkupParser.parse(markup)
+        }
+    }
 }
