@@ -34,7 +34,7 @@ struct AnkiNoteMapperTests {
         let mapped = try #require(AnkiNoteMapper.map(note: note, collection: collection, importedAt: importedAt))
         #expect(mapped.question == "What is ATP?")
         #expect(mapped.answer == "Adenosine triphosphate")
-        #expect(mapped.sourceSpan == "anki:9001")
+        #expect(mapped.sourceSpan == "anki:9001:0")
     }
 
     @Test func basicNote_htmlStripped() throws {
@@ -105,5 +105,20 @@ struct AnkiNoteMapperTests {
         let note = makeNote(modelID: 3, front: "Bonjour", back: "Hello")
         let mapped = AnkiNoteMapper.map(note: note, collection: collection, importedAt: importedAt)
         #expect(mapped == nil)
+    }
+
+    // MARK: Ordinal-aware identity + cloze skip
+
+    @Test func sourceSpanIncludesCardOrdinal() {
+        let span0 = AnkiNoteMapper.sourceSpan(noteID: 42, cardOrd: 0)
+        let span1 = AnkiNoteMapper.sourceSpan(noteID: 42, cardOrd: 1)
+        #expect(span0 == "anki:42:0")
+        #expect(span1 == "anki:42:1")
+        #expect(span0 != span1)
+    }
+
+    @Test func clozeNoteTypesAreSkipped() {
+        #expect(AnkiNoteMapper.isClozeModel(name: "Cloze") == true)
+        #expect(AnkiNoteMapper.isClozeModel(name: "Basic") == false)
     }
 }
