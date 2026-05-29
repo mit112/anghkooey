@@ -145,12 +145,14 @@ import sys
 
 # ── FSRS-6 default weights (ts-fsrs v5.4.0 pinned, len=21) ──────────────────
 
+# MUST match FSRSParameters.default.w exactly (ADR-0002, ts-fsrs v5.4.0 pinned).
+# This is NOT the FSRS-6 reference default vector — the codebase pins its own.
+# The baseline loss is computed under these weights and asserted (abs 0.001)
+# against Swift's optimize(from: .default) baseline, so they must be identical.
 DEFAULT_W = [
-    0.40255, 1.18385, 3.1262, 15.4722,  # w[0..3]: initial stability
-    7.2102,  0.5316,  1.0651, 0.06098,  # w[4..7]
-    1.616,   0.1544,  1.0070, 1.9395,   # w[8..11]
-    0.11,    0.29605, 2.2698, 0.2315,   # w[12..15]
-    2.9898,  0.51,    0.43,   0.01, 0.7  # w[16..20]
+    0.212, 1.2931, 2.3065, 8.2956, 6.4133, 0.8334, 3.0194, 0.001,
+    1.8722, 0.1666, 0.796, 1.4835, 0.0614, 0.2629, 1.6483, 0.6014,
+    1.8729, 0.5425, 0.0912, 0.0658, 0.1542,
 ]
 
 # Rating raw values (matches Swift Rating enum: Again=1,Hard=2,Good=3,Easy=4)
