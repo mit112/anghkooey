@@ -35,6 +35,8 @@ public extension Card {
         public let scheduledDays: Double
         public let elapsedDays: Double
         public let mnemonic: String?
+        public let clozeGroupID: UUID?
+        public let clozeBuriedUntil: Date?
 
         public init(
             id: UUID,
@@ -52,7 +54,9 @@ public extension Card {
             learningSteps: Int = 0,
             scheduledDays: Double = 0,
             elapsedDays: Double = 0,
-            mnemonic: String? = nil
+            mnemonic: String? = nil,
+            clozeGroupID: UUID? = nil,
+            clozeBuriedUntil: Date? = nil
         ) {
             self.id = id
             self.question = question
@@ -70,6 +74,8 @@ public extension Card {
             self.scheduledDays = scheduledDays
             self.elapsedDays = elapsedDays
             self.mnemonic = mnemonic
+            self.clozeGroupID = clozeGroupID
+            self.clozeBuriedUntil = clozeBuriedUntil
         }
 
         init(from card: Card) {
@@ -89,7 +95,9 @@ public extension Card {
                 learningSteps: card.learningSteps ?? 0,
                 scheduledDays: card.scheduledDays ?? 0,
                 elapsedDays: card.elapsedDays ?? 0,
-                mnemonic: card.mnemonic
+                mnemonic: card.mnemonic,
+                clozeGroupID: card.clozeGroupID,
+                clozeBuriedUntil: card.clozeBuriedUntil
             )
         }
 
@@ -201,6 +209,10 @@ public protocol CardStoreProtocol: Sendable {
         dueAt: Date,
         now: Date
     ) async throws -> Card.Snapshot
+
+    /// Fans a cloze template into one card per deletion, all sharing a fresh
+    /// `clozeGroupID`. Each card's `question`/`answer` are pre-rendered.
+    func createClozeCards(from template: ClozeTemplate, tags: [String], now: Date) async throws -> [Card.Snapshot]
 }
 
 // MARK: - CardStoreProtocol backward-compat extensions
@@ -276,10 +288,15 @@ public actor CardStore: CardStoreProtocol {
     }
 
     public func dueCards(asOf now: Date) async throws -> [Card.Snapshot] {
-        let predicate = #Predicate<Card> { $0.dueAt <= now }
-        let descriptor = FetchDescriptor<Card>(predicate: predicate)
-        let cards = try modelContext.fetch(descriptor)
-        return cards.map { Card.Snapshot(from: $0) }
+        let distantPast = Date.distantPast
+        let predicate = #Predicate<Card> {
+            $0.dueAt <= now && ($0.clozeBuriedUntil ?? distantPast) <= now
+        }
+        let descriptor = FetchDescriptor<Card>(
+            predicate: predicate,
+            sortBy: [SortDescriptor(\.dueAt), SortDescriptor(\.id)]
+        )
+        return try modelContext.fetch(descriptor).map { Card.Snapshot(from: $0) }
     }
 
     public func apply(_ output: SchedulerOutput, to cardID: UUID, grade: Rating, now: Date) async throws {
@@ -299,6 +316,15 @@ public actor CardStore: CardStoreProtocol {
         card.scheduledDays = output.card.scheduledDays
         card.elapsedDays = output.card.elapsedDays
         card.updatedAt = now
+
+        if let groupID = card.clozeGroupID {
+            let buryUntil = Calendar.current.startOfDay(for: now).addingTimeInterval(86_400)
+            let reviewedID = card.id
+            let sibPredicate = #Predicate<Card> { $0.clozeGroupID == groupID && $0.id != reviewedID }
+            for sib in try modelContext.fetch(FetchDescriptor<Card>(predicate: sibPredicate)) {
+                sib.clozeBuriedUntil = buryUntil
+            }
+        }
 
         let log = ReviewLog(
             id: UUID(),
@@ -427,6 +453,26 @@ public actor CardStore: CardStoreProtocol {
         }
         return Card.Snapshot(from: card)
     }
+
+    public func createClozeCards(from template: ClozeTemplate, tags: [String], now: Date) async throws -> [Card.Snapshot] {
+        let tagObjects = try findOrCreateTags(tags)
+        let groupID = UUID()
+        var snaps: [Card.Snapshot] = []
+        for idx in template.indices {
+            let card = Card(
+                question: ClozeMarkupParser.renderQuestion(template, index: idx),
+                answer: ClozeMarkupParser.renderAnswer(template, index: idx),
+                createdAt: now, updatedAt: now, tags: tagObjects,
+                dueAt: now,
+                cardType: .cloze, clozeGroupID: groupID, clozeIndex: idx,
+                clozeSourceText: template.markup
+            )
+            modelContext.insert(card)
+            snaps.append(Card.Snapshot(from: card))
+        }
+        do { try modelContext.save() } catch { modelContext.rollback(); throw error }
+        return snaps
+    }
 }
 
 // MARK: - MockCardStore
@@ -461,7 +507,7 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
     }
 
     public func dueCards(asOf now: Date) async throws -> [Card.Snapshot] {
-        cards.filter { $0.dueAt <= now }
+        cards.filter { $0.dueAt <= now && ($0.clozeBuriedUntil ?? .distantPast) <= now }
     }
 
     public func apply(_ output: SchedulerOutput, to cardID: UUID, grade: Rating, now: Date) async throws {
@@ -485,8 +531,27 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
             learningSteps: output.card.learningSteps,
             scheduledDays: output.card.scheduledDays,
             elapsedDays: output.card.elapsedDays,
-            mnemonic: old.mnemonic
+            mnemonic: old.mnemonic,
+            clozeGroupID: old.clozeGroupID,
+            clozeBuriedUntil: old.clozeBuriedUntil
         )
+        // Bury cloze siblings until next day
+        if let groupID = old.clozeGroupID {
+            let buryUntil = Calendar.current.startOfDay(for: now).addingTimeInterval(86_400)
+            cards = cards.map { snap in
+                guard snap.clozeGroupID == groupID, snap.id != cardID else { return snap }
+                return Card.Snapshot(
+                    id: snap.id, question: snap.question, answer: snap.answer,
+                    sourceSpan: snap.sourceSpan, tags: snap.tags,
+                    state: snap.state, stability: snap.stability, difficulty: snap.difficulty,
+                    dueAt: snap.dueAt, lastReviewedAt: snap.lastReviewedAt,
+                    reps: snap.reps, lapses: snap.lapses, learningSteps: snap.learningSteps,
+                    scheduledDays: snap.scheduledDays, elapsedDays: snap.elapsedDays,
+                    mnemonic: snap.mnemonic, clozeGroupID: snap.clozeGroupID,
+                    clozeBuriedUntil: buryUntil
+                )
+            }
+        }
     }
 
     public func count(asOf now: Date) async throws -> (total: Int, due: Int) {
@@ -596,5 +661,27 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
         )
         cards.append(snap)
         return snap
+    }
+
+    public func createClozeCards(from template: ClozeTemplate, tags: [String], now: Date) async throws -> [Card.Snapshot] {
+        if let err = createError { throw err }
+        let groupID = UUID()
+        var snaps: [Card.Snapshot] = []
+        for idx in template.indices {
+            let snap = Card.Snapshot(
+                id: UUID(),
+                question: ClozeMarkupParser.renderQuestion(template, index: idx),
+                answer: ClozeMarkupParser.renderAnswer(template, index: idx),
+                tags: tags,
+                state: .new,
+                stability: 0,
+                difficulty: 0,
+                dueAt: now,
+                clozeGroupID: groupID
+            )
+            snaps.append(snap)
+            cards.append(snap)
+        }
+        return snaps
     }
 }
