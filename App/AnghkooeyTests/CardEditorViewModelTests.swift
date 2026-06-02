@@ -32,4 +32,22 @@ import AnghkooeyCore
         let all = try await store.allCards()
         #expect(all.contains { $0.question == "2+2?" && $0.answer == "4" })
     }
+
+    @Test func clozeModeBuildsTemplateAndCreatesCards() async throws {
+        let store = MockCardStore()
+        let vm = CardEditorViewModel(mode: .create, store: store)
+        vm.kind = .cloze
+        vm.clozeText = "The capital of France is {{c1::Paris}}."
+        #expect(vm.canSave == true)
+        try await vm.save()
+        let all = try await store.allCards()
+        #expect(all.contains { $0.question.contains("capital of France") })
+    }
+
+    @Test func clozeWithoutDeletionIsInvalid() {
+        let vm = CardEditorViewModel(mode: .create, store: MockCardStore())
+        vm.kind = .cloze
+        vm.clozeText = "No deletions here."
+        #expect(vm.canSave == false)
+    }
 }

@@ -10,9 +10,15 @@ public final class CardEditorViewModel {
         case edit(Card.Snapshot)
     }
 
+    public enum Kind: Equatable {
+        case qa, cloze
+    }
+
     public var question: String = ""
     public var answer: String = ""
     public var tags: [String] = []
+    public var kind: Kind = .qa
+    public var clozeText: String = ""
     public private(set) var isSaving = false
 
     private let mode: Mode
@@ -32,10 +38,25 @@ public final class CardEditorViewModel {
         if case .create = mode { return "New Card" } else { return "Edit Card" }
     }
 
+    public var isCreateMode: Bool {
+        if case .create = mode { return true }
+        return false
+    }
+
+    private var parsedCloze: ClozeTemplate? {
+        try? ClozeMarkupParser.parse(clozeText)
+    }
+
     public var canSave: Bool {
-        !question.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        && !answer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        && !isSaving
+        guard !isSaving else { return false }
+        switch kind {
+        case .qa:
+            return !question.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                && !answer.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        case .cloze:
+            guard let t = parsedCloze else { return false }
+            return !t.deletions.isEmpty
+        }
     }
 
     public func save() async throws {
@@ -45,7 +66,13 @@ public final class CardEditorViewModel {
         defer { isSaving = false }
         switch mode {
         case .create:
-            _ = try await store.create(question: q, answer: a, sourceSpan: nil, tags: tags, now: .now)
+            switch kind {
+            case .qa:
+                _ = try await store.create(question: q, answer: a, sourceSpan: nil, tags: tags, now: .now)
+            case .cloze:
+                guard let template = parsedCloze else { return }
+                _ = try await store.createClozeCards(from: template, tags: tags, now: .now)
+            }
         case let .edit(card):
             try await store.update(id: card.id, question: q, answer: a, tags: tags)
         }

@@ -21,13 +21,33 @@ public struct LibraryCardEditView: View {
     public var body: some View {
         NavigationStack {
             Form {
-                Section("Question") {
-                    TextField("Question", text: $model.question, axis: .vertical)
-                        .lineLimit(3...)
+                if model.isCreateMode {
+                    Picker("Type", selection: $model.kind) {
+                        Text("Q&A").tag(CardEditorViewModel.Kind.qa)
+                        Text("Cloze").tag(CardEditorViewModel.Kind.cloze)
+                    }
+                    .pickerStyle(.segmented)
                 }
-                Section("Answer") {
-                    TextField("Answer", text: $model.answer, axis: .vertical)
-                        .lineLimit(3...)
+                if model.kind == .cloze {
+                    Section("Cloze sentence") {
+                        TextField("e.g. The capital of France is {{c1::Paris}}.",
+                                  text: $model.clozeText,
+                                  axis: .vertical)
+                            .lineLimit(3...)
+                        if let t = try? ClozeMarkupParser.parse(model.clozeText), !t.deletions.isEmpty {
+                            Text("\(t.deletions.count) deletion\(t.deletions.count == 1 ? "" : "s") detected")
+                                .font(.caption).foregroundStyle(.secondary)
+                        }
+                    }
+                } else {
+                    Section("Question") {
+                        TextField("Question", text: $model.question, axis: .vertical)
+                            .lineLimit(3...)
+                    }
+                    Section("Answer") {
+                        TextField("Answer", text: $model.answer, axis: .vertical)
+                            .lineLimit(3...)
+                    }
                 }
                 Section("Tags") {
                     TagEditorView(tags: $model.tags)
