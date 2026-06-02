@@ -22,6 +22,11 @@
 		65C5300478257265174ECB34 /* AnghkooeyUI in Frameworks */ = {isa = PBXBuildFile; productRef = 35F7FD1699C5DB4B94EEF7ED /* AnghkooeyUI */; };
 		6E2B75EF1D532905ED043B04 /* AnghkooeyIntelligence in Frameworks */ = {isa = PBXBuildFile; productRef = E463D25A57483D22C74E098F /* AnghkooeyIntelligence */; };
 		79C6AA877BE2A5BCD1BC8E7B /* CardStoreImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20946A67B7AE6E86392427A /* CardStoreImportTests.swift */; };
+		A1B2C3D4E5F6A1B2C3D4E5F6 /* CardStoreClozeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A1B2C3D4E5F7 /* CardStoreClozeTests.swift */; };
+		B1C2D3E4F5A6B1C2D3E4F5A6 /* CardStoreOptimizationLogsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E4F5A6B1C2D3E4F5A7 /* CardStoreOptimizationLogsTests.swift */; };
+		C2D3E4F5A6B7C2D3E4F5A6B7 /* AppStateSchedulerResolutionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D3E4F5A6B7C2D3E4F5A6B8 /* AppStateSchedulerResolutionTests.swift */; };
+		D3E4F5A6B7C8D3E4F5A6B7C8 /* OptimizeScheduleViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E4F5A6B7C8D3E4F5A6B7C9 /* OptimizeScheduleViewModelTests.swift */; };
+		D7A1B2C3D4E5F6A7B8C9D0E2 /* ClozeAuthoringViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7A1B2C3D4E5F6A7B8C9D0E1 /* ClozeAuthoringViewModelTests.swift */; };
 		8047F56DEDEDE4CC45B33655 /* AddToAnghkooeyIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92BD2E303E0D0DE839C3B7E /* AddToAnghkooeyIntent.swift */; };
 		838F434C0E47994FB38A3774 /* ReviewSessionMnemonicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFF0371E042B2726F73268FF /* ReviewSessionMnemonicTests.swift */; };
 		90186F0B4C28883634834192 /* AnghkooeyWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 5F576AE7AD31EBF6528DAC56 /* AnghkooeyWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -29,37 +34,39 @@
 		9E7D95BB2127525A1D3BD776 /* AddToAnghkooeyIntentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 912B355EF6B2C114C9EC763F /* AddToAnghkooeyIntentTests.swift */; };
 		A05524AC1F7FA8D8F1C2D24D /* GradeCardIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58DC8A89BB756CFDD147D74E /* GradeCardIntent.swift */; };
 		A1161DD57B95A46494E6EEFA /* AnkiImporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AD794AD57F5F37BC67AAB49 /* AnkiImporterTests.swift */; };
-		A1B2C3D4E5F6A1B2C3D4E5F6 /* CardStoreClozeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A1B2C3D4E5F7 /* CardStoreClozeTests.swift */; };
 		A7AE1592FEEDA52EA1AD8284 /* AnghkooeyShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 0A037B8F43852214FC842CDF /* AnghkooeyShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		AA000001000000000000BB01 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA000001000000000000AA01 /* PrivacyInfo.xcprivacy */; };
-		AA000001000000000000BB02 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA000001000000000000AA02 /* PrivacyInfo.xcprivacy */; };
-		AA000001000000000000BB03 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA000001000000000000AA03 /* PrivacyInfo.xcprivacy */; };
 		ABB53006BD7A54F597BA4FAE /* sample.apkg in Resources */ = {isa = PBXBuildFile; fileRef = 1984AFE61E092F2A64C6836E /* sample.apkg */; };
 		AE10CC0370F7C76BD262A2C7 /* AnkiPackageParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C32F9A6C7C0C292DE3ED8B1C /* AnkiPackageParserTests.swift */; };
 		AE2B092616BDC257E899D84C /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A6AE21F57389F2FA533F696 /* ShareViewController.swift */; };
-		B1C2D3E4F5A6B1C2D3E4F5A6 /* CardStoreOptimizationLogsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E4F5A6B1C2D3E4F5A7 /* CardStoreOptimizationLogsTests.swift */; };
 		BB5809147A8AC7D33F6E8A41 /* AnghkooeyCore in Frameworks */ = {isa = PBXBuildFile; productRef = 6050CC9AE2B0A888BBACD0E2 /* AnghkooeyCore */; };
 		BD158D82F31B74D299DF85F8 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E3ED969F4ECE89B0A25E87 /* ContentView.swift */; };
-		C2D3E4F5A6B7C2D3E4F5A6B7 /* AppStateSchedulerResolutionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D3E4F5A6B7C2D3E4F5A6B8 /* AppStateSchedulerResolutionTests.swift */; };
 		C6CE3B6A74FF27E6CCA0C154 /* AnkiNoteMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9649E9840BC5BA0D460B7FAA /* AnkiNoteMapperTests.swift */; };
 		C6E53CFF60B17F8A49163A0C /* SchemaMigrationV5Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3444A07A3C879498B6BFA02D /* SchemaMigrationV5Tests.swift */; };
 		CF23B824F937A853DF4C5C24 /* ClozeMarkupParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10541EABA7F5E2AF4A8A0343 /* ClozeMarkupParserTests.swift */; };
 		D1F38339D375EA3DC2616DAF /* HTMLSanitizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDF6E399E89202CEDB2D18F8 /* HTMLSanitizerTests.swift */; };
 		D3617197E24653996EEF5832 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 473B3A4650CFC7C87202D922 /* SettingsView.swift */; };
-		D3E4F5A6B7C8D3E4F5A6B7C8 /* OptimizeScheduleViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E4F5A6B7C8D3E4F5A6B7C9 /* OptimizeScheduleViewModelTests.swift */; };
 		D4C6DC87B925B0639F76684A /* FreezeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC74FCA67847F9D7EE391AA /* FreezeController.swift */; };
 		D6002CEE061540D958B46B78 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55F0F922386EE72B02D5FC3F /* AppState.swift */; };
 		D65B97A8CF3D2E004B70EA7B /* GradeReconciliationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4CD4A2A610E1C7AE3424E2A /* GradeReconciliationTests.swift */; };
-		D7A1B2C3D4E5F6A7B8C9D0E2 /* ClozeAuthoringViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7A1B2C3D4E5F6A7B8C9D0E1 /* ClozeAuthoringViewModelTests.swift */; };
 		DEEF868DF6F4C88CCE3C7571 /* ClipboardBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA7D84144C067F4521BC0B97 /* ClipboardBanner.swift */; };
 		EA01604E660F4F05E86D4778 /* AppStateEnqueueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC510E7B9D8F52E50E4CCED4 /* AppStateEnqueueTests.swift */; };
 		F0B8CFE921BE7F3C4C57296E /* ClozeAuthoringServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0CC79B996E9B8B2CF2DFC0D /* ClozeAuthoringServiceTests.swift */; };
 		F0E1C867C58E5B0E8205FA7F /* ClipboardCaptureCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ED5054838A0E774E245236E /* ClipboardCaptureCoordinator.swift */; };
 		FC26B2EE4475B376727E2BE2 /* AnghkooeyShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68C7356437F150F3733DF0DD /* AnghkooeyShortcuts.swift */; };
 		FCB6CFEC88A0183CD60308F3 /* ClipboardCaptureCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A052FDB039D5DFD8BACF02A7 /* ClipboardCaptureCoordinatorTests.swift */; };
-		E9M1T2A3B4C5D6E7F8A9B0C2 /* CardEditorViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9M1T2A3B4C5D6E7F8A9B0C1 /* CardEditorViewModelTests.swift */; };
+		AA000001000000000000BB01 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA000001000000000000AA01 /* PrivacyInfo.xcprivacy */; };
+		AA000001000000000000BB02 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA000001000000000000AA02 /* PrivacyInfo.xcprivacy */; };
+		AA000001000000000000BB03 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA000001000000000000AA03 /* PrivacyInfo.xcprivacy */; };
+		A0APPCORE00000000BUILDF00 /* AnghkooeyCore in Frameworks */ = {isa = PBXBuildFile; productRef = A0APPCORE00000000PRODREF0 /* AnghkooeyCore */; };
+		A0APPINTL00000000BUILDF00 /* AnghkooeyIntelligence in Frameworks */ = {isa = PBXBuildFile; productRef = A0APPINTL00000000PRODREF0 /* AnghkooeyIntelligence */; };
 		E9M1T2A3B4C5D6E7F8A9B0C4 /* AnghkooeyUI in Frameworks */ = {isa = PBXBuildFile; productRef = E9M1T2A3B4C5D6E7F8A9B0C3 /* AnghkooeyUI */; };
-/* End PBXBuildFile section */
+		A1B2C3D4E5F6A1B2C3D4E5F6 /* CardStoreClozeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F6A1B2C3D4E5F7 /* CardStoreClozeTests.swift */; };
+		B1C2D3E4F5A6B1C2D3E4F5A6 /* CardStoreOptimizationLogsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E4F5A6B1C2D3E4F5A7 /* CardStoreOptimizationLogsTests.swift */; };
+		C2D3E4F5A6B7C2D3E4F5A6B7 /* AppStateSchedulerResolutionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D3E4F5A6B7C2D3E4F5A6B8 /* AppStateSchedulerResolutionTests.swift */; };
+		D3E4F5A6B7C8D3E4F5A6B7C8 /* OptimizeScheduleViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E4F5A6B7C8D3E4F5A6B7C9 /* OptimizeScheduleViewModelTests.swift */; };
+		D7A1B2C3D4E5F6A7B8C9D0E2 /* ClozeAuthoringViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7A1B2C3D4E5F6A7B8C9D0E1 /* ClozeAuthoringViewModelTests.swift */; };
+		E9M1T2A3B4C5D6E7F8A9B0C2 /* CardEditorViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9M1T2A3B4C5D6E7F8A9B0C1 /* CardEditorViewModelTests.swift */; };
+	/* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
 		5E4306B26091E4AF36AF970E /* PBXContainerItemProxy */ = {
@@ -106,9 +113,9 @@
 		05AE6CEC6D1FBAFFB4F9F656 /* WidgetGradeReconciler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetGradeReconciler.swift; sourceTree = "<group>"; };
 		071F54EC6FF668936C218728 /* AnghkooeyCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AnghkooeyCore; path = ../Packages/AnghkooeyCore; sourceTree = SOURCE_ROOT; };
 		098D0C5450147DE402DC643A /* AnghkooeyWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AnghkooeyWidget.entitlements; sourceTree = "<group>"; };
-		0A037B8F43852214FC842CDF /* AnghkooeyShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AnghkooeyShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		0A037B8F43852214FC842CDF /* AnghkooeyShare.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = AnghkooeyShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		10541EABA7F5E2AF4A8A0343 /* ClozeMarkupParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClozeMarkupParserTests.swift; sourceTree = "<group>"; };
-		1984AFE61E092F2A64C6836E /* sample.apkg */ = {isa = PBXFileReference; lastKnownFileType = file; path = sample.apkg; sourceTree = "<group>"; };
+		1984AFE61E092F2A64C6836E /* sample.apkg */ = {isa = PBXFileReference; path = sample.apkg; sourceTree = "<group>"; };
 		1CD36BC6DD0A3A1B128803A5 /* AnghkooeyWidget-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "AnghkooeyWidget-Info.plist"; sourceTree = "<group>"; };
 		2343F02E0386139B64E683EC /* AnghkooeyWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnghkooeyWidgetBundle.swift; sourceTree = "<group>"; };
 		2542710C06ECE7EB817FF4F8 /* SyncPreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncPreference.swift; sourceTree = "<group>"; };
@@ -122,7 +129,7 @@
 		5B5DEC5926D8513370FD52E5 /* CloudKitV5SchemaTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitV5SchemaTests.swift; sourceTree = "<group>"; };
 		5BC74FCA67847F9D7EE391AA /* FreezeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreezeController.swift; sourceTree = "<group>"; };
 		5ED5054838A0E774E245236E /* ClipboardCaptureCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardCaptureCoordinator.swift; sourceTree = "<group>"; };
-		5F576AE7AD31EBF6528DAC56 /* AnghkooeyWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AnghkooeyWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		5F576AE7AD31EBF6528DAC56 /* AnghkooeyWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = AnghkooeyWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		6170637242A7E485A643F715 /* MetricsReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsReceiverTests.swift; sourceTree = "<group>"; };
 		6303924A04882FA4C900557B /* AnghkooeyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnghkooeyApp.swift; sourceTree = "<group>"; };
 		68C7356437F150F3733DF0DD /* AnghkooeyShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnghkooeyShortcuts.swift; sourceTree = "<group>"; };
@@ -135,30 +142,35 @@
 		912B355EF6B2C114C9EC763F /* AddToAnghkooeyIntentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddToAnghkooeyIntentTests.swift; sourceTree = "<group>"; };
 		9649E9840BC5BA0D460B7FAA /* AnkiNoteMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnkiNoteMapperTests.swift; sourceTree = "<group>"; };
 		A052FDB039D5DFD8BACF02A7 /* ClipboardCaptureCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardCaptureCoordinatorTests.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F6A1B2C3D4E5F7 /* CardStoreClozeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardStoreClozeTests.swift; sourceTree = "<group>"; };
 		A35276B7D331FB0334E9C818 /* Anghkooey.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Anghkooey.entitlements; sourceTree = "<group>"; };
 		A4CD4A2A610E1C7AE3424E2A /* GradeReconciliationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradeReconciliationTests.swift; sourceTree = "<group>"; };
-		AA000001000000000000AA01 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		AA000001000000000000AA02 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		AA000001000000000000AA03 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		B0CC79B996E9B8B2CF2DFC0D /* ClozeAuthoringServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClozeAuthoringServiceTests.swift; sourceTree = "<group>"; };
-		B1C2D3E4F5A6B1C2D3E4F5A7 /* CardStoreOptimizationLogsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardStoreOptimizationLogsTests.swift; sourceTree = "<group>"; };
 		BA7D84144C067F4521BC0B97 /* ClipboardBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardBanner.swift; sourceTree = "<group>"; };
 		BAD05419FDB54EF847E4F217 /* FreezeControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreezeControllerTests.swift; sourceTree = "<group>"; };
-		C2D3E4F5A6B7C2D3E4F5A6B8 /* AppStateSchedulerResolutionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateSchedulerResolutionTests.swift; sourceTree = "<group>"; };
 		C32F9A6C7C0C292DE3ED8B1C /* AnkiPackageParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnkiPackageParserTests.swift; sourceTree = "<group>"; };
 		C92BD2E303E0D0DE839C3B7E /* AddToAnghkooeyIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddToAnghkooeyIntent.swift; sourceTree = "<group>"; };
-		D3E4F5A6B7C8D3E4F5A6B7C9 /* OptimizeScheduleViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptimizeScheduleViewModelTests.swift; sourceTree = "<group>"; };
-		D7A1B2C3D4E5F6A7B8C9D0E1 /* ClozeAuthoringViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClozeAuthoringViewModelTests.swift; sourceTree = "<group>"; };
 		DC510E7B9D8F52E50E4CCED4 /* AppStateEnqueueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateEnqueueTests.swift; sourceTree = "<group>"; };
 		DC86FF464394DC7B8C2BA50D /* MetricsReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsReceiver.swift; sourceTree = "<group>"; };
 		DDAD0965A49F13A5EF35F4A5 /* SchemaMigrationV4Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchemaMigrationV4Tests.swift; sourceTree = "<group>"; };
 		DFF0371E042B2726F73268FF /* ReviewSessionMnemonicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewSessionMnemonicTests.swift; sourceTree = "<group>"; };
 		E20946A67B7AE6E86392427A /* CardStoreImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardStoreImportTests.swift; sourceTree = "<group>"; };
-		EA63E5FA330602579BBE4E25 /* Anghkooey.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Anghkooey.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1B2C3D4E5F6A1B2C3D4E5F7 /* CardStoreClozeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardStoreClozeTests.swift; sourceTree = "<group>"; };
+		B1C2D3E4F5A6B1C2D3E4F5A7 /* CardStoreOptimizationLogsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardStoreOptimizationLogsTests.swift; sourceTree = "<group>"; };
+		C2D3E4F5A6B7C2D3E4F5A6B8 /* AppStateSchedulerResolutionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateSchedulerResolutionTests.swift; sourceTree = "<group>"; };
+		D3E4F5A6B7C8D3E4F5A6B7C9 /* OptimizeScheduleViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptimizeScheduleViewModelTests.swift; sourceTree = "<group>"; };
+		D7A1B2C3D4E5F6A7B8C9D0E1 /* ClozeAuthoringViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClozeAuthoringViewModelTests.swift; sourceTree = "<group>"; };
+		EA63E5FA330602579BBE4E25 /* Anghkooey.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Anghkooey.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EDF6E399E89202CEDB2D18F8 /* HTMLSanitizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLSanitizerTests.swift; sourceTree = "<group>"; };
+		AA000001000000000000AA01 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		AA000001000000000000AA02 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		AA000001000000000000AA03 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		A1B2C3D4E5F6A1B2C3D4E5F7 /* CardStoreClozeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardStoreClozeTests.swift; sourceTree = "<group>"; };
+		B1C2D3E4F5A6B1C2D3E4F5A7 /* CardStoreOptimizationLogsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardStoreOptimizationLogsTests.swift; sourceTree = "<group>"; };
+		C2D3E4F5A6B7C2D3E4F5A6B8 /* AppStateSchedulerResolutionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateSchedulerResolutionTests.swift; sourceTree = "<group>"; };
+		D3E4F5A6B7C8D3E4F5A6B7C9 /* OptimizeScheduleViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptimizeScheduleViewModelTests.swift; sourceTree = "<group>"; };
+		D7A1B2C3D4E5F6A7B8C9D0E1 /* ClozeAuthoringViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClozeAuthoringViewModelTests.swift; sourceTree = "<group>"; };
 		E9M1T2A3B4C5D6E7F8A9B0C1 /* CardEditorViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardEditorViewModelTests.swift; sourceTree = "<group>"; };
-/* End PBXFileReference section */
+	/* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		060225AC14E6BB94935D5B02 /* Frameworks */ = {
@@ -166,8 +178,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				2D9E9B81761E8255480D8A34 /* AnghkooeyCore in Frameworks */,
-				E9M1T2A3B4C5D6E7F8A9B0C4 /* AnghkooeyUI in Frameworks */,
 				6E2B75EF1D532905ED043B04 /* AnghkooeyIntelligence in Frameworks */,
+				E9M1T2A3B4C5D6E7F8A9B0C4 /* AnghkooeyUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -184,6 +196,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				65C5300478257265174ECB34 /* AnghkooeyUI in Frameworks */,
+				A0APPCORE00000000BUILDF00 /* AnghkooeyCore in Frameworks */,
+				A0APPINTL00000000BUILDF00 /* AnghkooeyIntelligence in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -301,12 +315,12 @@
 				C32F9A6C7C0C292DE3ED8B1C /* AnkiPackageParserTests.swift */,
 				DC510E7B9D8F52E50E4CCED4 /* AppStateEnqueueTests.swift */,
 				E20946A67B7AE6E86392427A /* CardStoreImportTests.swift */,
-				A1B2C3D4E5F6A1B2C3D4E5F7 /* CardStoreClozeTests.swift */,
-				B1C2D3E4F5A6B1C2D3E4F5A7 /* CardStoreOptimizationLogsTests.swift */,
-				C2D3E4F5A6B7C2D3E4F5A6B8 /* AppStateSchedulerResolutionTests.swift */,
-				D3E4F5A6B7C8D3E4F5A6B7C9 /* OptimizeScheduleViewModelTests.swift */,
-				D7A1B2C3D4E5F6A7B8C9D0E1 /* ClozeAuthoringViewModelTests.swift */,
-				E9M1T2A3B4C5D6E7F8A9B0C1 /* CardEditorViewModelTests.swift */,
+					A1B2C3D4E5F6A1B2C3D4E5F7 /* CardStoreClozeTests.swift */,
+					B1C2D3E4F5A6B1C2D3E4F5A7 /* CardStoreOptimizationLogsTests.swift */,
+					C2D3E4F5A6B7C2D3E4F5A6B8 /* AppStateSchedulerResolutionTests.swift */,
+					D3E4F5A6B7C8D3E4F5A6B7C9 /* OptimizeScheduleViewModelTests.swift */,
+					D7A1B2C3D4E5F6A7B8C9D0E1 /* ClozeAuthoringViewModelTests.swift */,
+					E9M1T2A3B4C5D6E7F8A9B0C1 /* CardEditorViewModelTests.swift */,
 				A052FDB039D5DFD8BACF02A7 /* ClipboardCaptureCoordinatorTests.swift */,
 				5B5DEC5926D8513370FD52E5 /* CloudKitV5SchemaTests.swift */,
 				B0CC79B996E9B8B2CF2DFC0D /* ClozeAuthoringServiceTests.swift */,
@@ -343,6 +357,7 @@
 				86F48F1F9CC0C93AC8355A3A /* Sources */,
 				F917D06412004FAA2CDCEB46 /* Frameworks */,
 				C101D8F13C1F879865AD4379 /* Embed Foundation Extensions */,
+			
 				AA000001000000000000CC01 /* Resources */,
 			);
 			buildRules = (
@@ -354,6 +369,8 @@
 			name = Anghkooey;
 			packageProductDependencies = (
 				35F7FD1699C5DB4B94EEF7ED /* AnghkooeyUI */,
+				A0APPCORE00000000PRODREF0 /* AnghkooeyCore */,
+				A0APPINTL00000000PRODREF0 /* AnghkooeyIntelligence */,
 			);
 			productName = Anghkooey;
 			productReference = EA63E5FA330602579BBE4E25 /* Anghkooey.app */;
@@ -365,6 +382,7 @@
 			buildPhases = (
 				A5916AC2634611C961D45B6E /* Sources */,
 				FDDC6AE7EA9F2F67E5237851 /* Frameworks */,
+			
 				AA000001000000000000CC03 /* Resources */,
 			);
 			buildRules = (
@@ -385,6 +403,7 @@
 			buildPhases = (
 				AE8C7FE4FFFAB2EF0393B4DC /* Sources */,
 				ECD9F8F6385B28F86CD116B5 /* Frameworks */,
+			
 				AA000001000000000000CC02 /* Resources */,
 			);
 			buildRules = (
@@ -431,6 +450,15 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					02F92088487C152845F92C84 = {
+						ProvisioningStyle = Manual;
+					};
+					5590F6898AB2844890005CC7 = {
+						ProvisioningStyle = Manual;
+					};
+					7F720F6F21CF5127D7884289 = {
+						ProvisioningStyle = Manual;
+					};
 					C633685C3DE84BD0C1A8C9F8 = {
 						ProvisioningStyle = Manual;
 					};
@@ -488,6 +516,9 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXResourcesBuildPhase section */
 		EB8A11E0D0AE56D311485B46 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -529,12 +560,12 @@
 				AE10CC0370F7C76BD262A2C7 /* AnkiPackageParserTests.swift in Sources */,
 				EA01604E660F4F05E86D4778 /* AppStateEnqueueTests.swift in Sources */,
 				79C6AA877BE2A5BCD1BC8E7B /* CardStoreImportTests.swift in Sources */,
-				A1B2C3D4E5F6A1B2C3D4E5F6 /* CardStoreClozeTests.swift in Sources */,
-				B1C2D3E4F5A6B1C2D3E4F5A6 /* CardStoreOptimizationLogsTests.swift in Sources */,
-				C2D3E4F5A6B7C2D3E4F5A6B7 /* AppStateSchedulerResolutionTests.swift in Sources */,
-				D3E4F5A6B7C8D3E4F5A6B7C8 /* OptimizeScheduleViewModelTests.swift in Sources */,
-				D7A1B2C3D4E5F6A7B8C9D0E2 /* ClozeAuthoringViewModelTests.swift in Sources */,
-				E9M1T2A3B4C5D6E7F8A9B0C2 /* CardEditorViewModelTests.swift in Sources */,
+					A1B2C3D4E5F6A1B2C3D4E5F6 /* CardStoreClozeTests.swift in Sources */,
+					B1C2D3E4F5A6B1C2D3E4F5A6 /* CardStoreOptimizationLogsTests.swift in Sources */,
+					C2D3E4F5A6B7C2D3E4F5A6B7 /* AppStateSchedulerResolutionTests.swift in Sources */,
+					D3E4F5A6B7C8D3E4F5A6B7C8 /* OptimizeScheduleViewModelTests.swift in Sources */,
+					D7A1B2C3D4E5F6A7B8C9D0E2 /* ClozeAuthoringViewModelTests.swift in Sources */,
+					E9M1T2A3B4C5D6E7F8A9B0C2 /* CardEditorViewModelTests.swift in Sources */,
 				FCB6CFEC88A0183CD60308F3 /* ClipboardCaptureCoordinatorTests.swift in Sources */,
 				582792F95044259D37BC944E /* CloudKitV5SchemaTests.swift in Sources */,
 				F0B8CFE921BE7F3C4C57296E /* ClozeAuthoringServiceTests.swift in Sources */,
@@ -593,10 +624,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Anghkooey/Anghkooey.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 3P89U4WZAB;
 				INFOPLIST_FILE = Anghkooey/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -605,7 +635,6 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.mitsheth.anghkooey;
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
@@ -718,9 +747,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = AnghkooeyShare/AnghkooeyShare.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 3P89U4WZAB;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "AnghkooeyShare/AnghkooeyShare-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
@@ -730,7 +758,6 @@
 					"@executable_path/../../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.mitsheth.anghkooey.share;
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
@@ -742,9 +769,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = AnghkooeyWidget/AnghkooeyWidget.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 3P89U4WZAB;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "AnghkooeyWidget/AnghkooeyWidget-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
@@ -754,7 +780,6 @@
 					"@executable_path/../../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.mitsheth.anghkooey.widget;
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
@@ -766,9 +791,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = AnghkooeyWidget/AnghkooeyWidget.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 3P89U4WZAB;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "AnghkooeyWidget/AnghkooeyWidget-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
@@ -778,7 +802,6 @@
 					"@executable_path/../../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.mitsheth.anghkooey.widget;
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
@@ -855,10 +878,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = Anghkooey/Anghkooey.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 3P89U4WZAB;
 				INFOPLIST_FILE = Anghkooey/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -867,7 +889,6 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.mitsheth.anghkooey;
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
@@ -879,9 +900,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = AnghkooeyShare/AnghkooeyShare.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 3P89U4WZAB;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "AnghkooeyShare/AnghkooeyShare-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
@@ -891,7 +911,6 @@
 					"@executable_path/../../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.mitsheth.anghkooey.share;
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.0;
@@ -969,6 +988,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 54CE233A161E231738B6F5EF /* XCLocalSwiftPackageReference "../Packages/AnghkooeyUI" */;
 			productName = AnghkooeyUI;
+		};
+		A0APPCORE00000000PRODREF0 /* AnghkooeyCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AC0176BD46B94200BE7F8FD8 /* XCLocalSwiftPackageReference "../Packages/AnghkooeyCore" */;
+			productName = AnghkooeyCore;
+		};
+		A0APPINTL00000000PRODREF0 /* AnghkooeyIntelligence */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 855497277983DEBA7676E36C /* XCLocalSwiftPackageReference "../Packages/AnghkooeyIntelligence" */;
+			productName = AnghkooeyIntelligence;
 		};
 		35F7FD1699C5DB4B94EEF7ED /* AnghkooeyUI */ = {
 			isa = XCSwiftPackageProductDependency;
