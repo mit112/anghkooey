@@ -193,3 +193,12 @@ first milestone with a measurable on-device numerical workload, and it fits.
 interval (screenshot + device wall-clock) is part of M8 device QA, consistent with the
 project's code-complete / device-QA-pending pattern. The signpost is wired and will fire on
 device with no further code change.
+
+## M9 — Solid From First Tap
+
+**No material review-render change.** M9's review-loop polish (framed question/answer
+card with a `.regularMaterial` background, per-rating interval labels, a session-complete
+`ReviewSummary`) adds one material-backed container and static text per card — not a new
+list, animation, or per-frame computation. The M6 review-tap budget (`submit()` p95 well
+under the 100 ms gate; see §M6) is unaffected, so no fresh Instruments trace was captured
+for this milestone. Re-confirm during M9 on-device QA alongside the camera/torch pass.
