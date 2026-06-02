@@ -9,6 +9,7 @@ import AnghkooeyCore
 public struct LibraryView: View {
 
     let store: any CardStoreProtocol
+    private let loadSampleCards: (() async -> Void)?
 
     @State private var cards: [Card.Snapshot] = []
     @State private var selectedTag: String? = nil
@@ -17,8 +18,9 @@ public struct LibraryView: View {
     @State private var showingImport = false
     @State private var showingCreate = false
 
-    public init(store: any CardStoreProtocol) {
+    public init(store: any CardStoreProtocol, loadSampleCards: (() async -> Void)? = nil) {
         self.store = store
+        self.loadSampleCards = loadSampleCards
     }
 
     private var allTags: [String] {
@@ -36,11 +38,21 @@ public struct LibraryView: View {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if cards.isEmpty {
-                ContentUnavailableView(
-                    "No Cards Yet",
-                    systemImage: "rectangle.stack",
-                    description: Text("Cards you accept appear here.")
-                )
+                ContentUnavailableView {
+                    Label("No cards yet", systemImage: "rectangle.stack")
+                } description: {
+                    Text("Add a card, import your Anki deck, or try a sample.")
+                } actions: {
+                    Button("Add a card") { showingCreate = true }
+                        .buttonStyle(.borderedProminent)
+                        .accessibilityLabel("Add a new card")
+                    Button("Import from Anki") { showingImport = true }
+                    if let loader = loadSampleCards {
+                        Button("Load sample deck") {
+                            Task { await loader(); await load() }
+                        }
+                    }
+                }
             } else {
                 cardList
             }

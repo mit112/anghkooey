@@ -12,11 +12,21 @@ struct ContentView: View {
     @State private var captureMode: CaptureMode = .qa
     @State private var selectedTab: Int = 0
     @State private var onboardingState = OnboardingState()
+    @State private var showingImportFromReview = false
+
+    private func sampleLoader() -> SampleDeckLoader {
+        SampleDeckLoader(store: appState.cardStore)
+    }
 
     var body: some View {
         TabView(selection: $selectedTab) {
             NavigationStack {
-                ReviewScreen(store: appState.cardStore, scheduler: appState.scheduler)
+                ReviewScreen(
+                    store: appState.cardStore,
+                    scheduler: appState.scheduler,
+                    loadSampleCards: { try? await sampleLoader().load(now: .now) },
+                    onImport: { showingImportFromReview = true }
+                )
             }
             .tabItem { Label("Review", systemImage: "rectangle.on.rectangle") }
             .tag(0)
@@ -58,7 +68,10 @@ struct ContentView: View {
             .tag(1)
 
             NavigationStack {
-                LibraryView(store: appState.cardStore)
+                LibraryView(
+                    store: appState.cardStore,
+                    loadSampleCards: { try? await sampleLoader().load(now: .now) }
+                )
             }
             .tabItem { Label("Library", systemImage: "books.vertical") }
             .tag(2)
@@ -79,6 +92,12 @@ struct ContentView: View {
                     }
                 },
                 onFinish: { onboardingState.complete() }
+            )
+        }
+        .sheet(isPresented: $showingImportFromReview) {
+            AnkiImportView(
+                importer: LiveAnkiImporter(store: appState.cardStore),
+                isPresented: $showingImportFromReview
             )
         }
         .safeAreaInset(edge: .top) {

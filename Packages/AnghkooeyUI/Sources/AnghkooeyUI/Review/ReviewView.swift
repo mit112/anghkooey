@@ -13,15 +13,22 @@ import AnghkooeyCore
 public struct ReviewView: View {
 
     @Bindable var session: ReviewSession
+    private let loadSampleCards: (() async -> Void)?
+    private let onImport: (() -> Void)?
     @State private var againTrigger = false
     @State private var hardTrigger = false
     @State private var goodTrigger = false
     @State private var easyTrigger = false
     @State private var dragOffset: CGSize = .zero
     @State private var isEditSheetPresented: Bool = false
+    @State private var showingCreate = false
 
-    public init(session: ReviewSession) {
+    public init(session: ReviewSession,
+                loadSampleCards: (() async -> Void)? = nil,
+                onImport: (() -> Void)? = nil) {
         self.session = session
+        self.loadSampleCards = loadSampleCards
+        self.onImport = onImport
     }
 
     public var body: some View {
@@ -312,25 +319,46 @@ public struct ReviewView: View {
 
     private var emptyBody: some View {
         VStack(spacing: 12) {
-            if session.summary.reviewed > 0 {
-                VStack(spacing: 6) {
-                    Text("Session complete")
-                        .font(.headline)
-                    Text("You reviewed **\(session.summary.reviewed)** card\(session.summary.reviewed == 1 ? "" : "s") · **\(session.summary.accuracyPercent)%** remembered")
-                        .font(.subheadline)
-                        .multilineTextAlignment(.center)
-                        .foregroundStyle(.secondary)
+            if session.totalCardCount == 0 {
+                ContentUnavailableView {
+                    Label("No cards yet", systemImage: "rectangle.stack")
+                } description: {
+                    Text("Add a card, import your Anki deck, or try a sample.")
+                } actions: {
+                    Button("Add a card") { showingCreate = true }
+                        .buttonStyle(.borderedProminent)
+                        .accessibilityLabel("Add a new card")
+                    Button("Import from Anki") { onImport?() }
+                    if let loader = loadSampleCards {
+                        Button("Load sample deck") { Task { await loader(); await session.loadDueQueue() } }
+                    }
                 }
-                .padding()
-                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
-                .padding(.horizontal)
+            } else {
+                if session.summary.reviewed > 0 {
+                    VStack(spacing: 6) {
+                        Text("Session complete")
+                            .font(.headline)
+                        Text("You reviewed **\(session.summary.reviewed)** card\(session.summary.reviewed == 1 ? "" : "s") · **\(session.summary.accuracyPercent)%** remembered")
+                            .font(.subheadline)
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding()
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                    .padding(.horizontal)
+                }
+                ltmBanner
+                ContentUnavailableView(
+                    "All caught up",
+                    systemImage: "checkmark.circle.fill",
+                    description: Text("Come back when your next review is due, or capture something new to grow your deck.")
+                )
             }
-            ltmBanner
-            ContentUnavailableView(
-                "All caught up",
-                systemImage: "checkmark.circle.fill",
-                description: Text("Come back when your next review is due, or capture something new to grow your deck.")
-            )
+        }
+        .sheet(isPresented: $showingCreate) {
+            LibraryCardEditView(mode: .create, store: session.store) {
+                Task { await session.loadDueQueue() }
+            }
         }
     }
 }

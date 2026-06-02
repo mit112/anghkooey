@@ -64,6 +64,10 @@ public final class ReviewSession {
         queueRemaining + (currentCard != nil ? 1 : 0)
     }
 
+    /// Total cards in the store (not just due). Updated in `loadDueQueue()`.
+    /// Use to distinguish "nothing due" from "deck is empty".
+    public private(set) var totalCardCount: Int = 0
+
     /// True when a `MnemonicService` was injected — `ReviewView` uses this to
     /// conditionally render the "Generate Mnemonic" button.
     public var isMnemonicAvailable: Bool { mnemonicService != nil }
@@ -80,7 +84,7 @@ public final class ReviewSession {
 
     // MARK: Private
 
-    private let store: any CardStoreProtocol
+    public let store: any CardStoreProtocol
     private let scheduler: any FSRS6Engine
     private let clock: @Sendable () -> Date
     private var queue: [Card.Snapshot] = []
@@ -121,6 +125,7 @@ public final class ReviewSession {
             isAnswerRevealed = false
             summary = ReviewSummary()
             state = visible.isEmpty ? .empty : .reviewing
+            totalCardCount = visible.isEmpty ? ((try? await store.allCards().count) ?? 0) : allDue.count
             currentMnemonic = currentCard?.mnemonic
             ltmCount = (try? await store.longTermMemoryCount(thresholdDays: LTMConfig.defaultThresholdDays)) ?? ltmCount
             isMnemonicLoading = false
