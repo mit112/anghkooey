@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 import CryptoKit
+import UIKit
 
 struct ClipboardOffer: Equatable {
     let text: String
@@ -52,10 +53,21 @@ final class ClipboardCaptureCoordinator {
         pendingOffer = ClipboardOffer(text: clipboardText)
     }
 
+    /// Non-prompting detection: checks `hasStrings` without reading content.
+    /// Actual content is read in `acceptOffer()` after explicit user tap.
+    func refreshOffer() {
+        guard UIPasteboard.general.hasStrings else { pendingOffer = nil; return }
+        guard pendingOffer == nil else { return }
+        pendingOffer = ClipboardOffer(text: "")
+    }
+
     func acceptOffer() {
         guard let offer = pendingOffer else { return }
-        onRoute?(offer.text)
-        offerStore.offeredHashes.append(Self.hash(for: offer.text))
+        // If consider() stored the text directly, use it; otherwise read from pasteboard now (user action).
+        let text = offer.text.isEmpty ? (UIPasteboard.general.string ?? "") : offer.text
+        guard !text.isEmpty else { pendingOffer = nil; return }
+        onRoute?(text)
+        offerStore.offeredHashes.append(Self.hash(for: text))
         while offerStore.offeredHashes.count > ringCapacity {
             offerStore.offeredHashes.removeFirst()
         }

@@ -10,13 +10,15 @@ struct ContentView: View {
     @Environment(AppState.self) private var appState
     @Environment(ClipboardCaptureCoordinator.self) private var clipboardCoordinator
     @State private var captureMode: CaptureMode = .qa
+    @State private var selectedTab: Int = 0
 
     var body: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             NavigationStack {
                 ReviewScreen(store: appState.cardStore, scheduler: appState.scheduler)
             }
             .tabItem { Label("Review", systemImage: "rectangle.on.rectangle") }
+            .tag(0)
 
             NavigationStack {
                 VStack(spacing: 0) {
@@ -28,13 +30,19 @@ struct ContentView: View {
                     .padding(.horizontal)
                     .padding(.top, 8)
 
-                    if captureMode == .qa {
+                    if selectedTab == 1 && captureMode == .qa {
                         CameraView(
                             captureSession: CameraCaptureSession(),
                             ocrService: LiveOCRServiceDataAdapter(),
                             onCapture: { text in
                                 Task { await appState.enqueue(resolvedText: text) }
                             }
+                        )
+                    } else if captureMode == .qa {
+                        ContentUnavailableView(
+                            "Camera",
+                            systemImage: "camera",
+                            description: Text("Switch to the Capture tab to use the camera.")
                         )
                     } else {
                         ClozeAuthoringView(
@@ -46,14 +54,17 @@ struct ContentView: View {
                 .navigationTitle("Capture")
             }
             .tabItem { Label("Capture", systemImage: "camera") }
+            .tag(1)
 
             NavigationStack {
                 LibraryView(store: appState.cardStore)
             }
             .tabItem { Label("Library", systemImage: "books.vertical") }
+            .tag(2)
 
             SettingsView()
                 .tabItem { Label("Settings", systemImage: "gearshape") }
+            .tag(3)
         }
         .safeAreaInset(edge: .top) {
             ClipboardBanner(coordinator: clipboardCoordinator)
