@@ -878,3 +878,67 @@ Hosted in `SettingsView` under a "Schedule optimization" `NavigationLink`; reads
 a self-contained stdlib FD-Adam oracle running the same algorithm (py-fsrs's torch
 optimizer was unavailable on the build machine — see ADR-0005 for the deviation and its
 honest tradeoff). Validation is loss-based, never weight-equality.
+
+## M9 — Solid From First Tap (activation + trust)
+
+M9 adds no new product scope; it hardens the first-run experience so a new user is
+never blocked, never ambushed by a permission prompt at launch, and rewarded on every
+review. The §4 audit at this milestone found **no v1 scope gaps** — all in-scope
+surfaces (Share Sheet, camera/Vision OCR, FoundationModels Q&A authoring with mandatory
+user review, FSRS-6 default scheduling, swipe-to-grade + haptics, Cushion Mode, Freeze,
+tags, local SwiftData) remain present. The "No streaks / grace over guilt" principle
+(§3) was explicitly upheld: the new session summary reports `reviewed` and `% remembered`
+only — no streak counter, no shame copy.
+
+**Manual card creation (front door).** `CardEditorViewModel` (AnghkooeyUI, `@MainActor
+@Observable`) drives a dual-mode (`.create` / `.edit(Card.Snapshot)`) editor with a
+per-mode `Kind` (`.qa` / `.cloze`). `canSave` branches on kind — Q&A requires non-blank
+trimmed Q+A; cloze requires `ClozeMarkupParser.parse` to yield ≥1 deletion. Save routes
+to the existing `CardStoreProtocol` primitives (`create(question:answer:sourceSpan:tags:now:)`
+for Q&A, `createClozeCards(from:tags:now:)` for cloze) — no new store surface. The editor
+is reached from a Library `＋` toolbar item; cloze authoring reuses the M7 markup parser
+rather than adding a second cloze path.
+
+**Availability-honest AI capture.** `CaptureAvailabilityModel` (a pure `Sendable` struct)
+maps `AuthoringAvailability` → UX: `shouldOfferAI` and a nil-when-available
+`bannerMessage` covering `deviceNotEligible` / `appleIntelligenceNotEnabled` /
+`modelNotReady`, each routing the user to manual entry instead of a dead end. `ContentView`
+now wires the **live** `LiveClozeAuthoringService` (mock removed). `AppState.enqueue`'s
+authoring-failure path no longer inserts an opaque `"(edit to add answer)"` stub — it
+surfaces a `CardDraft(question: resolvedText, answer: "")` so captured text is never lost
+and still passes through the mandatory review sheet (no silent insertion, §4-consistent).
+
+**Permission hygiene.** The camera authorization request moved out of cold-launch into
+`CameraView.task` (instantiated only when the Capture/Q&A surface is on screen), with a
+denied-state fallback offering *Open Settings* and a layer-backed `PreviewUIView`. The
+required `NSCameraUsageDescription` purpose string was added to `Info.plist` (its absence
+traps on first access). Clipboard detection uses non-prompting `UIPasteboard.hasStrings`;
+the actual content read happens only in the user-initiated banner-accept action, so no
+paste prompt fires at launch.
+
+**Review loop polish.** `IntervalProjection` (AnghkooeyCore) projects, per `Rating`, the
+seconds-until-next-due by calling the existing `FSRS6Engine.next` (never re-deriving
+intervals) and formats compact labels (`<1m` / `10m` / `1d` / `1.5mo`), shown under each
+grade button; NaN/∞ is guarded. `ReviewSession` exposes `currentIntervals` and a
+`remainingCount` progress counter. `ReviewSummary` accumulates per-session stats for the
+session-complete screen.
+
+**First-run onboarding + starter deck.** `OnboardingState` (`@Observable`, `UserDefaults`-
+backed `hasCompletedOnboarding` flag) gates a 3-page `OnboardingView` presented as a
+`fullScreenCover`. `SampleDeckLoader` (App target) decodes the bundled `SampleDeck.json`
+(12 mixed-topic cards) through `CardStoreProtocol.create`, with a `jsonData:` injection
+seam so tests avoid a bundle dependency. Empty states in Review and Library are
+actionable `ContentUnavailableView`s (Add a card / Import from Anki / Load sample deck).
+
+**Trust hardening.** Library `load()` now distinguishes load-failure from empty-deck
+(`loadFailed` error state vs. empty state) instead of swallowing errors into `cards = []`;
+touched `try?`/`catch {}` sites gained logging or user-visible surfacing. New surfaces got
+a VoiceOver + Dynamic Type pass.
+
+**Tests.** 107 app tests across 28 suites, all green. New in M9: `IntervalProjectionTests`
+(projection ordering + label formatting), `CardEditorViewModelTests` (create/edit/validation
++ cloze), `CaptureAvailabilityModelTests`, `ReviewSummaryTests`, `OnboardingStateTests`,
+`SampleDeckLoaderTests`, plus the `AppStateEnqueue` fallback test. The pre-existing
+`acceptDraft persists…` test was de-flaked (bounded poll vs. fixed `Task.yield()`s) to make
+the full-suite green deterministic. On-device-only paths (live FoundationModels authoring,
+camera OCR, torch) remain covered by the device-QA exit gate, not the simulator suite.
