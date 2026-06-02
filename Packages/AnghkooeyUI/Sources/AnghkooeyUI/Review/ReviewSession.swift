@@ -48,6 +48,18 @@ public final class ReviewSession {
     /// Updated alongside the due queue on every `loadDueQueue()` call.
     public private(set) var ltmCount: Int = 0
 
+    /// Seconds-until-next-due per `Rating` for the current card.
+    /// Empty when there is no current card.
+    public var currentIntervals: [Rating: TimeInterval] {
+        guard let card = currentCard else { return [:] }
+        return IntervalProjection.project(card: card.schedulingCard, engine: scheduler, now: clock())
+    }
+
+    /// Cards remaining in this session including the current card.
+    public var remainingCount: Int {
+        queueRemaining + (currentCard != nil ? 1 : 0)
+    }
+
     /// True when a `MnemonicService` was injected — `ReviewView` uses this to
     /// conditionally render the "Generate Mnemonic" button.
     public var isMnemonicAvailable: Bool { mnemonicService != nil }

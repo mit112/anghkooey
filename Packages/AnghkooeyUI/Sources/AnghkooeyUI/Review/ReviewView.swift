@@ -61,8 +61,16 @@ public struct ReviewView: View {
 
     private var reviewingBody: some View {
         VStack(spacing: 0) {
-            ltmBanner
-                .padding(.top, 8)
+            HStack {
+                ltmBanner
+                Spacer()
+                Text("\(session.remainingCount) left")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .accessibilityLabel("\(session.remainingCount) cards remaining")
+            }
+            .padding(.top, 8)
+            .padding(.horizontal)
 
             if session.isCushionActive {
                 HStack(spacing: 8) {
@@ -245,6 +253,27 @@ public struct ReviewView: View {
         .padding()
     }
 
+    private func gradeButton(_ grade: ReviewGrade, title: String, systemImage: String, onTap: @escaping () -> Void) -> some View {
+        let secs = session.currentIntervals[grade.fsrsRating]
+        let intervalLabel = secs.map { IntervalProjection.label(seconds: $0) }
+        return Button {
+            onTap()
+            Task { await session.submit(grade: grade) }
+        } label: {
+            VStack(spacing: 2) {
+                Label(title, systemImage: systemImage)
+                    .frame(maxWidth: .infinity)
+                if let l = intervalLabel {
+                    Text(l)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .accessibilityLabel("next review in \(l)")
+                }
+            }
+        }
+        .controlSize(.large)
+    }
+
     private var showAnswerButton: some View {
         Button("Show Answer") {
             session.revealAnswer()
@@ -257,49 +286,16 @@ public struct ReviewView: View {
     private var gradeButtons: some View {
         VStack(spacing: 8) {
             HStack(spacing: 8) {
-                Button {
-                    againTrigger.toggle()
-                    Task { await session.submit(grade: .again) }
-                } label: {
-                    Label("Again", systemImage: "arrow.counterclockwise")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-                .tint(.red)
-                .controlSize(.large)
-
-                Button {
-                    hardTrigger.toggle()
-                    Task { await session.submit(grade: .hard) }
-                } label: {
-                    Label("Hard", systemImage: "minus.circle")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-                .tint(.orange)
-                .controlSize(.large)
+                gradeButton(.again, title: "Again", systemImage: "arrow.counterclockwise") { againTrigger.toggle() }
+                    .buttonStyle(.bordered).tint(.red)
+                gradeButton(.hard, title: "Hard", systemImage: "minus.circle") { hardTrigger.toggle() }
+                    .buttonStyle(.bordered).tint(.orange)
             }
             HStack(spacing: 8) {
-                Button {
-                    goodTrigger.toggle()
-                    Task { await session.submit(grade: .good) }
-                } label: {
-                    Label("Good", systemImage: "checkmark")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-
-                Button {
-                    easyTrigger.toggle()
-                    Task { await session.submit(grade: .easy) }
-                } label: {
-                    Label("Easy", systemImage: "star.fill")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(.blue)
-                .controlSize(.large)
+                gradeButton(.good, title: "Good", systemImage: "checkmark") { goodTrigger.toggle() }
+                    .buttonStyle(.borderedProminent)
+                gradeButton(.easy, title: "Easy", systemImage: "star.fill") { easyTrigger.toggle() }
+                    .buttonStyle(.borderedProminent).tint(.blue)
             }
         }
         .sensoryFeedback(.error, trigger: againTrigger)
