@@ -11,6 +11,7 @@ struct ContentView: View {
     @Environment(ClipboardCaptureCoordinator.self) private var clipboardCoordinator
     @State private var captureMode: CaptureMode = .qa
     @State private var selectedTab: Int = 0
+    @State private var onboardingState = OnboardingState()
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -65,6 +66,15 @@ struct ContentView: View {
             SettingsView()
                 .tabItem { Label("Settings", systemImage: "gearshape") }
             .tag(3)
+        }
+        .fullScreenCover(isPresented: Binding(
+            get: { !onboardingState.hasCompleted },
+            set: { _ in }
+        )) {
+            OnboardingView(
+                onLoadSample: { /* SampleDeckLoader wired in T11 */ },
+                onFinish: { onboardingState.complete() }
+            )
         }
         .safeAreaInset(edge: .top) {
             ClipboardBanner(coordinator: clipboardCoordinator)

@@ -68,6 +68,7 @@
 		E9M1T2A3B4C5D6E7F8A9B0C2 /* CardEditorViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9M1T2A3B4C5D6E7F8A9B0C1 /* CardEditorViewModelTests.swift */; };
 			CA001000000000000000BF01 /* CaptureAvailabilityModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA001000000000000000FR01 /* CaptureAvailabilityModelTests.swift */; };
 			RS001000000000000000BF01 /* ReviewSummaryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = RS001000000000000000FR01 /* ReviewSummaryTests.swift */; };
+			OB001000000000000000BF01 /* OnboardingStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OB001000000000000000FR01 /* OnboardingStateTests.swift */; };
 	/* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -174,6 +175,7 @@
 		E9M1T2A3B4C5D6E7F8A9B0C1 /* CardEditorViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardEditorViewModelTests.swift; sourceTree = "<group>"; };
 			CA001000000000000000FR01 /* CaptureAvailabilityModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureAvailabilityModelTests.swift; sourceTree = "<group>"; };
 			RS001000000000000000FR01 /* ReviewSummaryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewSummaryTests.swift; sourceTree = "<group>"; };
+			OB001000000000000000FR01 /* OnboardingStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStateTests.swift; sourceTree = "<group>"; };
 	/* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -327,6 +329,7 @@
 					E9M1T2A3B4C5D6E7F8A9B0C1 /* CardEditorViewModelTests.swift */,
 				CA001000000000000000FR01 /* CaptureAvailabilityModelTests.swift */,
 				RS001000000000000000FR01 /* ReviewSummaryTests.swift */,
+				OB001000000000000000FR01 /* OnboardingStateTests.swift */,
 				A052FDB039D5DFD8BACF02A7 /* ClipboardCaptureCoordinatorTests.swift */,
 				5B5DEC5926D8513370FD52E5 /* CloudKitV5SchemaTests.swift */,
 				B0CC79B996E9B8B2CF2DFC0D /* ClozeAuthoringServiceTests.swift */,
@@ -574,6 +577,7 @@
 					E9M1T2A3B4C5D6E7F8A9B0C2 /* CardEditorViewModelTests.swift in Sources */,
 				CA001000000000000000BF01 /* CaptureAvailabilityModelTests.swift in Sources */,
 				RS001000000000000000BF01 /* ReviewSummaryTests.swift in Sources */,
+				OB001000000000000000BF01 /* OnboardingStateTests.swift in Sources */,
 				FCB6CFEC88A0183CD60308F3 /* ClipboardCaptureCoordinatorTests.swift in Sources */,
 				582792F95044259D37BC944E /* CloudKitV5SchemaTests.swift in Sources */,
 				F0B8CFE921BE7F3C4C57296E /* ClozeAuthoringServiceTests.swift in Sources */,
