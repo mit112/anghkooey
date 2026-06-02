@@ -40,6 +40,7 @@
 		AE2B092616BDC257E899D84C /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A6AE21F57389F2FA533F696 /* ShareViewController.swift */; };
 		BB5809147A8AC7D33F6E8A41 /* AnghkooeyCore in Frameworks */ = {isa = PBXBuildFile; productRef = 6050CC9AE2B0A888BBACD0E2 /* AnghkooeyCore */; };
 		BD158D82F31B74D299DF85F8 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E3ED969F4ECE89B0A25E87 /* ContentView.swift */; };
+		SDL00000000000000SWFT_BF /* SampleDeckLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = SDL00000000000000SWFT_FR /* SampleDeckLoader.swift */; };
 		C6CE3B6A74FF27E6CCA0C154 /* AnkiNoteMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9649E9840BC5BA0D460B7FAA /* AnkiNoteMapperTests.swift */; };
 		C6E53CFF60B17F8A49163A0C /* SchemaMigrationV5Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3444A07A3C879498B6BFA02D /* SchemaMigrationV5Tests.swift */; };
 		CF23B824F937A853DF4C5C24 /* ClozeMarkupParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10541EABA7F5E2AF4A8A0343 /* ClozeMarkupParserTests.swift */; };
@@ -69,6 +70,8 @@
 			CA001000000000000000BF01 /* CaptureAvailabilityModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA001000000000000000FR01 /* CaptureAvailabilityModelTests.swift */; };
 			RS001000000000000000BF01 /* ReviewSummaryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = RS001000000000000000FR01 /* ReviewSummaryTests.swift */; };
 			OB001000000000000000BF01 /* OnboardingStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OB001000000000000000FR01 /* OnboardingStateTests.swift */; };
+			SDL00000000000000TEST_BF /* SampleDeckLoaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = SDL00000000000000TEST_FR /* SampleDeckLoaderTests.swift */; };
+			SDL00000000000000JSON_BF /* SampleDeck.json in Resources */ = {isa = PBXBuildFile; fileRef = SDL00000000000000JSON_FR /* SampleDeck.json */; };
 	/* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -176,6 +179,9 @@
 			CA001000000000000000FR01 /* CaptureAvailabilityModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureAvailabilityModelTests.swift; sourceTree = "<group>"; };
 			RS001000000000000000FR01 /* ReviewSummaryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewSummaryTests.swift; sourceTree = "<group>"; };
 			OB001000000000000000FR01 /* OnboardingStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStateTests.swift; sourceTree = "<group>"; };
+			SDL00000000000000TEST_FR /* SampleDeckLoaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleDeckLoaderTests.swift; sourceTree = "<group>"; };
+			SDL00000000000000JSON_FR /* SampleDeck.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SampleDeck.json; sourceTree = "<group>"; };
+			SDL00000000000000SWFT_FR /* SampleDeckLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleDeckLoader.swift; sourceTree = "<group>"; };
 	/* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -252,6 +258,7 @@
 				05AE6CEC6D1FBAFFB4F9F656 /* WidgetGradeReconciler.swift */,
 				F699C42103F2BC786D197A19 /* Clipboard */,
 				6E8482196AA783E060A44A5F /* Intents */,
+				SDL00000000000000GRPSDL1 /* SampleDeck */,
 				AA000001000000000000AA01 /* PrivacyInfo.xcprivacy */,
 			);
 			path = Anghkooey;
@@ -264,6 +271,15 @@
 				68C7356437F150F3733DF0DD /* AnghkooeyShortcuts.swift */,
 			);
 			path = Intents;
+			sourceTree = "<group>";
+		};
+		SDL00000000000000GRPSDL1 /* SampleDeck */ = {
+			isa = PBXGroup;
+			children = (
+				SDL00000000000000SWFT_FR /* SampleDeckLoader.swift */,
+				SDL00000000000000JSON_FR /* SampleDeck.json */,
+			);
+			path = SampleDeck;
 			sourceTree = "<group>";
 		};
 		772CA5EFF1AF47C0CF8ADC88 /* Products */ = {
@@ -330,6 +346,7 @@
 				CA001000000000000000FR01 /* CaptureAvailabilityModelTests.swift */,
 				RS001000000000000000FR01 /* ReviewSummaryTests.swift */,
 				OB001000000000000000FR01 /* OnboardingStateTests.swift */,
+				SDL00000000000000TEST_FR /* SampleDeckLoaderTests.swift */,
 				A052FDB039D5DFD8BACF02A7 /* ClipboardCaptureCoordinatorTests.swift */,
 				5B5DEC5926D8513370FD52E5 /* CloudKitV5SchemaTests.swift */,
 				B0CC79B996E9B8B2CF2DFC0D /* ClozeAuthoringServiceTests.swift */,
@@ -506,6 +523,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA000001000000000000BB01 /* PrivacyInfo.xcprivacy in Resources */,
+				SDL00000000000000JSON_BF /* SampleDeck.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -551,6 +569,7 @@
 				DEEF868DF6F4C88CCE3C7571 /* ClipboardBanner.swift in Sources */,
 				F0E1C867C58E5B0E8205FA7F /* ClipboardCaptureCoordinator.swift in Sources */,
 				BD158D82F31B74D299DF85F8 /* ContentView.swift in Sources */,
+				SDL00000000000000SWFT_BF /* SampleDeckLoader.swift in Sources */,
 				D4C6DC87B925B0639F76684A /* FreezeController.swift in Sources */,
 				23EB4719C6CDE2DF3A10FDB7 /* MetricsReceiver.swift in Sources */,
 				D3617197E24653996EEF5832 /* SettingsView.swift in Sources */,
@@ -578,6 +597,7 @@
 				CA001000000000000000BF01 /* CaptureAvailabilityModelTests.swift in Sources */,
 				RS001000000000000000BF01 /* ReviewSummaryTests.swift in Sources */,
 				OB001000000000000000BF01 /* OnboardingStateTests.swift in Sources */,
+				SDL00000000000000TEST_BF /* SampleDeckLoaderTests.swift in Sources */,
 				FCB6CFEC88A0183CD60308F3 /* ClipboardCaptureCoordinatorTests.swift in Sources */,
 				582792F95044259D37BC944E /* CloudKitV5SchemaTests.swift in Sources */,
 				F0B8CFE921BE7F3C4C57296E /* ClozeAuthoringServiceTests.swift in Sources */,

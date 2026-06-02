@@ -72,7 +72,12 @@ struct ContentView: View {
             set: { _ in }
         )) {
             OnboardingView(
-                onLoadSample: { /* SampleDeckLoader wired in T11 */ },
+                onLoadSample: {
+                    Task {
+                        let loader = SampleDeckLoader(store: appState.cardStore)
+                        try? await loader.load(now: .now)
+                    }
+                },
                 onFinish: { onboardingState.complete() }
             )
         }
