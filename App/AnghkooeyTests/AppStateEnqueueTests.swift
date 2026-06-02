@@ -122,9 +122,12 @@ struct AppStateEnqueueTests {
 
         sut.acceptDraft()
 
-        // Yield so the Task inside acceptDraft has a chance to run.
-        await Task.yield()
-        await Task.yield()
+        // acceptDraft persists in a fire-and-forget Task; poll (bounded) until it
+        // lands rather than relying on a fixed number of yields, which races under
+        // full-suite parallel scheduling.
+        for _ in 0..<100 where mockStore.cards.isEmpty {
+            try await Task.sleep(for: .milliseconds(5))
+        }
 
         #expect(mockStore.cards.count == 1)
         #expect(mockStore.cards.first?.question == "What is 2+2?")
