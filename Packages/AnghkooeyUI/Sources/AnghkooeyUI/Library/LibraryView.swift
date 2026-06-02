@@ -15,6 +15,7 @@ public struct LibraryView: View {
     @State private var editingCard: Card.Snapshot? = nil
     @State private var isLoading = false
     @State private var showingImport = false
+    @State private var showingCreate = false
 
     public init(store: any CardStoreProtocol) {
         self.store = store
@@ -48,6 +49,13 @@ public struct LibraryView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
+                    showingCreate = true
+                } label: {
+                    Label("Add Card", systemImage: "plus")
+                }
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
                     showingImport = true
                 } label: {
                     Label("Import", systemImage: "tray.and.arrow.down")
@@ -56,7 +64,12 @@ public struct LibraryView: View {
         }
         .task { await load() }
         .sheet(item: $editingCard) { card in
-            LibraryCardEditView(card: card, store: store) {
+            LibraryCardEditView(mode: .edit(card), store: store) {
+                Task { await load() }
+            }
+        }
+        .sheet(isPresented: $showingCreate) {
+            LibraryCardEditView(mode: .create, store: store) {
                 Task { await load() }
             }
         }
