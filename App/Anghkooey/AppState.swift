@@ -181,7 +181,7 @@ final class AppState: @unchecked Sendable {
             pendingDrafts.append(IdentifiedDraft(draft: draft))
             if presentedDraft == nil { advanceQueue() }
         } catch {
-            let fallback = CardDraft(question: resolvedText, answer: "(edit to add answer)")
+            let fallback = CardDraft(question: resolvedText, answer: "")
             pendingDrafts.append(IdentifiedDraft(draft: fallback))
             if presentedDraft == nil { advanceQueue() }
         }
