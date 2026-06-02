@@ -66,6 +66,7 @@
 		D3E4F5A6B7C8D3E4F5A6B7C8 /* OptimizeScheduleViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E4F5A6B7C8D3E4F5A6B7C9 /* OptimizeScheduleViewModelTests.swift */; };
 		D7A1B2C3D4E5F6A7B8C9D0E2 /* ClozeAuthoringViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7A1B2C3D4E5F6A7B8C9D0E1 /* ClozeAuthoringViewModelTests.swift */; };
 		E9M1T2A3B4C5D6E7F8A9B0C2 /* CardEditorViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9M1T2A3B4C5D6E7F8A9B0C1 /* CardEditorViewModelTests.swift */; };
+			CA001000000000000000BF01 /* CaptureAvailabilityModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA001000000000000000FR01 /* CaptureAvailabilityModelTests.swift */; };
 	/* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -170,6 +171,7 @@
 		D3E4F5A6B7C8D3E4F5A6B7C9 /* OptimizeScheduleViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptimizeScheduleViewModelTests.swift; sourceTree = "<group>"; };
 		D7A1B2C3D4E5F6A7B8C9D0E1 /* ClozeAuthoringViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClozeAuthoringViewModelTests.swift; sourceTree = "<group>"; };
 		E9M1T2A3B4C5D6E7F8A9B0C1 /* CardEditorViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardEditorViewModelTests.swift; sourceTree = "<group>"; };
+			CA001000000000000000FR01 /* CaptureAvailabilityModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureAvailabilityModelTests.swift; sourceTree = "<group>"; };
 	/* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -321,6 +323,7 @@
 					D3E4F5A6B7C8D3E4F5A6B7C9 /* OptimizeScheduleViewModelTests.swift */,
 					D7A1B2C3D4E5F6A7B8C9D0E1 /* ClozeAuthoringViewModelTests.swift */,
 					E9M1T2A3B4C5D6E7F8A9B0C1 /* CardEditorViewModelTests.swift */,
+				CA001000000000000000FR01 /* CaptureAvailabilityModelTests.swift */,
 				A052FDB039D5DFD8BACF02A7 /* ClipboardCaptureCoordinatorTests.swift */,
 				5B5DEC5926D8513370FD52E5 /* CloudKitV5SchemaTests.swift */,
 				B0CC79B996E9B8B2CF2DFC0D /* ClozeAuthoringServiceTests.swift */,
@@ -566,6 +569,7 @@
 					D3E4F5A6B7C8D3E4F5A6B7C8 /* OptimizeScheduleViewModelTests.swift in Sources */,
 					D7A1B2C3D4E5F6A7B8C9D0E2 /* ClozeAuthoringViewModelTests.swift in Sources */,
 					E9M1T2A3B4C5D6E7F8A9B0C2 /* CardEditorViewModelTests.swift in Sources */,
+				CA001000000000000000BF01 /* CaptureAvailabilityModelTests.swift in Sources */,
 				FCB6CFEC88A0183CD60308F3 /* ClipboardCaptureCoordinatorTests.swift in Sources */,
 				582792F95044259D37BC944E /* CloudKitV5SchemaTests.swift in Sources */,
 				F0B8CFE921BE7F3C4C57296E /* ClozeAuthoringServiceTests.swift in Sources */,

@@ -37,11 +37,9 @@ struct ContentView: View {
                             }
                         )
                     } else {
-                        // TODO: Replace with LiveClozeAuthoringService() once FoundationModels device
-                        // entitlement is provisioned. Mock returns empty drafts (stubbed = []).
                         ClozeAuthoringView(
                             store: appState.cardStore,
-                            authoringService: MockClozeAuthoringService()
+                            authoringService: LiveClozeAuthoringService()
                         )
                     }
                 }
