@@ -22,11 +22,12 @@ public struct LibraryCardEditView: View {
         NavigationStack {
             Form {
                 if model.isCreateMode {
-                    Picker("Type", selection: $model.kind) {
+                    Picker("Card type", selection: $model.kind) {
                         Text("Q&A").tag(CardEditorViewModel.Kind.qa)
                         Text("Cloze").tag(CardEditorViewModel.Kind.cloze)
                     }
                     .pickerStyle(.segmented)
+                    .accessibilityLabel("Card type: \(model.kind == .qa ? "Question and Answer" : "Cloze deletion")")
                 }
                 if model.kind == .cloze {
                     Section("Cloze sentence") {
@@ -72,6 +73,7 @@ public struct LibraryCardEditView: View {
                         }
                     }
                     .disabled(!model.canSave)
+                    .accessibilityHint(model.canSave ? "" : "Fill in all required fields to enable")
                 }
             }
         }
