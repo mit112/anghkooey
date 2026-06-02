@@ -140,13 +140,17 @@ final class AppState: @unchecked Sendable {
         let tags = draft.draft.proposedTags
         advanceQueue()
         Task {
-            try? await cardStore.create(
-                question: question,
-                answer: answer,
-                sourceSpan: draft.draft.sourceSpan,
-                tags: tags,
-                now: .now
-            )
+            do {
+                _ = try await cardStore.create(
+                    question: question,
+                    answer: answer,
+                    sourceSpan: draft.draft.sourceSpan,
+                    tags: tags,
+                    now: .now
+                )
+            } catch {
+                CoreLog.persistence.error("acceptDraft: card creation failed: \(error)")
+            }
             try? await widgetReconciler.rewriteSnapshot()
         }
         NotificationCenter.default.post(name: .anghkooeyCardAccepted, object: nil)

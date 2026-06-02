@@ -61,7 +61,15 @@ public struct LibraryCardEditView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        Task { try? await model.save(); onSaved(); dismiss() }
+                        Task {
+                            do {
+                                try await model.save()
+                                onSaved()
+                                dismiss()
+                            } catch {
+                                UILog.library.error("Card save failed: \(error)")
+                            }
+                        }
                     }
                     .disabled(!model.canSave)
                 }

@@ -15,6 +15,7 @@ public struct LibraryView: View {
     @State private var selectedTag: String? = nil
     @State private var editingCard: Card.Snapshot? = nil
     @State private var isLoading = false
+    @State private var loadFailed = false
     @State private var showingImport = false
     @State private var showingCreate = false
 
@@ -37,6 +38,13 @@ public struct LibraryView: View {
             if isLoading {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if loadFailed {
+                ContentUnavailableView(
+                    "Couldn't load your cards",
+                    systemImage: "exclamationmark.triangle",
+                    description: Text("Pull to retry.")
+                )
+                .refreshable { await load() }
             } else if cards.isEmpty {
                 ContentUnavailableView {
                     Label("No cards yet", systemImage: "rectangle.stack")
@@ -174,8 +182,10 @@ public struct LibraryView: View {
         defer { isLoading = false }
         do {
             cards = try await store.allCards()
+            loadFailed = false
         } catch {
-            cards = []
+            loadFailed = true
+            UILog.library.error("Library load failed: \(error)")
         }
     }
 }
