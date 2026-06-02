@@ -18,6 +18,7 @@ public enum IntervalProjection {
 
     /// Compact human label for an interval in seconds.
     public static func label(seconds: TimeInterval) -> String {
+        guard seconds.isFinite else { return "—" }
         let minute = 60.0, hour = 3_600.0, day = 86_400.0, month = 30 * day, year = 365 * day
         switch seconds {
         case ..<minute:        return "<1m"
