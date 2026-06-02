@@ -31,6 +31,10 @@ public final class ReviewSession {
     public private(set) var queueRemaining: Int = 0
     public private(set) var state: ReviewSessionState = .loading
 
+    /// Accumulated stats for the current session (reviewed count, accuracy).
+    /// Reset each time `loadDueQueue()` seeds a fresh queue.
+    public private(set) var summary = ReviewSummary()
+
     /// Total due cards at last `loadDueQueue` call, before Cushion cap applied.
     /// Use this to render honest copy: "Showing today's batch — N of `backlogTotal` due".
     public private(set) var backlogTotal: Int = 0
@@ -115,6 +119,7 @@ public final class ReviewSession {
             currentCard = visible.first
             queueRemaining = queue.count
             isAnswerRevealed = false
+            summary = ReviewSummary()
             state = visible.isEmpty ? .empty : .reviewing
             currentMnemonic = currentCard?.mnemonic
             ltmCount = (try? await store.longTermMemoryCount(thresholdDays: LTMConfig.defaultThresholdDays)) ?? ltmCount
@@ -147,6 +152,7 @@ public final class ReviewSession {
         } catch {
             // Scheduling errors are non-fatal; advance queue regardless.
         }
+        summary.record(grade.fsrsRating)
         if queue.isEmpty {
             currentCard = nil
             queueRemaining = 0

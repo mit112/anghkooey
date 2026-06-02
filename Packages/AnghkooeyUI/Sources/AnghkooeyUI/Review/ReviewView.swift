@@ -92,6 +92,7 @@ public struct ReviewView: View {
                     VStack(alignment: .leading, spacing: 24) {
                         questionSection(card.question)
                         if session.isAnswerRevealed {
+                            Divider()
                             answerSection(card.answer)
                             mnemonicSection
                         }
@@ -99,6 +100,9 @@ public struct ReviewView: View {
                     .padding()
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
                 .overlay(swipeTintOverlay)
             }
 
@@ -193,8 +197,8 @@ public struct ReviewView: View {
                 .foregroundStyle(.secondary)
                 .textCase(.uppercase)
             Text(question)
-                .font(.title3)
-                .fontWeight(.medium)
+                .font(.title2)
+                .fontWeight(.semibold)
         }
     }
 
@@ -205,7 +209,7 @@ public struct ReviewView: View {
                 .foregroundStyle(.secondary)
                 .textCase(.uppercase)
             Text(answer)
-                .font(.body)
+                .font(.title3)
         }
         .transition(.move(edge: .bottom).combined(with: .opacity))
     }
@@ -308,6 +312,19 @@ public struct ReviewView: View {
 
     private var emptyBody: some View {
         VStack(spacing: 12) {
+            if session.summary.reviewed > 0 {
+                VStack(spacing: 6) {
+                    Text("Session complete")
+                        .font(.headline)
+                    Text("You reviewed **\(session.summary.reviewed)** card\(session.summary.reviewed == 1 ? "" : "s") · **\(session.summary.accuracyPercent)%** remembered")
+                        .font(.subheadline)
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(.secondary)
+                }
+                .padding()
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                .padding(.horizontal)
+            }
             ltmBanner
             ContentUnavailableView(
                 "All caught up",
