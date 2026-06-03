@@ -4,17 +4,11 @@ struct ClipboardBanner: View {
     let coordinator: ClipboardCaptureCoordinator
 
     var body: some View {
-        if let offer = coordinator.pendingOffer {
+        if coordinator.pendingOffer != nil {
             HStack(spacing: 12) {
                 Image(systemName: "doc.on.clipboard")
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Create cards from clipboard?")
-                        .font(.subheadline.weight(.semibold))
-                    Text(offer.text)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                }
+                Text("Create cards from clipboard?")
+                    .font(.subheadline.weight(.semibold))
                 Spacer()
                 Button("Use") { coordinator.acceptOffer() }
                     .buttonStyle(.borderedProminent)

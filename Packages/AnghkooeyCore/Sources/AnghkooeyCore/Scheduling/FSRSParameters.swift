@@ -58,6 +58,21 @@ public struct FSRSParameters: Equatable, Sendable {
         self.relearningStepsSeconds = relearningStepsSeconds
     }
 
+    /// Returns a copy of `self` with `w` replaced. Used to apply optimized
+    /// weights onto the immutable `.default` configuration (retention,
+    /// learning steps, etc. are preserved; only `w` is personalised).
+    public func withWeights(_ newW: [Double]) -> FSRSParameters {
+        FSRSParameters(
+            w: newW,
+            requestRetention: requestRetention,
+            maximumInterval: maximumInterval,
+            enableFuzz: enableFuzz,
+            enableShortTerm: enableShortTerm,
+            learningStepsSeconds: learningStepsSeconds,
+            relearningStepsSeconds: relearningStepsSeconds
+        )
+    }
+
     /// FSRS-6 default parameters as pinned by ADR-0002.
     ///
     /// `w[20] = 0.1542` is the FSRS-6 default decay constant. Do not edit any

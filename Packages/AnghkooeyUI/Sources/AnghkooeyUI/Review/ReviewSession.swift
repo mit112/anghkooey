@@ -31,6 +31,10 @@ public final class ReviewSession {
     public private(set) var queueRemaining: Int = 0
     public private(set) var state: ReviewSessionState = .loading
 
+    /// Accumulated stats for the current session (reviewed count, accuracy).
+    /// Reset each time `loadDueQueue()` seeds a fresh queue.
+    public private(set) var summary = ReviewSummary()
+
     /// Total due cards at last `loadDueQueue` call, before Cushion cap applied.
     /// Use this to render honest copy: "Showing today's batch — N of `backlogTotal` due".
     public private(set) var backlogTotal: Int = 0
@@ -48,6 +52,22 @@ public final class ReviewSession {
     /// Updated alongside the due queue on every `loadDueQueue()` call.
     public private(set) var ltmCount: Int = 0
 
+    /// Seconds-until-next-due per `Rating` for the current card.
+    /// Empty when there is no current card.
+    public var currentIntervals: [Rating: TimeInterval] {
+        guard let card = currentCard else { return [:] }
+        return IntervalProjection.project(card: card.schedulingCard, engine: scheduler, now: clock())
+    }
+
+    /// Cards remaining in this session including the current card.
+    public var remainingCount: Int {
+        queueRemaining + (currentCard != nil ? 1 : 0)
+    }
+
+    /// Total cards in the store (not just due). Updated in `loadDueQueue()`.
+    /// Use to distinguish "nothing due" from "deck is empty".
+    public private(set) var totalCardCount: Int = 0
+
     /// True when a `MnemonicService` was injected — `ReviewView` uses this to
     /// conditionally render the "Generate Mnemonic" button.
     public var isMnemonicAvailable: Bool { mnemonicService != nil }
@@ -64,7 +84,7 @@ public final class ReviewSession {
 
     // MARK: Private
 
-    private let store: any CardStoreProtocol
+    public let store: any CardStoreProtocol
     private let scheduler: any FSRS6Engine
     private let clock: @Sendable () -> Date
     private var queue: [Card.Snapshot] = []
@@ -103,7 +123,9 @@ public final class ReviewSession {
             currentCard = visible.first
             queueRemaining = queue.count
             isAnswerRevealed = false
+            summary = ReviewSummary()
             state = visible.isEmpty ? .empty : .reviewing
+            totalCardCount = visible.isEmpty ? ((try? await store.allCards().count) ?? 0) : allDue.count
             currentMnemonic = currentCard?.mnemonic
             ltmCount = (try? await store.longTermMemoryCount(thresholdDays: LTMConfig.defaultThresholdDays)) ?? ltmCount
             isMnemonicLoading = false
@@ -135,6 +157,7 @@ public final class ReviewSession {
         } catch {
             // Scheduling errors are non-fatal; advance queue regardless.
         }
+        summary.record(grade.fsrsRating)
         if queue.isEmpty {
             currentCard = nil
             queueRemaining = 0

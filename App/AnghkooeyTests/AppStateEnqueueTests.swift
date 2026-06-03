@@ -9,6 +9,16 @@ import AnghkooeyIntelligence
 // These tests are RED until Codex implements AppState.enqueue(resolvedText:)
 // to call cardAuthor.author(from:) instead of using the hardcoded fallback stub.
 
+private struct FailingAuthor: CardAuthoringService {
+    var availability: AuthoringAvailability {
+        get async { .available }
+    }
+
+    func generateDrafts(from text: String) async throws -> AsyncThrowingStream<CardDraft, Error> {
+        throw AuthoringError.generationFailed(underlying: URLError(.timedOut))
+    }
+}
+
 @Suite("AppState.enqueue — M4.2 contract")
 @MainActor
 struct AppStateEnqueueTests {
@@ -42,7 +52,7 @@ struct AppStateEnqueueTests {
 
         let presented = try #require(sut.presentedDraft)
         #expect(presented.draft.question == resolvedText)
-        #expect(presented.draft.answer == "(edit to add answer)")
+        #expect(presented.draft.answer == "")
     }
 
     @Test("enqueue queues a fallback draft when model is unavailable (airplane-mode path)")
@@ -57,7 +67,7 @@ struct AppStateEnqueueTests {
 
         let presented = try #require(sut.presentedDraft)
         #expect(presented.draft.question == resolvedText)
-        #expect(presented.draft.answer == "(edit to add answer)")
+        #expect(presented.draft.answer == "")
     }
 
     // MARK: enqueue_preservesQueueOrder_acrossMultipleDrains
@@ -112,13 +122,27 @@ struct AppStateEnqueueTests {
 
         sut.acceptDraft()
 
-        // Yield so the Task inside acceptDraft has a chance to run.
-        await Task.yield()
-        await Task.yield()
+        // acceptDraft persists in a fire-and-forget Task; poll (bounded) until it
+        // lands rather than relying on a fixed number of yields, which races under
+        // full-suite parallel scheduling.
+        for _ in 0..<100 where mockStore.cards.isEmpty {
+            try await Task.sleep(for: .milliseconds(5))
+        }
 
         #expect(mockStore.cards.count == 1)
         #expect(mockStore.cards.first?.question == "What is 2+2?")
         #expect(mockStore.cards.first?.answer == "4")
         #expect(sut.presentedDraft == nil)
+    }
+
+    // MARK: enqueueFallbackPreservesCapturedTextAsQuestion (M9)
+
+    @Test("enqueue preserves captured text as question when authoring fails")
+    func enqueueFallbackPreservesCapturedTextAsQuestion() async throws {
+        let state = AppState(cardAuthor: FailingAuthor(), cardStore: MockCardStore())
+        await state.enqueue(resolvedText: "Mitochondria is the powerhouse of the cell")
+        let presented = try #require(state.presentedDraft)
+        #expect(presented.draft.question == "Mitochondria is the powerhouse of the cell")
+        #expect(presented.draft.answer.isEmpty == true)
     }
 }

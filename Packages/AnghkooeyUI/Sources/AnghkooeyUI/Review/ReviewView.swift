@@ -13,15 +13,22 @@ import AnghkooeyCore
 public struct ReviewView: View {
 
     @Bindable var session: ReviewSession
+    private let loadSampleCards: (() async -> Void)?
+    private let onImport: (() -> Void)?
     @State private var againTrigger = false
     @State private var hardTrigger = false
     @State private var goodTrigger = false
     @State private var easyTrigger = false
     @State private var dragOffset: CGSize = .zero
     @State private var isEditSheetPresented: Bool = false
+    @State private var showingCreate = false
 
-    public init(session: ReviewSession) {
+    public init(session: ReviewSession,
+                loadSampleCards: (() async -> Void)? = nil,
+                onImport: (() -> Void)? = nil) {
         self.session = session
+        self.loadSampleCards = loadSampleCards
+        self.onImport = onImport
     }
 
     public var body: some View {
@@ -61,8 +68,16 @@ public struct ReviewView: View {
 
     private var reviewingBody: some View {
         VStack(spacing: 0) {
-            ltmBanner
-                .padding(.top, 8)
+            HStack {
+                ltmBanner
+                Spacer()
+                Text("\(session.remainingCount) left")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .accessibilityLabel("\(session.remainingCount) cards remaining")
+            }
+            .padding(.top, 8)
+            .padding(.horizontal)
 
             if session.isCushionActive {
                 HStack(spacing: 8) {
@@ -84,6 +99,7 @@ public struct ReviewView: View {
                     VStack(alignment: .leading, spacing: 24) {
                         questionSection(card.question)
                         if session.isAnswerRevealed {
+                            Divider()
                             answerSection(card.answer)
                             mnemonicSection
                         }
@@ -91,6 +107,9 @@ public struct ReviewView: View {
                     .padding()
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
                 .overlay(swipeTintOverlay)
             }
 
@@ -185,8 +204,8 @@ public struct ReviewView: View {
                 .foregroundStyle(.secondary)
                 .textCase(.uppercase)
             Text(question)
-                .font(.title3)
-                .fontWeight(.medium)
+                .font(.title2)
+                .fontWeight(.semibold)
         }
     }
 
@@ -197,7 +216,7 @@ public struct ReviewView: View {
                 .foregroundStyle(.secondary)
                 .textCase(.uppercase)
             Text(answer)
-                .font(.body)
+                .font(.title3)
         }
         .transition(.move(edge: .bottom).combined(with: .opacity))
     }
@@ -245,6 +264,27 @@ public struct ReviewView: View {
         .padding()
     }
 
+    private func gradeButton(_ grade: ReviewGrade, title: String, systemImage: String, onTap: @escaping () -> Void) -> some View {
+        let secs = session.currentIntervals[grade.fsrsRating]
+        let intervalLabel = secs.map { IntervalProjection.label(seconds: $0) }
+        return Button {
+            onTap()
+            Task { await session.submit(grade: grade) }
+        } label: {
+            VStack(spacing: 2) {
+                Label(title, systemImage: systemImage)
+                    .frame(maxWidth: .infinity)
+                if let l = intervalLabel {
+                    Text(l)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .accessibilityLabel("next review in \(l)")
+                }
+            }
+        }
+        .controlSize(.large)
+    }
+
     private var showAnswerButton: some View {
         Button("Show Answer") {
             session.revealAnswer()
@@ -257,49 +297,16 @@ public struct ReviewView: View {
     private var gradeButtons: some View {
         VStack(spacing: 8) {
             HStack(spacing: 8) {
-                Button {
-                    againTrigger.toggle()
-                    Task { await session.submit(grade: .again) }
-                } label: {
-                    Label("Again", systemImage: "arrow.counterclockwise")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-                .tint(.red)
-                .controlSize(.large)
-
-                Button {
-                    hardTrigger.toggle()
-                    Task { await session.submit(grade: .hard) }
-                } label: {
-                    Label("Hard", systemImage: "minus.circle")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
-                .tint(.orange)
-                .controlSize(.large)
+                gradeButton(.again, title: "Again", systemImage: "arrow.counterclockwise") { againTrigger.toggle() }
+                    .buttonStyle(.bordered).tint(.red)
+                gradeButton(.hard, title: "Hard", systemImage: "minus.circle") { hardTrigger.toggle() }
+                    .buttonStyle(.bordered).tint(.orange)
             }
             HStack(spacing: 8) {
-                Button {
-                    goodTrigger.toggle()
-                    Task { await session.submit(grade: .good) }
-                } label: {
-                    Label("Good", systemImage: "checkmark")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-
-                Button {
-                    easyTrigger.toggle()
-                    Task { await session.submit(grade: .easy) }
-                } label: {
-                    Label("Easy", systemImage: "star.fill")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(.blue)
-                .controlSize(.large)
+                gradeButton(.good, title: "Good", systemImage: "checkmark") { goodTrigger.toggle() }
+                    .buttonStyle(.borderedProminent)
+                gradeButton(.easy, title: "Easy", systemImage: "star.fill") { easyTrigger.toggle() }
+                    .buttonStyle(.borderedProminent).tint(.blue)
             }
         }
         .sensoryFeedback(.error, trigger: againTrigger)
@@ -312,12 +319,46 @@ public struct ReviewView: View {
 
     private var emptyBody: some View {
         VStack(spacing: 12) {
-            ltmBanner
-            ContentUnavailableView(
-                "All caught up",
-                systemImage: "checkmark.circle.fill",
-                description: Text("Come back when your next review is due, or capture something new to grow your deck.")
-            )
+            if session.totalCardCount == 0 {
+                ContentUnavailableView {
+                    Label("No cards yet", systemImage: "rectangle.stack")
+                } description: {
+                    Text("Add a card, import your Anki deck, or try a sample.")
+                } actions: {
+                    Button("Add a card") { showingCreate = true }
+                        .buttonStyle(.borderedProminent)
+                        .accessibilityLabel("Add a new card")
+                    Button("Import from Anki") { onImport?() }
+                    if let loader = loadSampleCards {
+                        Button("Load sample deck") { Task { await loader(); await session.loadDueQueue() } }
+                    }
+                }
+            } else {
+                if session.summary.reviewed > 0 {
+                    VStack(spacing: 6) {
+                        Text("Session complete")
+                            .font(.headline)
+                        Text("You reviewed **\(session.summary.reviewed)** card\(session.summary.reviewed == 1 ? "" : "s") · **\(session.summary.accuracyPercent)%** remembered")
+                            .font(.subheadline)
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding()
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                    .padding(.horizontal)
+                }
+                ltmBanner
+                ContentUnavailableView(
+                    "All caught up",
+                    systemImage: "checkmark.circle.fill",
+                    description: Text("Come back when your next review is due, or capture something new to grow your deck.")
+                )
+            }
+        }
+        .sheet(isPresented: $showingCreate) {
+            LibraryCardEditView(mode: .create, store: session.store) {
+                Task { await session.loadDueQueue() }
+            }
         }
     }
 }

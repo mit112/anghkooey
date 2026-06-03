@@ -1,50 +1,60 @@
 import SwiftUI
 import AnghkooeyCore
 
-/// Standalone edit sheet used from the Library tab.
+/// Dual-mode edit/create sheet used from the Library tab.
 ///
-/// Edits Q/A/tags directly via `store.update` — no ReviewSession involved.
-/// The `onSave` callback triggers a data reload in `LibraryView`.
+/// Delegates state management to `CardEditorViewModel`.
+/// The `onSaved` callback triggers a data reload in `LibraryView`.
 public struct LibraryCardEditView: View {
 
+    @State private var model: CardEditorViewModel
     @Environment(\.dismiss) private var dismiss
-    let card: Card.Snapshot
-    let store: any CardStoreProtocol
-    let onSave: () -> Void
+    private let onSaved: () -> Void
 
-    @State private var editedQuestion: String
-    @State private var editedAnswer: String
-    @State private var editedTags: [String]
-
-    public init(
-        card: Card.Snapshot,
-        store: any CardStoreProtocol,
-        onSave: @escaping () -> Void
-    ) {
-        self.card = card
-        self.store = store
-        self.onSave = onSave
-        _editedQuestion = State(initialValue: card.question)
-        _editedAnswer = State(initialValue: card.answer)
-        _editedTags = State(initialValue: card.tags)
+    public init(mode: CardEditorViewModel.Mode,
+                store: any CardStoreProtocol,
+                onSaved: @escaping () -> Void) {
+        _model = State(initialValue: CardEditorViewModel(mode: mode, store: store))
+        self.onSaved = onSaved
     }
 
     public var body: some View {
         NavigationStack {
             Form {
-                Section("Question") {
-                    TextEditor(text: $editedQuestion)
-                        .frame(minHeight: 80)
+                if model.isCreateMode {
+                    Picker("Card type", selection: $model.kind) {
+                        Text("Q&A").tag(CardEditorViewModel.Kind.qa)
+                        Text("Cloze").tag(CardEditorViewModel.Kind.cloze)
+                    }
+                    .pickerStyle(.segmented)
+                    .accessibilityLabel("Card type: \(model.kind == .qa ? "Question and Answer" : "Cloze deletion")")
                 }
-                Section("Answer") {
-                    TextEditor(text: $editedAnswer)
-                        .frame(minHeight: 80)
+                if model.kind == .cloze {
+                    Section("Cloze sentence") {
+                        TextField("e.g. The capital of France is {{c1::Paris}}.",
+                                  text: $model.clozeText,
+                                  axis: .vertical)
+                            .lineLimit(3...)
+                        if let t = try? ClozeMarkupParser.parse(model.clozeText), !t.deletions.isEmpty {
+                            Text("\(t.deletions.count) deletion\(t.deletions.count == 1 ? "" : "s") detected")
+                                .font(.caption).foregroundStyle(.secondary)
+                        }
+                    }
+                } else {
+                    Section("Question") {
+                        TextField("Question", text: $model.question, axis: .vertical)
+                            .lineLimit(3...)
+                    }
+                    Section("Answer") {
+                        TextField("Answer", text: $model.answer, axis: .vertical)
+                            .lineLimit(3...)
+                    }
                 }
                 Section("Tags") {
-                    TagEditorView(tags: $editedTags)
+                    TagEditorView(tags: $model.tags)
                 }
             }
-            .navigationTitle("Edit Card")
+            .navigationTitle(model.navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -53,16 +63,17 @@ public struct LibraryCardEditView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
                         Task {
-                            try? await store.update(
-                                id: card.id,
-                                question: editedQuestion,
-                                answer: editedAnswer,
-                                tags: editedTags
-                            )
-                            onSave()
-                            dismiss()
+                            do {
+                                try await model.save()
+                                onSaved()
+                                dismiss()
+                            } catch {
+                                UILog.library.error("Card save failed: \(error)")
+                            }
                         }
                     }
+                    .disabled(!model.canSave)
+                    .accessibilityHint(model.canSave ? "" : "Fill in all required fields to enable")
                 }
             }
         }

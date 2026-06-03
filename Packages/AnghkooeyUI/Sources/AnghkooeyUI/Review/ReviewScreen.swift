@@ -12,13 +12,20 @@ public struct ReviewScreen: View {
     @Environment(\.scenePhase) private var scenePhase
 
     @State private var session: ReviewSession
+    private let loadSampleCards: (() async -> Void)?
+    private let onImport: (() -> Void)?
 
-    public init(store: any CardStoreProtocol, scheduler: any FSRS6Engine = LiveFSRS6Engine()) {
+    public init(store: any CardStoreProtocol,
+                scheduler: any FSRS6Engine = LiveFSRS6Engine(),
+                loadSampleCards: (() async -> Void)? = nil,
+                onImport: (() -> Void)? = nil) {
         _session = State(initialValue: ReviewSession(store: store, scheduler: scheduler))
+        self.loadSampleCards = loadSampleCards
+        self.onImport = onImport
     }
 
     public var body: some View {
-        ReviewView(session: session)
+        ReviewView(session: session, loadSampleCards: loadSampleCards, onImport: onImport)
             .navigationTitle("Review")
             .task { await session.loadDueQueue() }
             .onChange(of: scenePhase) { _, phase in

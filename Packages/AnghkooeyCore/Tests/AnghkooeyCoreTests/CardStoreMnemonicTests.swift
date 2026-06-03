@@ -8,10 +8,10 @@ struct CardStoreMnemonicTests {
 
     // MARK: Migration plan structure
 
-    @Test("Migration plan has three schemas and two stages after V3 addition")
-    func migrationPlan_hasThreeSchemasAndTwoStages() {
-        #expect(AnghkooeyMigrationPlan.schemas.count == 3)
-        #expect(AnghkooeyMigrationPlan.stages.count == 2)
+    @Test("Migration plan has five schemas and four stages through V5")
+    func migrationPlan_hasFiveSchemasAndFourStages() {
+        #expect(AnghkooeyMigrationPlan.schemas.count == 5)
+        #expect(AnghkooeyMigrationPlan.stages.count == 4)
     }
 
     // MARK: Snapshot defaults

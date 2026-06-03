@@ -1,0 +1,14 @@
+[
+  {"question": "What does 'spaced repetition' do?", "answer": "Schedules reviews right before you'd forget, so memory lasts with less work.", "tags": ["Anghkooey 101"]},
+  {"question": "Capital of Japan?", "answer": "Tokyo", "tags": ["Geography"]},
+  {"question": "Capital of Australia?", "answer": "Canberra", "tags": ["Geography"]},
+  {"question": "How do you say 'thank you' in Spanish?", "answer": "Gracias", "tags": ["Spanish"]},
+  {"question": "How do you say 'tomorrow' in Spanish?", "answer": "Mañana", "tags": ["Spanish"]},
+  {"question": "The mitochondria is the ___ of the cell.", "answer": "powerhouse", "tags": ["Biology"]},
+  {"question": "What molecule stores genetic information?", "answer": "DNA", "tags": ["Biology"]},
+  {"question": "What is 7 × 8?", "answer": "56", "tags": ["Math"]},
+  {"question": "Who wrote 'Romeo and Juliet'?", "answer": "William Shakespeare", "tags": ["Literature"]},
+  {"question": "What year did the first iPhone launch?", "answer": "2007", "tags": ["Trivia"]},
+  {"question": "What gas do plants absorb for photosynthesis?", "answer": "Carbon dioxide (CO₂)", "tags": ["Biology"]},
+  {"question": "What does 'FSRS' schedule based on?", "answer": "Your memory's stability and difficulty for each card.", "tags": ["Anghkooey 101"]}
+]

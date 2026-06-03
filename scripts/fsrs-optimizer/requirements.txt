@@ -1,0 +1,5 @@
+# No extra dependencies — generator uses only Python stdlib + math.
+# py-fsrs's Optimizer requires PyTorch which requires CUDA/MKL libs not
+# available in all build environments. The fixture uses a self-contained
+# FD-Adam implementation that mirrors exactly what LiveFSRSOptimizer.swift does,
+# making it a more direct parity target than a PyTorch autograd oracle.

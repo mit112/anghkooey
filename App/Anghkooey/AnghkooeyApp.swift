@@ -56,8 +56,8 @@ struct AnghkooeyApp: App {
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .active {
                         Task { await appState.drain() }
-                        if let text = UIPasteboard.general.string {
-                            clipboardCoordinator.consider(clipboardText: text)
+                        if UIPasteboard.general.hasStrings {
+                            clipboardCoordinator.refreshOffer()
                         }
                     }
                 }
