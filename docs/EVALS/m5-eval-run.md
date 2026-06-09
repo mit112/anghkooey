@@ -19,15 +19,34 @@ swift run --package-path Packages/AnghkooeyIntelligence EvalRunner --update-gold
 
 ## Fixtures
 
-3 fixtures in `Packages/AnghkooeyIntelligence/Tests/AnghkooeyIntelligenceTests/Fixtures/eval-fixtures.json`:
+20 fixtures in `Packages/AnghkooeyIntelligence/Tests/AnghkooeyIntelligenceTests/Fixtures/eval-fixtures.json`:
 
-| ID | Passage (truncated) | Domain |
-|---|---|---|
-| `biology-001` | Mitosis is the process by which a single cell divides… | Biology |
-| `vocab-001` | Ephemeral means lasting for a very short time… | Vocabulary |
-| `history-001` | The Treaty of Versailles was signed in 1919… | History |
+| ID | Domain |
+|---|---|
+| `biology-001` | Biology |
+| `vocab-001` | Vocabulary |
+| `history-001` | History |
+| `chemistry-001` | Chemistry |
+| `physics-001` | Physics |
+| `history-002` | History |
+| `geography-001` | Geography |
+| `vocab-002` | Vocabulary |
+| `cs-001` | Computer Science |
+| `medicine-001` | Medicine |
+| `astronomy-001` | Astronomy |
+| `economics-001` | Economics |
+| `art-001` | Art |
+| `music-001` | Music |
+| `psychology-001` | Psychology |
+| `math-001` | Mathematics |
+| `biology-002` | Biology |
+| `literature-001` | Literature |
+| `anatomy-001` | Anatomy |
+| `language-001` | Linguistics |
 
-Pass threshold: **80%** (≥ 3/3 inputs must pass rubric).
+Pass threshold: **80%** (≥ 16/20 inputs must pass rubric).
+
+**2026-06-09:** Fixture set expanded 3 → 20. Goldens for the 17 new fixtures pending first `--update-goldens` run on AI hardware.
 
 ## M2 baseline (original run, 2026-05-21)
 

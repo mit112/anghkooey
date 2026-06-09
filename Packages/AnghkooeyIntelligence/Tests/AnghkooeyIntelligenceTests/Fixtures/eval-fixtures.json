@@ -55,5 +55,22 @@
         "sourceSpan": "It imposed heavy reparations on Germany."
       }
     ]
-  }
+  },
+  {"id":"chemistry-001","passage":"A covalent bond forms when two atoms share one or more pairs of electrons. Water is held together by polar covalent bonds because oxygen attracts the shared electrons more strongly than hydrogen does.","templateVersion":"v1.0","goldenDrafts":[]},
+  {"id":"physics-001","passage":"Newton's second law states that the net force on an object equals its mass times its acceleration. Doubling the force on a fixed mass doubles the acceleration.","templateVersion":"v1.0","goldenDrafts":[]},
+  {"id":"history-002","passage":"The Treaty of Westphalia in 1648 ended the Thirty Years' War. It established the principle of state sovereignty, under which each ruler determined the affairs of their own territory.","templateVersion":"v1.0","goldenDrafts":[]},
+  {"id":"geography-001","passage":"The Mariana Trench in the western Pacific Ocean is the deepest part of the world's oceans, reaching about 10,994 meters at the Challenger Deep.","templateVersion":"v1.0","goldenDrafts":[]},
+  {"id":"vocab-002","passage":"Ephemeral means lasting for a very short time. A mayfly's adult life is ephemeral, often lasting only a single day.","templateVersion":"v1.0","goldenDrafts":[]},
+  {"id":"cs-001","passage":"A hash table stores key-value pairs and offers average constant-time lookup. Collisions occur when two keys map to the same bucket and are commonly resolved by chaining or open addressing.","templateVersion":"v1.0","goldenDrafts":[]},
+  {"id":"medicine-001","passage":"Insulin is a hormone produced by the beta cells of the pancreas. It lowers blood glucose by signaling cells in the liver and muscles to absorb glucose from the bloodstream.","templateVersion":"v1.0","goldenDrafts":[]},
+  {"id":"astronomy-001","passage":"A light-year is the distance light travels in one year, about 9.46 trillion kilometers. Proxima Centauri, the nearest star to the Sun, is roughly 4.24 light-years away.","templateVersion":"v1.0","goldenDrafts":[]},
+  {"id":"economics-001","passage":"Opportunity cost is the value of the best alternative forgone when a choice is made. Spending an evening studying carries the opportunity cost of the wages from a missed work shift.","templateVersion":"v1.0","goldenDrafts":[]},
+  {"id":"art-001","passage":"Chiaroscuro is the use of strong contrast between light and dark in painting. Caravaggio used chiaroscuro to give his figures dramatic three-dimensional volume.","templateVersion":"v1.0","goldenDrafts":[]},
+  {"id":"music-001","passage":"In music, a fugue is a contrapuntal composition in which a short melody, the subject, is introduced by one voice and successively taken up by the others. Bach's The Well-Tempered Clavier contains forty-eight preludes and fugues.","templateVersion":"v1.0","goldenDrafts":[]},
+  {"id":"psychology-001","passage":"The spacing effect is the finding that learning is more durable when study sessions are spread out over time rather than massed together. Reviewing material at increasing intervals improves long-term retention.","templateVersion":"v1.0","goldenDrafts":[]},
+  {"id":"math-001","passage":"A prime number is a natural number greater than one whose only divisors are one and itself. The number two is the only even prime.","templateVersion":"v1.0","goldenDrafts":[]},
+  {"id":"biology-002","passage":"Photosynthesis converts carbon dioxide and water into glucose and oxygen using light energy. It takes place in the chloroplasts of plant cells, primarily within the leaves.","templateVersion":"v1.0","goldenDrafts":[]},
+  {"id":"literature-001","passage":"An unreliable narrator is a storyteller whose account the reader has reason to doubt. The narrator of Edgar Allan Poe's The Tell-Tale Heart insists on his sanity while describing his own madness.","templateVersion":"v1.0","goldenDrafts":[]},
+  {"id":"anatomy-001","passage":"The human heart has four chambers: two atria that receive blood and two ventricles that pump it out. The left ventricle has the thickest wall because it pumps blood to the entire body.","templateVersion":"v1.0","goldenDrafts":[]},
+  {"id":"language-001","passage":"In Japanese, the particle wa marks the topic of a sentence, while ga marks the grammatical subject. The sentence watashi wa gakusei desu means I am a student.","templateVersion":"v1.0","goldenDrafts":[]}
 ]
