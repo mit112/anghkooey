@@ -1,6 +1,6 @@
 # Privacy Policy — Anghkooey
 
-**Last updated:** 2026-05-22
+**Last updated:** 2026-06-09
 
 ## Who we are
 
@@ -18,7 +18,7 @@ The card generation and mnemonic features use Apple Intelligence (Apple's on-dev
 
 ## iCloud sync (if enabled)
 
-If you enable iCloud sync in a future version, your data will be stored in your personal iCloud private database using Apple's CloudKit framework. Only you have access to this data. We cannot read it.
+iCloud sync is off by default. If you turn it on, your data is stored in your personal iCloud private database using Apple's CloudKit framework. Only you have access to this data; we cannot read it.
 
 ## Crash reporting
 

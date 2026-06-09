@@ -31,9 +31,17 @@ Capture — Use the Share Sheet from any app to send text or images to Anghkooey
 
 Review and approve — Each AI draft shows you the proposed question, answer, and suggested tags. Edit anything directly before accepting. Nothing enters your deck without your approval.
 
+Two card types — Generate classic question-and-answer cards, or cloze deletions that blank out the key term in a sentence. The AI proposes the deletions; you decide what to keep.
+
 Study — A proven spaced-repetition algorithm (FSRS-6) schedules each card at the right moment. Swipe right for Good, left for Again, up for Easy — or tap the four-grade buttons. Swipe down to edit a card mid-session. The app never punishes a missed day.
 
+Optimize your schedule — Once you've built up review history, Anghkooey can fit the FSRS-6 parameters to your own memory, so reviews land even closer to the moment you'd forget.
+
 Mnemonics — Stuck on a card? Tap "Generate Mnemonic" to let on-device AI craft a vivid memory device — a concrete image, acronym, or micro-story that makes the answer stick.
+
+Bring your Anki deck — Import an existing .apkg file and pick up where you left off. Your notes, fields, and tags come across.
+
+Home Screen widget — See how many cards are due at a glance and jump straight into a review without opening the app first.
 
 Your Library — Browse every card, filter by tag, and edit directly. AI proposes tags when a card is created; you're always in control.
 
@@ -53,7 +61,7 @@ REQUIREMENTS
 ### Keywords (100 char max, comma-separated)
 
 ```
-flashcards,spaced repetition,FSRS,AI study,memory,learning,notes,capture,review,apple intelligence
+flashcards,spaced repetition,FSRS,AI study,memory,cloze,anki import,notes,capture,apple intelligence
 ```
 
 ### What's New (v1.0, 4,000 char max)
@@ -126,4 +134,8 @@ Test account: not required.
 - [ ] "What's New" text written for this version
 - [ ] App Review notes filled in
 - [ ] TestFlight external review completed (at least one non-developer tester)
-- [ ] Name availability verified: App Store, `.com`/`.app` domain, USPTO TESS (not yet done as of 2026-05-22)
+- [ ] Name availability checked 2026-06-09 — ⚠️ **COLLISION, decision required before any public push:**
+  - App Store: **clear** (no app named "Anghkooey"; only fuzzy matches like Anghami)
+  - `anghkooey.app`: **available**
+  - `anghkooey.com`: **registered 2024-09-25** (GoDaddy, expires 2026-09-25) and serving a live "Launching Soon" + email-signup page for a product **also named Anghkooey** — i.e. a third party is pre-launching the same coined name
+  - USPTO TESS: no trademark surfaced via web search; a manual lookup at tmsearch.uspto.gov is still required to confirm
