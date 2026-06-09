@@ -42,7 +42,14 @@ public struct OnboardingView: View {
             }
         }
         .tabViewStyle(.page)
+        .indexViewStyle(.page(backgroundDisplayMode: .always))
         .ignoresSafeArea()
+        .overlay(alignment: .topTrailing) {
+            Button("Skip") { onFinish() }
+                .padding(.top, 64)
+                .padding(.trailing, 24)
+                .accessibilityLabel("Skip onboarding")
+        }
     }
 
     private func page(_ title: String, _ body: String, _ symbol: String) -> some View {
