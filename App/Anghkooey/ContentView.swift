@@ -14,8 +14,14 @@ struct ContentView: View {
     @State private var onboardingState = OnboardingState()
     @State private var showingImportFromReview = false
 
-    private func sampleLoader() -> SampleDeckLoader {
-        SampleDeckLoader(store: appState.cardStore)
+    @State private var sampleLoadErrorMessage: String?
+
+    private func loadSamples() async {
+        do {
+            try await SampleDeckLoader(store: appState.cardStore).load(now: .now)
+        } catch {
+            sampleLoadErrorMessage = "Couldn't load the sample deck: \(error.localizedDescription)"
+        }
     }
 
     var body: some View {
@@ -24,7 +30,7 @@ struct ContentView: View {
                 ReviewScreen(
                     store: appState.cardStore,
                     scheduler: appState.scheduler,
-                    loadSampleCards: { try? await sampleLoader().load(now: .now) },
+                    loadSampleCards: { await loadSamples() },
                     onImport: { showingImportFromReview = true }
                 )
             }
@@ -70,7 +76,7 @@ struct ContentView: View {
             NavigationStack {
                 LibraryView(
                     store: appState.cardStore,
-                    loadSampleCards: { try? await sampleLoader().load(now: .now) }
+                    loadSampleCards: { await loadSamples() }
                 )
             }
             .tabItem { Label("Library", systemImage: "books.vertical") }
@@ -86,10 +92,7 @@ struct ContentView: View {
         )) {
             OnboardingView(
                 onLoadSample: {
-                    Task {
-                        let loader = SampleDeckLoader(store: appState.cardStore)
-                        try? await loader.load(now: .now)
-                    }
+                    Task { await loadSamples() }
                 },
                 onFinish: { onboardingState.complete() }
             )
@@ -103,6 +106,17 @@ struct ContentView: View {
         .safeAreaInset(edge: .top) {
             ClipboardBanner(coordinator: clipboardCoordinator)
                 .animation(.snappy, value: clipboardCoordinator.pendingOffer)
+        }
+        .alert(
+            "Sample deck",
+            isPresented: Binding(
+                get: { sampleLoadErrorMessage != nil },
+                set: { if !$0 { sampleLoadErrorMessage = nil } }
+            )
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(sampleLoadErrorMessage ?? "")
         }
     }
 }
