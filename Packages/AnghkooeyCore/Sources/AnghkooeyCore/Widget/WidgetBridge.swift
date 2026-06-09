@@ -33,10 +33,10 @@ public struct WidgetBridge: Sendable {
     private var snapshotURL: URL { widgetDir.appendingPathComponent("due-snapshot.json") }
     private var gradesURL: URL { widgetDir.appendingPathComponent("grades.jsonl") }
 
-    private nonisolated(unsafe) static let encoder: JSONEncoder = {
+    private static let encoder: JSONEncoder = {
         let e = JSONEncoder(); e.dateEncodingStrategy = .iso8601; return e
     }()
-    private nonisolated(unsafe) static let decoder: JSONDecoder = {
+    private static let decoder: JSONDecoder = {
         let d = JSONDecoder(); d.dateDecodingStrategy = .iso8601; return d
     }()
 

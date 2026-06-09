@@ -86,7 +86,7 @@ struct AnghkooeyWidgetView: View {
     }
 
     private func gradeIntent(snap: WidgetDueSnapshot, rating: Rating) -> GradeCardIntent {
-        var intent = GradeCardIntent()
+        let intent = GradeCardIntent()
         intent.cardID = snap.cardID.uuidString
         intent.ratingRaw = rating.rawValue
         return intent
@@ -96,7 +96,7 @@ struct AnghkooeyWidgetView: View {
 // MARK: - Widget + Bundle
 
 struct AnghkooeyReviewWidget: Widget {
-    nonisolated(unsafe) static let kind: String = "AnghkooeyReviewWidget"
+    static let kind: String = "AnghkooeyReviewWidget"
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: Self.kind, provider: DueCardProvider()) { entry in

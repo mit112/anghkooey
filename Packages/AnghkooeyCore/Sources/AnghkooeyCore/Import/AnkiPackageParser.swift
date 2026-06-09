@@ -60,7 +60,10 @@ enum AnkiPackageParser {
     // MARK: - Extraction
 
     private static func extractDatabase(from apkgURL: URL, into dir: URL) throws -> URL {
-        guard let archive = Archive(url: apkgURL, accessMode: .read) else {
+        let archive: Archive
+        do {
+            archive = try Archive(url: apkgURL, accessMode: .read)
+        } catch {
             throw AnkiImportError.corruptedArchive
         }
 
