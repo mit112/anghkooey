@@ -14,6 +14,7 @@ Apple requires apps to declare a reason for accessing certain sensitive APIs in 
 |---|---|---|---|
 | `NSPrivacyAccessedAPICategoryFileTimestamp` | `3B52.1` | `InboxDrainer` (main app) | Reads `contentModificationDateKey` and `attributesOfItem` on inbox JSON/image files the app creates and manages in the App Group container, to process items in arrival order. |
 | `NSPrivacyAccessedAPICategoryFileTimestamp` | `DDA9.1` | `InboxWriter` (Share Extension) | Checks the inbox for existing pending items written from content shared by other apps via the Share Sheet. |
+| `NSPrivacyAccessedAPICategoryUserDefaults` | `CA92.1` | Main app (`OnboardingState`, `SyncPreference`, `FreezeController`, `ClipboardCaptureCoordinator`) | App's own settings only: onboarding-completed flag, iCloud sync opt-in, freeze state, clipboard-offer dedupe. No third-party access. |
 
 **APIs audited and confirmed not used:**
 
@@ -22,6 +23,5 @@ Apple requires apps to declare a reason for accessing certain sensitive APIs in 
 | `NSPrivacyAccessedAPICategorySystemBootTime` | Not used — no `systemUptime`, `mach_absolute_time`, or monotonic clock calls in production code |
 | `NSPrivacyAccessedAPICategoryDiskSpace` | Not used — no `volumeAvailableCapacity` or `attributesOfFileSystem` calls |
 | `NSPrivacyAccessedAPICategoryActiveKeyboards` | Not used — no `UITextInputMode.activeInputModes` calls |
-| `NSPrivacyAccessedAPICategoryUserDefaults` | Not used — no `UserDefaults` or `@AppStorage` in production code |
 
 **No tracking, no third-party SDKs, no data collection.** All card data stays on-device in SwiftData. CloudKit private DB sync (v1.1) will also remain in the user's private iCloud account.
