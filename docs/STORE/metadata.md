@@ -138,4 +138,5 @@ Test account: not required.
   - App Store: **clear** (no app named "Anghkooey"; only fuzzy matches like Anghami)
   - `anghkooey.app`: **available**
   - `anghkooey.com`: **registered 2024-09-25** (GoDaddy, expires 2026-09-25) and serving a live "Launching Soon" + email-signup page for a product **also named Anghkooey** — i.e. a third party is pre-launching the same coined name
-  - USPTO TESS: no trademark surfaced via web search; a manual lookup at tmsearch.uspto.gov is still required to confirm
+  - USPTO: **no "Anghkooey" trademark** (verified via Justia/Trademarkia 2026-06-09; closest is unrelated "ANKOOY"). Word-mark clear.
+  - **Brand caveat:** "Anghkooey" is not an original coinage — it is a recognizable word from the MGM+ series *From* (means "remember"; the chant of the show's sacrificed children). Strong public association; reconsider whether that's the desired connotation for a study app.
