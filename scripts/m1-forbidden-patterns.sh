@@ -28,7 +28,6 @@ PATTERNS=(
   '\bvar[[:space:]]+easeFactor\b'            # FSRS uses stability/difficulty, not SM-2 ease
   '\bvar[[:space:]]+interval\b'              # likewise, no SM-2 interval Int
   '\bvar[[:space:]]+nextDue\b'               # field is dueAt
-  'tags:[[:space:]]*\[String\]'              # tags is a [Tag] relationship
   'Logger\([[:space:]]*subsystem:'           # use CoreLog.persistence; do not hard-code subsystem
   # M1 T3 — Scheduling/ contract bans. ts-fsrs is JS (snake_case); Codex's
   # priors will pull those identifiers in verbatim. Swift port is camelCase.
@@ -61,6 +60,15 @@ for pattern in "${PATTERNS[@]}"; do
     EXIT=1
   fi
 done
+
+# Card.tags is a SwiftData [Tag] relationship. String projections are valid in
+# Sendable snapshots and store APIs, so keep this schema check scoped to Card.
+CARD_SOURCE="${SRC}/Persistence/Card.swift"
+if rg --no-heading --line-number --color=never \
+      -e '\bvar[[:space:]]+tags:[[:space:]]*\[String\]' "${CARD_SOURCE}"; then
+  echo "  ↑ forbidden pattern in Card model: var tags: [String]" >&2
+  EXIT=1
+fi
 
 # M2 — AnghkooeyIntelligence source checks
 INT_SRC="${ROOT}/Packages/AnghkooeyIntelligence/Sources/AnghkooeyIntelligence"

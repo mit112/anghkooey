@@ -8,10 +8,12 @@
 set -euo pipefail
 
 SIMULATOR="generic/platform=iOS Simulator"
+TEST_SIMULATOR="platform=iOS Simulator,name=iPhone 17 Pro,OS=latest"
 WORKSPACE_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DERIVED="$WORKSPACE_ROOT/.ci-derived-data"
 
 echo "=== M1 forbidden-pattern check ==="
+bash "$WORKSPACE_ROOT/scripts/tests/m1-forbidden-patterns-test.sh"
 bash "$WORKSPACE_ROOT/scripts/m1-forbidden-patterns.sh"
 
 echo "=== AnghkooeyCore tests ==="
@@ -28,7 +30,15 @@ echo "=== AnghkooeyIntelligence tests ==="
 (cd "$WORKSPACE_ROOT/Packages/AnghkooeyIntelligence" && swift test)
 
 echo "=== AnghkooeyUI tests ==="
-(cd "$WORKSPACE_ROOT/Packages/AnghkooeyUI" && swift test)
+(
+  cd "$WORKSPACE_ROOT/Packages/AnghkooeyUI"
+  xcodebuild test \
+    -scheme AnghkooeyUI \
+    -destination "$TEST_SIMULATOR" \
+    -configuration Debug \
+    CODE_SIGNING_ALLOWED=NO \
+    -derivedDataPath "$DERIVED/ui-tests"
+)
 
 echo "=== App target build ==="
 xcodebuild build \
