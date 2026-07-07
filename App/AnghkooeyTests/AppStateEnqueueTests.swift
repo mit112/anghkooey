@@ -517,6 +517,135 @@ struct AppStateEnqueueTests {
     }
 }
 
+// MARK: - #34 authoringCount (drafting indicator)
+//
+// Between a capture and the draft sheet appearing, `enqueue(resolvedText:)`
+// awaits on-device generation with no visible feedback. `authoringCount`
+// tracks the number of `enqueue` calls currently in flight so `ContentView`
+// can show a drafting indicator while it's non-zero. It's an `Int` rather
+// than a `Bool` so it stays accurate under concurrent captures.
+
+/// Routes to a distinct `(drafts, gate)` pair per `resolvedText`, letting a
+/// test suspend two concurrent `enqueue` calls independently. Sharing a
+/// single `GatedStreamAuthor`'s one `StreamGate` between two callers would
+/// corrupt the gate's single-continuation slot (its `wait()` overwrites
+/// `continuation` on a second concurrent caller, stranding the first).
+/// Mirrors `GatedStreamAuthor`'s body, keyed by input text instead of fixed.
+private struct RoutingGatedStreamAuthor: CardAuthoringService {
+    let routes: [String: (drafts: [CardDraft], gate: StreamGate)]
+
+    var availability: AuthoringAvailability {
+        get async { .available }
+    }
+
+    func generateDrafts(from text: String) async throws -> AsyncThrowingStream<CardDraft, Error> {
+        guard let route = routes[text] else {
+            return AsyncThrowingStream { continuation in continuation.finish() }
+        }
+        let drafts = route.drafts
+        let gate = route.gate
+        return AsyncThrowingStream { continuation in
+            let task = Task {
+                guard let first = drafts.first else {
+                    continuation.finish()
+                    return
+                }
+                continuation.yield(first)
+                await gate.wait()
+                for draft in drafts.dropFirst() { continuation.yield(draft) }
+                continuation.finish()
+            }
+            continuation.onTermination = { _ in task.cancel() }
+        }
+    }
+}
+
+@Suite("AppState.authoringCount — #34 drafting indicator")
+@MainActor
+struct AppStateAuthoringCountTests {
+
+    /// Cooperatively yields the MainActor until `condition` holds, bounded so
+    /// a genuine regression fails fast instead of hanging. Mirrors the helper
+    /// in `AppStateEnqueueTests`.
+    private func waitUntil(
+        maxIterations: Int = 10_000,
+        _ condition: () -> Bool
+    ) async {
+        for _ in 0..<maxIterations {
+            if condition() { return }
+            await Task.yield()
+        }
+    }
+
+    // MARK: authoringCount_risesAndFalls_aroundASingleEnqueue
+
+    @Test("authoringCount is 0 at rest, rises to 1 while a gated enqueue is suspended mid-stream, and returns to 0 once the stream completes")
+    func authoringCount_risesAndFalls_aroundASingleEnqueue() async throws {
+        let d1 = CardDraft(question: "Q1", answer: "A1")
+        let gate = StreamGate()
+        let sut = AppState(cardAuthor: GatedStreamAuthor(drafts: [d1], gate: gate))
+
+        #expect(sut.authoringCount == 0)
+
+        let task = Task { @MainActor in
+            await sut.enqueue(resolvedText: "capture")
+        }
+
+        // Registration barrier: don't assert until enqueue has actually
+        // incremented the count, proving it's suspended mid-stream (parked
+        // at the gate after yielding the first draft) rather than merely not
+        // yet scheduled.
+        await waitUntil { sut.authoringCount == 1 }
+        #expect(sut.authoringCount == 1)
+
+        gate.release()
+        await task.value
+
+        #expect(sut.authoringCount == 0)
+    }
+
+    // MARK: authoringCount_tracksConcurrentEnqueues
+
+    @Test("two concurrent gated enqueues both count: authoringCount is 2 while both are suspended, and drops back to 0 only after both finish")
+    func authoringCount_tracksConcurrentEnqueues() async throws {
+        let a1 = CardDraft(question: "A1", answer: "a1")
+        let b1 = CardDraft(question: "B1", answer: "b1")
+        let gateA = StreamGate()
+        let gateB = StreamGate()
+        let sut = AppState(cardAuthor: RoutingGatedStreamAuthor(routes: [
+            "capture A": (drafts: [a1], gate: gateA),
+            "capture B": (drafts: [b1], gate: gateB),
+        ]))
+
+        #expect(sut.authoringCount == 0)
+
+        let taskA = Task { @MainActor in await sut.enqueue(resolvedText: "capture A") }
+        let taskB = Task { @MainActor in await sut.enqueue(resolvedText: "capture B") }
+
+        await waitUntil { sut.authoringCount == 2 }
+        #expect(sut.authoringCount == 2)
+
+        gateA.release()
+        await taskA.value
+        #expect(sut.authoringCount == 1)
+
+        gateB.release()
+        await taskB.value
+        #expect(sut.authoringCount == 0)
+    }
+
+    // MARK: authoringCount_returnsToZero_afterPreYieldThrow
+
+    @Test("authoringCount returns to 0 even when the author throws before yielding anything — the defer guard fires on a thrown stream too")
+    func authoringCount_returnsToZero_afterPreYieldThrow() async throws {
+        let sut = AppState(cardAuthor: FailingAuthor())
+
+        await sut.enqueue(resolvedText: "some captured text")
+
+        #expect(sut.authoringCount == 0)
+    }
+}
+
 // MARK: - #30 authoring availability caching
 
 @Suite("AppState.refreshAuthoringAvailability — #30 capture-tab banner")

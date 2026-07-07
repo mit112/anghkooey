@@ -123,8 +123,24 @@ struct ContentView: View {
             )
         }
         .safeAreaInset(edge: .top) {
-            ClipboardBanner(coordinator: clipboardCoordinator)
-                .animation(.snappy, value: clipboardCoordinator.pendingOffer)
+            if appState.authoringCount > 0 {
+                DraftingIndicator()
+            } else {
+                ClipboardBanner(coordinator: clipboardCoordinator)
+                    .animation(.snappy, value: clipboardCoordinator.pendingOffer)
+            }
+        }
+        .animation(.snappy, value: appState.authoringCount > 0)
+        .onChange(of: appState.authoringCount) { old, new in
+            // Announce only on the 0↔non-zero boundary, not on every count
+            // change (e.g. a second concurrent capture starting while the
+            // first is still authoring shouldn't re-announce "Drafting
+            // cards") (#34).
+            if old == 0 && new > 0 {
+                AccessibilityNotification.Announcement("Drafting cards").post()
+            } else if old > 0 && new == 0 {
+                AccessibilityNotification.Announcement("Cards ready").post()
+            }
         }
         .alert(
             "Sample deck",
