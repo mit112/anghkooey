@@ -58,5 +58,17 @@ done
 count=$(grep -c "PrivacyInfo" "$PBXPROJ" || true)
 [ "$count" -eq 12 ] || { echo "ERROR: expected 12 PrivacyInfo lines in pbxproj, found $count (see #56)"; exit 1; }
 
+# Guard the project.yml -> Info.plist contract: these two keys are ONLY kept
+# across `make generate` because they live in project.yml's info.properties
+# (xcodegen writes Info.plist purely from properties). CI does not run
+# `make generate`, so a merge could drop them from project.yml while the
+# committed Info.plist still has them — CI would pass and the NEXT generate
+# would silently re-drop them (camera crash / ITMS-91053). Fail here if the
+# source of truth loses either key (Epic-10 tooling checkpoint, see #56).
+PROJECT_YML="$WORKSPACE_ROOT/App/project.yml"
+for key in NSCameraUsageDescription LSSupportsOpeningDocumentsInPlace; do
+  grep -q "$key" "$PROJECT_YML" || { echo "ERROR: $key missing from App/project.yml info.properties — make generate would drop it from Info.plist (see #56)"; exit 1; }
+done
+
 echo ""
 echo "✓ All checks passed"
