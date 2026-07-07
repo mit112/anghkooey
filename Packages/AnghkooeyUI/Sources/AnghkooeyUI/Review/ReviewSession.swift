@@ -67,6 +67,12 @@ public final class ReviewSession {
     /// Updated alongside the due queue on every `loadDueQueue()` call.
     public private(set) var ltmCount: Int = 0
 
+    /// When the in-session queue empties but a card is known to become due
+    /// again soon (e.g. an FSRS learning-step "Again" card), this is that
+    /// due date; `nil` when nothing is upcoming. `ReviewView` uses this to
+    /// show "next card in ~N min" instead of a bare "all caught up" (#18).
+    public private(set) var nextDueDate: Date?
+
     /// Seconds-until-next-due per `Rating` for the current card.
     /// Empty when there is no current card.
     public var currentIntervals: [Rating: TimeInterval] {
@@ -105,11 +111,40 @@ public final class ReviewSession {
     private var queue: [Card.Snapshot] = []
     private let mnemonicService: (any MnemonicService)?
 
+    /// Bumped at the start of every `loadDueQueue()` call. `loadDueQueue()`
+    /// and `enterEmptyState(generation:)` each capture the generation that
+    /// was current when *they* started and re-check it after every `await`
+    /// before writing published state. A load fired from `.task` /
+    /// `scenePhase` / `.anghkooeyCardAccepted` (see `ReviewScreen`) can
+    /// suspend across an `await`; without this guard, a second concurrent
+    /// `loadDueQueue()` that starts and finishes during that suspension
+    /// would get clobbered when the first, now-stale call resumes (#18).
+    private var loadGeneration = 0
+
     /// Surfaces persistence/generation failures to the owning screen.
     /// `nil` by default so existing construction sites keep compiling; a
     /// session built without one silently drops errors it can't hand off
     /// (see the `#23` fix — every call site that matters injects one).
     private let errorPresenter: ErrorPresenter?
+
+    /// Test seam for the single scheduled wake in `scheduleNextDueCheck(at:)`.
+    /// Defaults to a real `Task.sleep` so existing construction sites need no
+    /// change; mirrors `ErrorPresenter`'s `sleep` seam (#22) so tests inject a
+    /// controllable stand-in and nothing waits on real time.
+    private let sleep: @Sendable (Duration) async -> Void
+
+    /// The single in-flight "wake me when the next learning-step card is
+    /// due" task, or `nil` when nothing is scheduled. At most one is ever
+    /// outstanding: `scheduleNextDueCheck(at:)` cancels any prior one before
+    /// starting a new one, and `loadDueQueue()` cancels it too so a stale
+    /// wake from a since-superseded queue load can't double-seed (#18).
+    ///
+    /// `nonisolated(unsafe)` so `deinit` (which runs nonisolated) can cancel
+    /// it — required because the `@Observable` macro's generated backing for
+    /// this stored property cannot be plain `nonisolated`. Safe: every other
+    /// access is on the MainActor and `deinit` runs with no other references
+    /// left to race with.
+    nonisolated(unsafe) private var nextDueCheckTask: Task<Void, Never>?
 
     // MARK: Init
 
@@ -117,6 +152,7 @@ public final class ReviewSession {
         store: any CardStoreProtocol,
         scheduler: @escaping () -> any FSRS6Engine = { LiveFSRS6Engine() },
         clock: @Sendable @escaping () -> Date = { .now },
+        sleep: @escaping @Sendable (Duration) async -> Void = { try? await Task.sleep(for: $0) },
         dailyBatchCap: Int = 20,
         backlogThreshold: Int = 50,
         mnemonicService: (any MnemonicService)? = nil,
@@ -125,23 +161,46 @@ public final class ReviewSession {
         self.store = store
         self.scheduler = scheduler
         self.clock = clock
+        self.sleep = sleep
         self.dailyBatchCap = dailyBatchCap
         self.backlogThreshold = backlogThreshold
         self.mnemonicService = mnemonicService
         self.errorPresenter = errorPresenter
     }
 
+    deinit {
+        nextDueCheckTask?.cancel()
+    }
+
     // MARK: Public API
 
     /// Fetches all due cards, applies Cushion Mode cap if backlog exceeds threshold,
     /// and seeds the review queue.
-    public func loadDueQueue() async {
+    ///
+    /// - Parameter resetSummary: When `true` (the default), resets `summary`
+    ///   to a fresh `ReviewSummary()` — this call represents a new sitting.
+    ///   The single scheduled wake in `scheduleNextDueCheck(at:)` passes
+    ///   `false` instead: a learning-step card reappearing mid-sitting is a
+    ///   continuation of the same session, not a new one, so the running
+    ///   tally must survive it (#18).
+    public func loadDueQueue(resetSummary: Bool = true) async {
+        // Cancel and clear any wake scheduled by a prior queue-emptied event
+        // — this reload supersedes it, and a stale wake must not fire a
+        // second, possibly-conflicting re-seed later (#18).
+        nextDueCheckTask?.cancel()
+        nextDueCheckTask = nil
+        nextDueDate = nil
         state = .loading
+        loadGeneration &+= 1
+        let gen = loadGeneration
         do {
             // Both throwing fetches happen before any published-state mutation
             // so a failure in either leaves no stale reviewing snapshot behind.
             let allDue = try await store.dueCards(asOf: clock())
+            guard gen == loadGeneration else { return } // superseded by a newer load
             let counts = try await store.count(asOf: clock())
+            guard gen == loadGeneration else { return }
+
             backlogTotal = allDue.count
             isCushionActive = allDue.count > backlogThreshold && allDue.count > dailyBatchCap
             let visible = isCushionActive ? Array(allDue.prefix(dailyBatchCap)) : allDue
@@ -149,17 +208,32 @@ public final class ReviewSession {
             currentCard = visible.first
             queueRemaining = queue.count
             isAnswerRevealed = false
-            summary = ReviewSummary()
-            state = visible.isEmpty ? .empty : .reviewing
+            if resetSummary {
+                summary = ReviewSummary()
+            }
             totalCardCount = counts.total
             currentMnemonic = currentCard?.mnemonic
+            isMnemonicLoading = false
+
             // Deliberate non-fatal degrade (not a swallowed error, #23 audit):
             // the LTM banner is a nice-to-have stat, not part of the review
             // contract, so a failure here just keeps showing the prior count
             // rather than surfacing a toast or failing the whole queue load.
-            ltmCount = (try? await store.longTermMemoryCount(thresholdDays: LTMConfig.defaultThresholdDays)) ?? ltmCount
-            isMnemonicLoading = false
+            let ltm = try? await store.longTermMemoryCount(thresholdDays: LTMConfig.defaultThresholdDays)
+            guard gen == loadGeneration else { return }
+            ltmCount = ltm ?? ltmCount
+
+            if visible.isEmpty {
+                // Recomputes nextDueDate + wake instead of a bare `.empty` so
+                // the ETA/wake survive a reload (e.g. backgrounding then
+                // foregrounding while a wake was already pending) instead of
+                // being silently dropped (#18).
+                await enterEmptyState(generation: gen)
+            } else {
+                state = .reviewing
+            }
         } catch {
+            guard gen == loadGeneration else { return }
             UILog.review.error("loadDueQueue failed to fetch the due queue: \(error)")
             state = .error(error.localizedDescription)
         }
@@ -221,15 +295,91 @@ public final class ReviewSession {
         if queue.isEmpty {
             currentCard = nil
             queueRemaining = 0
-            state = .empty
             currentMnemonic = nil
             isMnemonicLoading = false
+            await enterEmptyState(generation: loadGeneration)
         } else {
             currentCard = queue.removeFirst()
             queueRemaining = queue.count
             isAnswerRevealed = false
             currentMnemonic = currentCard?.mnemonic
             isMnemonicLoading = false
+        }
+    }
+
+    /// Enters the empty state, but first computes the next due time so the
+    /// UI can show an ETA and a single wake can re-seed the queue when a
+    /// learning-step (Again) card becomes due. Called both when
+    /// `loadDueQueue()` finds nothing visible and when `submit(grade:)`
+    /// empties the queue mid-session (#18).
+    ///
+    /// Deliberately does **not** re-fetch `dueCards(asOf:)` and dump
+    /// whatever it finds into the queue: the only thing that query can
+    /// return right after the queue just emptied is Cushion-Mode-held
+    /// backlog beyond `dailyBatchCap`, and Cushion Mode's contract is one
+    /// capped batch per load — re-seeding that backlog here, even re-capped,
+    /// would defeat the feature. Learning-step ("Again") cards are due in
+    /// the *future*, not now, so they're handled by the scheduled wake
+    /// below, never by an immediate re-seed.
+    ///
+    /// `generation` pins this call to the `loadDueQueue()` (or
+    /// `submit(grade:)`) invocation that started it. If a newer
+    /// `loadDueQueue()` has since bumped `loadGeneration` by the time the
+    /// `await` below resumes, this call has been superseded and must not
+    /// clobber the newer call's state (#18).
+    ///
+    /// A fetch failure logs and falls back to a plain `.empty` with no
+    /// next-due marker — a deliberate, documented safe fallback (not a
+    /// silent `try?`, per #23's no-silent-swallow rule): the user still
+    /// sees "all caught up" rather than a stuck spinner, they just lose
+    /// the ETA.
+    ///
+    /// Note: the ETA/wake computed here account only for FSRS `dueAt`, not
+    /// `clozeBuriedUntil` expiry — cloze burial clears at the next calendar
+    /// day, not a minutes-scale learning step, so it's intentionally out of
+    /// #18's scope and is instead picked up by the next foreground
+    /// `loadDueQueue()`.
+    private func enterEmptyState(generation: Int) async {
+        do {
+            let next = try await store.nextDueDate(after: clock())
+            guard generation == loadGeneration else { return } // superseded
+            currentCard = nil
+            queueRemaining = 0
+            currentMnemonic = nil
+            isMnemonicLoading = false
+            nextDueDate = next
+            state = .empty
+            if let next {
+                await scheduleNextDueCheck(at: next)
+            }
+        } catch {
+            guard generation == loadGeneration else { return }
+            UILog.review.error("re-check after queue emptied failed: \(error)")
+            nextDueDate = nil
+            state = .empty
+        }
+    }
+
+    /// Schedules exactly one wake at `date` to re-check the due queue —
+    /// never a polling loop. Cancels any previously-scheduled wake first, so
+    /// at most one is ever outstanding (#18).
+    private func scheduleNextDueCheck(at date: Date) async {
+        nextDueCheckTask?.cancel()
+        let delay = date.timeIntervalSince(clock())
+        guard delay > 0 else {
+            // Already due by the time we got here (e.g. clock crossed it
+            // between the two fetches above) — just reload now. `false`:
+            // this re-seed continues the current sitting (#18 finding 3).
+            nextDueCheckTask = nil
+            await loadDueQueue(resetSummary: false)
+            return
+        }
+        nextDueCheckTask = Task { @MainActor [weak self] in
+            await self?.sleep(.seconds(delay))
+            guard !Task.isCancelled, let self else { return }
+            // `false`: the wake continues the current sitting, so the
+            // running summary must survive the re-seed (#18 finding 3).
+            await self.loadDueQueue(resetSummary: false) // re-seed; the now-due card reappears
         }
     }
 
