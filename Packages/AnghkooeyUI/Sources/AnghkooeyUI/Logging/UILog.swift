@@ -6,4 +6,5 @@ public enum UILog {
     public static var review: Logger { Logger(subsystem: subsystem, category: "Review") }
     public static var library: Logger { Logger(subsystem: subsystem, category: "Library") }
     public static var capture: Logger { Logger(subsystem: subsystem, category: "Capture") }
+    public static var cloze: Logger { Logger(subsystem: subsystem, category: "Cloze") }
 }
