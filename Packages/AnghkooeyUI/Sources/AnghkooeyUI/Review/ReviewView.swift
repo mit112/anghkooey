@@ -373,6 +373,9 @@ private struct CardEditSheet: View {
     @State private var editedQuestion: String
     @State private var editedAnswer: String
     @State private var editedTags: [String]
+    // Own presenter, not the screen's: a screen-level `.errorToast` would be
+    // hidden behind this sheet, so the sheet surfaces its own failures.
+    @State private var errorPresenter = ErrorPresenter()
 
     init(isPresented: Binding<Bool>, card: Card.Snapshot, session: ReviewSession) {
         _isPresented = isPresented
@@ -406,17 +409,33 @@ private struct CardEditSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        Task { @MainActor in
-                            await session.submitEdit(
-                                question: editedQuestion,
-                                answer: editedAnswer,
-                                tags: editedTags
-                            )
-                            isPresented = false
-                        }
+                        Task { @MainActor in await saveEdit() }
                     }
                 }
             }
+        }
+        .errorToast(errorPresenter)
+    }
+
+    /// Submits the current edit fields. On success, closes the sheet. On
+    /// failure, keeps the sheet open with the entered text intact and offers
+    /// a retry that re-runs this same save (#23 — no silent swallow).
+    @MainActor
+    private func saveEdit() async {
+        do {
+            try await session.submitEdit(
+                cardID: card.id,
+                question: editedQuestion,
+                answer: editedAnswer,
+                tags: editedTags
+            )
+            isPresented = false
+        } catch {
+            UILog.review.error("Card edit save failed: \(error)")
+            errorPresenter.present(
+                "Couldn't save your edit — try again.",
+                retry: { await self.saveEdit() }
+            )
         }
     }
 }

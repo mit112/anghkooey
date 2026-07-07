@@ -506,6 +506,7 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
     public var createError: Error?
     public var applyError: Error?
     public var updateError: Error?
+    public var updateMnemonicError: Error?
     public var countError: Error?
     /// When set, `optimizationReviewLogs()` returns this instead of the computed result.
     public var optimizationReviewLogsOverride: [OptimizationReviewLogRow]?
@@ -654,6 +655,7 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
     }
 
     public func updateMnemonic(id: UUID, mnemonic: String) async throws {
+        if let err = updateMnemonicError { throw err }
         guard let idx = cards.firstIndex(where: { $0.id == id }) else { return }
         let old = cards[idx]
         cards[idx] = Card.Snapshot(
