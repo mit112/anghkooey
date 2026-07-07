@@ -40,14 +40,14 @@ echo "=== AnghkooeyUI tests ==="
     -derivedDataPath "$DERIVED/ui-tests"
 )
 
-echo "=== App target build ==="
-xcodebuild build \
+echo "=== App target test ==="
+xcodebuild test \
   -project "$WORKSPACE_ROOT/App/Anghkooey.xcodeproj" \
   -scheme Anghkooey \
-  -destination "$SIMULATOR" \
+  -destination "$TEST_SIMULATOR" \
   -configuration Debug \
   CODE_SIGNING_ALLOWED=NO \
-  -derivedDataPath "$DERIVED"
+  -derivedDataPath "$DERIVED/app-tests"
 
 echo ""
 echo "✓ All checks passed"
