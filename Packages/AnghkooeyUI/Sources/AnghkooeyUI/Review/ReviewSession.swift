@@ -290,6 +290,14 @@ public final class ReviewSession {
             )
             return
         }
+        // The store write for `card` has landed — that's correct and must
+        // not be undone. But a concurrent `loadDueQueue()` (scenePhase /
+        // `.anghkooeyCardAccepted` / the #18 wake) can have changed
+        // `currentCard` while the write above was in flight. If it has, the
+        // reload already owns the current session state: recording into the
+        // (possibly reset) summary or dequeuing the (now-different) live
+        // queue here would advance/drop the wrong card.
+        guard currentCard?.id == card.id else { return }
         errorPresenter?.dismiss()
         summary.record(grade.fsrsRating)
         if queue.isEmpty {
@@ -423,6 +431,10 @@ public final class ReviewSession {
             )
             return
         }
+        // If the user advanced to a different card while generation was in
+        // flight, this mnemonic is stale — discard it rather than publish it
+        // onto (or persist it against) whatever card is current now.
+        guard currentCard?.id == card.id else { return }
         currentMnemonic = text
         await persistMnemonic(text, for: card.id)
     }
@@ -476,6 +488,12 @@ public final class ReviewSession {
             UILog.review.error("submitEdit failed to save the card: \(error)")
             throw error
         }
+        // The edit persisted to `cardID` regardless — that's correct and
+        // must not be rethrown. But a concurrent `loadDueQueue()` can have
+        // changed `currentCard` while the write above was in flight; if it
+        // has, the reload owns the current state and this must not clobber
+        // it with a snapshot rebuilt from the (now stale) pre-await `card`.
+        guard currentCard?.id == cardID else { return }
         errorPresenter?.dismiss()
         currentCard = Card.Snapshot(
             id: card.id,
