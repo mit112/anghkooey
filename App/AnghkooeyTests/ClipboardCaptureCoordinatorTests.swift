@@ -2,69 +2,78 @@ import Testing
 import Foundation
 @testable import Anghkooey
 
+@MainActor
+final class MockPasteboard: PasteboardReading {
+    var hasStrings: Bool
+    var changeCount: Int
+    var string: String?
+
+    init(hasStrings: Bool = true, changeCount: Int = 1, string: String? = nil) {
+        self.hasStrings = hasStrings
+        self.changeCount = changeCount
+        self.string = string
+    }
+}
+
 @Suite("Clipboard capture coordinator")
 @MainActor
 struct ClipboardCaptureCoordinatorTests {
 
-    private func makeCoordinator() -> (ClipboardCaptureCoordinator, InMemoryOfferStore) {
-        let store = InMemoryOfferStore()
-        let coord = ClipboardCaptureCoordinator(offerStore: store, minLength: 20, ringCapacity: 50)
-        return (coord, store)
+    private func makeCoordinator(
+        hasStrings: Bool = true,
+        changeCount: Int = 1,
+        string: String? = nil
+    ) -> (ClipboardCaptureCoordinator, MockPasteboard, InMemoryLastHandledChangeCountStore) {
+        let pasteboard = MockPasteboard(hasStrings: hasStrings, changeCount: changeCount, string: string)
+        let store = InMemoryLastHandledChangeCountStore()
+        let coord = ClipboardCaptureCoordinator(pasteboard: pasteboard, store: store)
+        return (coord, pasteboard, store)
     }
 
-    @Test("text below the minimum length produces no offer")
-    func tooShortNoOffer() {
-        let (coord, _) = makeCoordinator()
-        coord.consider(clipboardText: "short")
-        #expect(coord.pendingOffer == nil)
-    }
+    @Test("dismiss suppresses re-offer until changeCount bumps")
+    func dismissSuppressesUntilChangeCountBumps() {
+        let (coord, pasteboard, _) = makeCoordinator(hasStrings: true, changeCount: 1)
 
-    @Test("fresh long text produces an offer")
-    func freshTextOffers() {
-        let (coord, _) = makeCoordinator()
-        coord.consider(clipboardText: "This is a sufficiently long clipboard string to offer.")
-        #expect(coord.pendingOffer?.text == "This is a sufficiently long clipboard string to offer.")
-    }
+        coord.refreshOffer()
+        #expect(coord.pendingOffer != nil)
 
-    @Test("the same text is not offered twice")
-    func dedupSameText() {
-        let (coord, _) = makeCoordinator()
-        let text = "This is a sufficiently long clipboard string to offer."
-        coord.consider(clipboardText: text)
-        coord.dismissOffer() // marks offered
-        coord.consider(clipboardText: text)
-        #expect(coord.pendingOffer == nil)
-    }
-
-    @Test("normalization makes whitespace-only differences dedup")
-    func dedupNormalized() {
-        let (coord, _) = makeCoordinator()
-        coord.consider(clipboardText: "This is a sufficiently long clipboard string to offer.")
         coord.dismissOffer()
-        coord.consider(clipboardText: "  This is a sufficiently long clipboard string to offer.  ")
         #expect(coord.pendingOffer == nil)
+
+        coord.refreshOffer()
+        #expect(coord.pendingOffer == nil) // suppressed: same changeCount
+
+        pasteboard.changeCount = 2
+        coord.refreshOffer()
+        #expect(coord.pendingOffer != nil) // genuine change: re-offers
     }
 
-    @Test("accepting routes the text and clears the offer")
-    func acceptRoutes() {
-        let (coord, _) = makeCoordinator()
+    @Test("accept suppresses re-offer until changeCount bumps")
+    func acceptSuppressesUntilChangeCountBumps() {
+        let (coord, pasteboard, _) = makeCoordinator(hasStrings: true, changeCount: 1, string: "hello")
         var routed: String?
         coord.onRoute = { routed = $0 }
-        coord.consider(clipboardText: "This is a sufficiently long clipboard string to offer.")
+
+        coord.refreshOffer()
+        #expect(coord.pendingOffer != nil)
+
         coord.acceptOffer()
-        #expect(routed == "This is a sufficiently long clipboard string to offer.")
+        #expect(routed == "hello")
         #expect(coord.pendingOffer == nil)
+
+        coord.refreshOffer()
+        #expect(coord.pendingOffer == nil) // suppressed: same changeCount
+
+        pasteboard.changeCount = 2
+        coord.refreshOffer()
+        #expect(coord.pendingOffer != nil) // genuine change: re-offers
     }
 
-    @Test("ring evicts oldest hash beyond capacity")
-    func ringEviction() {
-        let store = InMemoryOfferStore()
-        let coord = ClipboardCaptureCoordinator(offerStore: store, minLength: 1, ringCapacity: 2)
-        coord.consider(clipboardText: "alpha one two three"); coord.dismissOffer()
-        coord.consider(clipboardText: "bravo one two three"); coord.dismissOffer()
-        coord.consider(clipboardText: "charlie one two three"); coord.dismissOffer()
-        // "alpha" hash should have been evicted; offering it again succeeds.
-        coord.consider(clipboardText: "alpha one two three")
-        #expect(coord.pendingOffer != nil)
+    @Test("no strings on the pasteboard clears any pending offer")
+    func noStringsClearsOffer() {
+        let (coord, _, _) = makeCoordinator(hasStrings: false)
+
+        coord.refreshOffer()
+        #expect(coord.pendingOffer == nil)
     }
 }

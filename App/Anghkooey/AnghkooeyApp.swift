@@ -14,7 +14,7 @@ extension URL: @retroactive Identifiable {
 struct AnghkooeyApp: App {
     @State private var appState: AppState
     @State private var freezeController: FreezeController
-    @State private var clipboardCoordinator = ClipboardCaptureCoordinator(offerStore: UserDefaultsOfferStore())
+    @State private var clipboardCoordinator = ClipboardCaptureCoordinator()
     @State private var pendingImportURL: URL?
     @Environment(\.scenePhase) private var scenePhase
     private let metricsReceiver = MetricsReceiver()
@@ -59,9 +59,7 @@ struct AnghkooeyApp: App {
                     if phase == .active {
                         Task { await appState.drain() }
                         Task { await appState.refreshAuthoringAvailability() }
-                        if UIPasteboard.general.hasStrings {
-                            clipboardCoordinator.refreshOffer()
-                        }
+                        clipboardCoordinator.refreshOffer()
                     }
                 }
                 .onOpenURL { url in
