@@ -143,13 +143,19 @@ struct ErrorPresenterTests {
         presenter.present("First error.")
         let firstID = presenter.toast?.id
 
+        // Barrier: the first toast's timer must register with the gate BEFORE
+        // the second is presented, so it is deterministically the oldest
+        // pending continuation. Without this, the two unstructured dismiss
+        // Tasks race to register and `fireOldest()` could resume the *second*
+        // (still-live) timer and wrongly dismiss it (flaky failure).
+        await waitUntil { gate.callCount >= 1 }
+
         presenter.present("Second error.")
         let secondID = presenter.toast?.id
         #expect(firstID != secondID)
         #expect(presenter.toast?.message == "Second error.")
 
-        // Wait for both dismiss tasks to register with the gate before firing
-        // either — see the comment in the auto-dismiss test above.
+        // Now the second timer registers too; the oldest is the first one.
         await waitUntil { gate.callCount >= 2 }
 
         // Fire the first (now-cancelled) timer. It must NOT dismiss the second
@@ -175,6 +181,10 @@ struct ErrorPresenterTests {
         let presenter = ErrorPresenter(sleep: { duration in await gate.sleep(duration) }, announce: { _ in })
 
         presenter.present("A")
+        // Barrier: A's timer must register before B is presented, so it is the
+        // oldest pending continuation and `fireOldest()` below deterministically
+        // fires the dismissed/cancelled one (not B's still-live timer).
+        await waitUntil { gate.callCount >= 1 }
         presenter.dismiss()
         #expect(presenter.toast == nil)
 
@@ -186,8 +196,9 @@ struct ErrorPresenterTests {
         presenter.present("B")
         #expect(presenter.toast?.message == "B")
 
-        // Fire the first (dismissed, and should-be-cancelled) timer.
-        await waitUntil { gate.callCount >= 1 }
+        // Fire the first (dismissed, and should-be-cancelled) timer — both
+        // timers are now registered, so the oldest is A's.
+        await waitUntil { gate.callCount >= 2 }
         gate.fireOldest()
         await waitUntil(maxIterations: 300) { presenter.toast == nil }
 
