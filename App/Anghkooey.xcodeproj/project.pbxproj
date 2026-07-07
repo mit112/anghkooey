@@ -47,6 +47,7 @@
 		C6E53CFF60B17F8A49163A0C /* SchemaMigrationV5Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3444A07A3C879498B6BFA02D /* SchemaMigrationV5Tests.swift */; };
 		CF23B824F937A853DF4C5C24 /* ClozeMarkupParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10541EABA7F5E2AF4A8A0343 /* ClozeMarkupParserTests.swift */; };
 		D1F38339D375EA3DC2616DAF /* HTMLSanitizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDF6E399E89202CEDB2D18F8 /* HTMLSanitizerTests.swift */; };
+		D2FD61D83BB17F47EEFAB1CA /* AppStateAcceptDraftOrderingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0230E7868C5AFE5CB3D8E4D /* AppStateAcceptDraftOrderingTests.swift */; };
 		D3617197E24653996EEF5832 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 473B3A4650CFC7C87202D922 /* SettingsView.swift */; };
 		D4C6DC87B925B0639F76684A /* FreezeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BC74FCA67847F9D7EE391AA /* FreezeController.swift */; };
 		D6002CEE061540D958B46B78 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55F0F922386EE72B02D5FC3F /* AppState.swift */; };
@@ -162,6 +163,7 @@
 		DD989AFACC372F9FA57EA7CD /* CaptureAvailabilityModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureAvailabilityModelTests.swift; sourceTree = "<group>"; };
 		DDAD0965A49F13A5EF35F4A5 /* SchemaMigrationV4Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchemaMigrationV4Tests.swift; sourceTree = "<group>"; };
 		DFF0371E042B2726F73268FF /* ReviewSessionMnemonicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewSessionMnemonicTests.swift; sourceTree = "<group>"; };
+		E0230E7868C5AFE5CB3D8E4D /* AppStateAcceptDraftOrderingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateAcceptDraftOrderingTests.swift; sourceTree = "<group>"; };
 		E20946A67B7AE6E86392427A /* CardStoreImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardStoreImportTests.swift; sourceTree = "<group>"; };
 		EA63E5FA330602579BBE4E25 /* Anghkooey.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Anghkooey.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EC6349552502A3CC38E013D2 /* SampleDeckLoaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleDeckLoaderTests.swift; sourceTree = "<group>"; };
@@ -313,6 +315,7 @@
 				2AD794AD57F5F37BC67AAB49 /* AnkiImporterTests.swift */,
 				9649E9840BC5BA0D460B7FAA /* AnkiNoteMapperTests.swift */,
 				C32F9A6C7C0C292DE3ED8B1C /* AnkiPackageParserTests.swift */,
+				E0230E7868C5AFE5CB3D8E4D /* AppStateAcceptDraftOrderingTests.swift */,
 				DC510E7B9D8F52E50E4CCED4 /* AppStateEnqueueTests.swift */,
 				39CCA16F4B517A6BB52C02BA /* AppStateSchedulerResolutionTests.swift */,
 				DD989AFACC372F9FA57EA7CD /* CaptureAvailabilityModelTests.swift */,
@@ -568,6 +571,7 @@
 				A1161DD57B95A46494E6EEFA /* AnkiImporterTests.swift in Sources */,
 				C6CE3B6A74FF27E6CCA0C154 /* AnkiNoteMapperTests.swift in Sources */,
 				AE10CC0370F7C76BD262A2C7 /* AnkiPackageParserTests.swift in Sources */,
+				D2FD61D83BB17F47EEFAB1CA /* AppStateAcceptDraftOrderingTests.swift in Sources */,
 				EA01604E660F4F05E86D4778 /* AppStateEnqueueTests.swift in Sources */,
 				6F80EBA5F85241C073340591 /* AppStateSchedulerResolutionTests.swift in Sources */,
 				8511152EC0636AF534E6B001 /* CaptureAvailabilityModelTests.swift in Sources */,

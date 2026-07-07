@@ -99,11 +99,11 @@ struct AppStateEnqueueTests {
         let first = try #require(sut2.presentedDraft)
         #expect(first.draft.question == "Q1")
 
-        sut2.acceptDraft()
+        await sut2.acceptDraft()
         let second = try #require(sut2.presentedDraft)
         #expect(second.draft.question == "Q2")  // fails with stub (stub uses resolvedText as question)
 
-        sut2.acceptDraft()
+        await sut2.acceptDraft()
         let third = try #require(sut2.presentedDraft)
         #expect(third.draft.question == "Q3")
     }
@@ -120,14 +120,9 @@ struct AppStateEnqueueTests {
         await sut.enqueue(resolvedText: "2+2=4")
         _ = try #require(sut.presentedDraft)
 
-        sut.acceptDraft()
-
-        // acceptDraft persists in a fire-and-forget Task; poll (bounded) until it
-        // lands rather than relying on a fixed number of yields, which races under
-        // full-suite parallel scheduling.
-        for _ in 0..<100 where mockStore.cards.isEmpty {
-            try await Task.sleep(for: .milliseconds(5))
-        }
+        // acceptDraft is async and only returns once the create has landed —
+        // a single await suffices, no bounded-poll de-flake needed (#20).
+        await sut.acceptDraft()
 
         #expect(mockStore.cards.count == 1)
         #expect(mockStore.cards.first?.question == "What is 2+2?")
