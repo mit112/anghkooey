@@ -136,6 +136,14 @@ final class AppState: @unchecked Sendable {
     /// possibly-wrong state before the first check completes.
     private(set) var authoringAvailability: AuthoringAvailability?
 
+    /// Number of `enqueue(resolvedText:)` calls currently awaiting on-device
+    /// generation, e.g. `2` while two captures are both mid-stream. `Int`
+    /// rather than `Bool` so concurrent captures (#29) report accurately —
+    /// the second capture finishing must not flip this to "not authoring"
+    /// while the first is still running. `ContentView` shows a drafting
+    /// indicator (#34) while this is `> 0`.
+    private(set) var authoringCount: Int = 0
+
     // MARK: Private state
 
     private var pendingDrafts: [IdentifiedDraft] = []
@@ -450,6 +458,13 @@ final class AppState: @unchecked Sendable {
     /// `.generationFailed(underlying:)` payload — exactly the diagnostic
     /// information we're logging for.
     func enqueue(resolvedText: String) async {
+        // First line, synchronous, before any await — paired with the defer
+        // immediately below so authoringCount always settles back to 0, even
+        // if the stream throws before yielding anything or is cancelled
+        // mid-drain (#34).
+        authoringCount += 1
+        defer { authoringCount -= 1 }
+
         let batchID = UUID()
         var indexInBatch = 0
 
