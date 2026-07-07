@@ -528,8 +528,20 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
     public var updateError: Error?
     public var updateMnemonicError: Error?
     public var countError: Error?
+    /// When set, `optimizationReviewLogs()` throws this instead of returning
+    /// data — mirrors `createError`/`applyError`/`updateError` so a caller
+    /// (e.g. `OptimizeScheduleViewModel`) can be tested against a genuine
+    /// store failure distinct from "no review history yet" (#27).
+    public var optimizationReviewLogsError: Error?
     /// When set, `optimizationReviewLogs()` returns this instead of the computed result.
     public var optimizationReviewLogsOverride: [OptimizationReviewLogRow]?
+    /// Test-only gate: when set, `optimizationReviewLogs()` suspends on it
+    /// (after the error check, before returning any rows) until the test
+    /// resumes it. Lets a test hold `OptimizeScheduleViewModel.optimize()`
+    /// suspended between `phase == .ready` and `phase == .running` so a
+    /// second, overlapping `optimize()` call can be observed hitting the
+    /// reentrancy guard (#27). Mirrors `applyGate`/`createGate`/`updateGate`.
+    public var optimizationReviewLogsGate: (@Sendable () async -> Void)?
     /// When non-nil (including `.some(nil)`), `nextDueDate(after:)` returns
     /// this directly instead of computing it from `cards`. Lets a test
     /// simulate "genuinely no upcoming card" — FSRS scheduling always
@@ -666,6 +678,8 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
     }
 
     public func optimizationReviewLogs() async throws -> [OptimizationReviewLogRow] {
+        if let err = optimizationReviewLogsError { throw err }
+        if let gate = optimizationReviewLogsGate { await gate() }
         if let override = optimizationReviewLogsOverride { return override }
         return reviewLogs.map { entry in
             OptimizationReviewLogRow(

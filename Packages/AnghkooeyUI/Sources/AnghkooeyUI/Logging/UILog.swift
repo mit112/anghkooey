@@ -7,4 +7,5 @@ public enum UILog {
     public static var library: Logger { Logger(subsystem: subsystem, category: "Library") }
     public static var capture: Logger { Logger(subsystem: subsystem, category: "Capture") }
     public static var cloze: Logger { Logger(subsystem: subsystem, category: "Cloze") }
+    public static var optimization: Logger { Logger(subsystem: subsystem, category: "Optimization") }
 }
