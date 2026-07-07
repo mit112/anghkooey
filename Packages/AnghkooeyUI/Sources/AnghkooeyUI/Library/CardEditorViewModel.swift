@@ -20,6 +20,7 @@ public final class CardEditorViewModel {
     public var kind: Kind = .qa
     public var clozeText: String = ""
     public private(set) var isSaving = false
+    public private(set) var errorMessage: String?
 
     private let mode: Mode
     private let store: any CardStoreProtocol
@@ -59,22 +60,82 @@ public final class CardEditorViewModel {
         }
     }
 
+    /// Persists the current question/answer/tags via the store.
+    ///
+    /// On failure, `errorMessage` is set and the error is rethrown so the
+    /// sheet stays open — entered data (question/answer/tags) lives on this
+    /// model and is never cleared here, so a failed save doesn't destroy
+    /// what the user typed (#26). `isSaving` guards against a double-tap
+    /// re-entering `save()` while the first attempt is still in flight: a
+    /// second overlapping call is a no-op, matching the guard already used
+    /// by `AppState.acceptDraft`.
     public func save() async throws {
+        guard !isSaving else { return }
         let q = question.trimmingCharacters(in: .whitespacesAndNewlines)
         let a = answer.trimmingCharacters(in: .whitespacesAndNewlines)
+        errorMessage = nil
         isSaving = true
         defer { isSaving = false }
-        switch mode {
-        case .create:
-            switch kind {
-            case .qa:
-                _ = try await store.create(question: q, answer: a, sourceSpan: nil, tags: tags, now: .now)
-            case .cloze:
-                guard let template = parsedCloze else { return }
-                _ = try await store.createClozeCards(from: template, tags: tags, now: .now)
+        do {
+            switch mode {
+            case .create:
+                switch kind {
+                case .qa:
+                    _ = try await store.create(question: q, answer: a, sourceSpan: nil, tags: tags, now: .now)
+                case .cloze:
+                    // Must throw (not silently `return`) on unparseable markup —
+                    // a bare return here would make `save()` complete without
+                    // throwing, so the view would treat it as a success and
+                    // close the sheet with nothing persisted (#26).
+                    let template = try ClozeMarkupParser.parse(clozeText)
+                    _ = try await store.createClozeCards(from: template, tags: tags, now: .now)
+                }
+            case let .edit(card):
+                try await store.update(id: card.id, question: q, answer: a, tags: tags)
             }
-        case let .edit(card):
-            try await store.update(id: card.id, question: q, answer: a, tags: tags)
+        } catch {
+            UILog.library.error("Card save failed: \(error)")
+            errorMessage = Self.errorMessage(for: error)
+            throw error
+        }
+    }
+
+    /// Sets `errorMessage` to a generic fallback if nothing has already
+    /// surfaced one. Defense-in-depth backstop for a caller (the view's
+    /// `save()` catch block) that observed a throw but found no message —
+    /// `errorMessage` stays `private(set)`, so this is the seam through
+    /// which the view can self-heal without the model losing control of
+    /// its own invariant (#26).
+    public func surfaceFallbackErrorIfNeeded() {
+        if errorMessage == nil {
+            errorMessage = "Save failed. Please try again."
+        }
+    }
+
+    /// Maps a save failure to user-facing copy. `ClozeParseError` doesn't
+    /// conform to `LocalizedError`, so its bridged `localizedDescription`
+    /// is a generic, unhelpful NSError message ("The operation couldn't be
+    /// completed...") — spell out what's actually wrong with the markup so
+    /// the user has something actionable to fix (#26).
+    private static func errorMessage(for error: Error) -> String {
+        guard let clozeError = error as? ClozeParseError else {
+            return error.localizedDescription
+        }
+        switch clozeError {
+        case .noDeletions:
+            return "No cloze deletions found — add at least one {{c1::answer}} marker."
+        case .unclosedMarker:
+            return "Unclosed {{ marker — check for a missing }}."
+        case .nestedMarker:
+            return "Nested {{ }} markers aren't supported."
+        case let .duplicateIndex(index):
+            return "Duplicate cloze index c\(index) — each deletion needs a unique number."
+        case let .nonPositiveIndex(index):
+            return "Cloze index must be positive (found c\(index))."
+        case let .tooManyDeletions(count, max):
+            return "Too many cloze deletions (\(count) found, max \(max))."
+        case let .emptyAnswer(index):
+            return "Cloze c\(index) has an empty answer — add text after ::."
         }
     }
 }

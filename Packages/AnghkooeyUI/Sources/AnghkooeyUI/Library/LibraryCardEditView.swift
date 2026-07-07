@@ -53,6 +53,11 @@ public struct LibraryCardEditView: View {
                 Section("Tags") {
                     TagEditorView(tags: $model.tags)
                 }
+                if let msg = model.errorMessage {
+                    Text(msg)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
             }
             .navigationTitle(model.navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
@@ -61,19 +66,30 @@ public struct LibraryCardEditView: View {
                     Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
-                        Task {
-                            do {
-                                try await model.save()
-                                onSaved()
-                                dismiss()
-                            } catch {
-                                UILog.library.error("Card save failed: \(error)")
+                    HStack(spacing: 8) {
+                        if model.isSaving {
+                            ProgressView()
+                        }
+                        Button("Save") {
+                            Task {
+                                do {
+                                    try await model.save()
+                                    onSaved()
+                                    dismiss()
+                                } catch {
+                                    // Already logged and surfaced via model.errorMessage (#26);
+                                    // the sheet just stays open so the user sees it. Self-healing
+                                    // backstop in case a future save() path throws without
+                                    // setting errorMessage — the user still sees *something*.
+                                    model.surfaceFallbackErrorIfNeeded()
+                                }
                             }
                         }
+                        // isSaving guards against a double-tap re-entering save()
+                        // and double-creating a card in create mode (#26).
+                        .disabled(!model.canSave || model.isSaving)
+                        .accessibilityHint(model.canSave ? "" : "Fill in all required fields to enable")
                     }
-                    .disabled(!model.canSave)
-                    .accessibilityHint(model.canSave ? "" : "Fill in all required fields to enable")
                 }
             }
         }
