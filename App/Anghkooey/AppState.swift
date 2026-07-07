@@ -567,7 +567,7 @@ final class AppState: @unchecked Sendable {
             // branch must prune too, or a batch whose last draft is removed
             // here leaks its `batchCounts` entry forever (contradicting the
             // "never grows unboundedly" guarantee on `batchCounts`).
-            pruneBatchCount(draft.batchID)
+            pruneStaleBatchCounts()
         }
         await persistAcceptedDraft(draft, question: question, answer: answer)
     }
@@ -583,7 +583,6 @@ final class AppState: @unchecked Sendable {
             reviewSheetSignpostState = nil
         }
 
-        let previousBatchID = presentedDraft?.batchID
         let next = pendingDrafts.isEmpty ? nil : pendingDrafts.removeFirst()
         presentedDraft = next
         if next != nil {
@@ -594,19 +593,22 @@ final class AppState: @unchecked Sendable {
             )
         }
 
-        // The batch that was presented before this advance may now have no
-        // draft left anywhere — prune its count entry so `batchCounts`
-        // doesn't grow unboundedly over the app's lifetime.
-        if let previousBatchID { pruneBatchCount(previousBatchID) }
+        // Prune any batch that no longer has a draft anywhere in the queue so
+        // `batchCounts` doesn't grow unboundedly over the app's lifetime.
+        pruneStaleBatchCounts()
     }
 
-    /// Removes `batchID`'s entry from `batchCounts` iff no draft carrying
-    /// that batchID remains in `presentedDraft` or `pendingDrafts`. Safe to
-    /// call whenever a draft leaves the queue (advance, skip, retry-remove);
-    /// a no-op while any sibling draft from the same capture is still around.
-    private func pruneBatchCount(_ batchID: UUID) {
-        guard presentedDraft?.batchID != batchID,
-              !pendingDrafts.contains(where: { $0.batchID == batchID }) else { return }
-        batchCounts.removeValue(forKey: batchID)
+    /// Removes every `batchCounts` entry whose batch no longer has a draft in
+    /// `presentedDraft` or `pendingDrafts`. A full sweep rather than a
+    /// targeted per-id removal, because `handleSheetDismiss()` calls
+    /// `advanceQueue()` *after* SwiftUI has already set `presentedDraft = nil`
+    /// on an interactive swipe — so the departed batch's id isn't available to
+    /// target, and a per-id prune would leak the swiped batch's entry (the
+    /// #32 × #29 cross-issue interaction caught by the Epic #10 checkpoint).
+    /// Cheap: `batchCounts` holds at most a handful of in-flight captures.
+    private func pruneStaleBatchCounts() {
+        batchCounts = batchCounts.filter { id, _ in
+            presentedDraft?.batchID == id || pendingDrafts.contains { $0.batchID == id }
+        }
     }
 }
