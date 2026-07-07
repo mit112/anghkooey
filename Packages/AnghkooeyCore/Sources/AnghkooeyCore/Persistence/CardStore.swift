@@ -537,10 +537,33 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
     /// reached by grading alone with the real formula (#18).
     public var nextDueDateOverride: Date??
 
+    /// Test-only gate: when set, `apply(_:to:grade:now:)` suspends on it
+    /// (after the error check, before mutating any state) until the test
+    /// resumes it. Lets a test change `currentCard` — e.g. via a concurrent
+    /// `loadDueQueue()` — while `ReviewSession.applyGrade(_:to:)`'s call to
+    /// `store.apply` is still in flight, to exercise its post-await
+    /// re-check guard. Mirrors the `SleepGate` pattern used in
+    /// `ReviewSessionRequeueTests`/`ErrorPresenterTests`.
+    public var applyGate: (@Sendable () async -> Void)?
+
+    /// Same seam as `applyGate`, for `update(id:question:answer:tags:)` —
+    /// exercises `ReviewSession.submitEdit(...)`'s post-await re-check guard.
+    public var updateGate: (@Sendable () async -> Void)?
+
+    /// Same seam, for `create(question:answer:sourceSpan:tags:now:)` —
+    /// exercises `AppState.acceptDraft(question:answer:)`'s reentrancy guard.
+    /// Needed because this mock has no actor hop the way the real
+    /// (actor-isolated) `CardStore` does: without an explicit suspension
+    /// here, two `acceptDraft` calls never genuinely overlap — the first
+    /// runs to completion before the second's Task is ever scheduled — so
+    /// the reentrancy race can't be reproduced deterministically without it.
+    public var createGate: (@Sendable () async -> Void)?
+
     public init() {}
 
     public func create(question: String, answer: String, sourceSpan: String?, tags: [String], now: Date) async throws -> Card.Snapshot {
         if let err = createError { throw err }
+        if let gate = createGate { await gate() }
         let snap = Card.Snapshot(
             id: UUID(),
             question: question,
@@ -562,6 +585,7 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
 
     public func apply(_ output: SchedulerOutput, to cardID: UUID, grade: Rating, now: Date) async throws {
         if let err = applyError { throw err }
+        if let gate = applyGate { await gate() }
         reviewLogs.append((cardID: cardID, output: output, grade: grade))
         guard let idx = cards.firstIndex(where: { $0.id == cardID }) else { return }
         let old = cards[idx]
@@ -656,6 +680,7 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
 
     public func update(id: UUID, question: String, answer: String, tags: [String]) async throws {
         if let err = updateError { throw err }
+        if let gate = updateGate { await gate() }
         guard let idx = cards.firstIndex(where: { $0.id == id }) else { return }
         let old = cards[idx]
         cards[idx] = Card.Snapshot(

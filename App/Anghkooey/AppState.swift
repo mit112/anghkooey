@@ -67,6 +67,18 @@ final class AppState: @unchecked Sendable {
     // MARK: Private state
 
     private var pendingDrafts: [IdentifiedDraft] = []
+
+    /// Reentrancy guard for `acceptDraft(question:answer:)`. `AnghkooeyApp`
+    /// wraps the Accept button's tap in `Task { await appState.acceptDraft(...) }`,
+    /// so a rapid double-tap enqueues two Tasks that both resolve
+    /// `presentedDraft` at *task-run* time, not tap time. Without this guard,
+    /// the second task can start running while the first is still suspended
+    /// mid-persist, read `presentedDraft` as the draft the first task just
+    /// advanced to, and persist that next draft using the first tap's
+    /// (stale) question/answer text. Setting this flag for the duration of
+    /// the whole method makes the second, overlapping call a no-op instead —
+    /// the correct, current draft stays presented for a fresh accept.
+    private var isProcessingAccept = false
     private let drainer: InboxDrainer
     private let bridge: DrainerBridge
     private var notificationToken: InboxNotificationToken?
@@ -156,6 +168,9 @@ final class AppState: @unchecked Sendable {
     /// head of the queue (re-presented immediately if the queue is now
     /// idle) and the failure is surfaced via `errorPresenter`.
     func acceptDraft(question: String, answer: String) async {
+        guard !isProcessingAccept else { return }
+        isProcessingAccept = true
+        defer { isProcessingAccept = false }
         guard let draft = presentedDraft else { return }
         advanceQueue()
         await persistAcceptedDraft(draft, question: question, answer: answer)
