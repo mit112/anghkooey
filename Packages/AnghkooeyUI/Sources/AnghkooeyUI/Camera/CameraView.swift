@@ -18,8 +18,11 @@ public struct CameraView: View {
     private let onCapture: @MainActor @Sendable (String) -> Void
 
     @State private var isCapturing = false
-    @State private var captureError: Error?
+    @State private var errorPresenter = ErrorPresenter()
     @State private var authorizationDenied = false
+    /// Bumped on every successful capture; drives `.sensoryFeedback` below so
+    /// the user gets an acknowledgement before the draft sheet arrives (#24).
+    @State private var captureSuccessCount = 0
 
     public init(
         captureSession: any CaptureServiceProtocol,
@@ -54,8 +57,10 @@ public struct CameraView: View {
                 }
                 .disabled(isCapturing)
                 .padding(.bottom, 40)
+                .sensoryFeedback(.success, trigger: captureSuccessCount)
             }
         }
+        .errorToast(errorPresenter)
         .task {
             guard await requestCameraAccess() else {
                 authorizationDenied = true
@@ -103,12 +108,60 @@ public struct CameraView: View {
         guard !isCapturing else { return }
         isCapturing = true
         defer { isCapturing = false }
+        let succeeded = await CameraCaptureHandler.run(
+            captureSession: captureSession,
+            ocrService: ocrService,
+            errorPresenter: errorPresenter,
+            onCapture: onCapture
+        )
+        if succeeded {
+            captureSuccessCount += 1
+        }
+    }
+}
+
+/// The capture → OCR → validate decision logic behind `CameraView.handleCapture()`,
+/// pulled out into a standalone function so it's unit-testable without a
+/// running view hierarchy (the camera can't run in the simulator/CI, so
+/// tests drive this with mock `captureSession`/`ocrService` values instead).
+///
+/// Failure modes are surfaced via `errorPresenter` rather than thrown:
+/// - A thrown `captureFrame()`/`recognizeText()` presents an error toast
+///   and does not call `onCapture` (#24 — `captureError` used to be written
+///   but never rendered, so this used to fail silently). No retry closure is
+///   attached: the shutter button is the retry affordance, and it already
+///   re-enters this pipeline through the guarded `handleCapture()` — a
+///   separate retry here would bypass the `isCapturing` guard.
+/// - Whitespace-only OCR output presents a "no text found" message and does
+///   not call `onCapture` — never opens a blank draft (#24).
+enum CameraCaptureHandler {
+
+    /// Runs the pipeline once. Returns `true` only when `onCapture` was
+    /// actually invoked with usable text, so the caller can gate success
+    /// feedback (haptic/flash) on a real delivered capture.
+    @MainActor
+    @discardableResult
+    static func run(
+        captureSession: any CaptureServiceProtocol,
+        ocrService: any OCRServiceProtocol,
+        errorPresenter: ErrorPresenter,
+        onCapture: @escaping @MainActor @Sendable (String) -> Void
+    ) async -> Bool {
         do {
             let data = try await captureSession.captureFrame()
             let text = try await ocrService.recognizeText(inImageData: data)
+            guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                UILog.capture.error("handleCapture: OCR produced empty/whitespace-only text")
+                errorPresenter.present("No text found — try getting closer.")
+                return false
+            }
+            errorPresenter.dismiss()
             onCapture(text)
+            return true
         } catch {
-            captureError = error
+            UILog.capture.error("handleCapture failed: \(error)")
+            errorPresenter.present("Couldn't capture — try again.")
+            return false
         }
     }
 }
