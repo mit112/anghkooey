@@ -216,3 +216,62 @@ A GPT-5.5 review of this retro sharpened it. Changes already folded into §5/§6
 **Not verifiable by the external reviewer:** the raw cost/token figures (from
 harness telemetry) were treated as reported, not independently proven — same caveat
 applies to §1/§7 here.
+
+## 9. Tooling audit — are we using ECC to the max? (honest: no, but…)
+
+Checked the ECC catalog (github.com/affaan-m/ECC) against this workflow. **The gap
+is 80% process/config, not missing tools.** ECC's own README warns: install
+"core/general skills only… avoid bloating the context budget." So the discipline is
+FEWER targeted tools, not more — adding orchestration tools has overhead and grows
+the very Opus context that §5.1 says is the #1 cost. Verdict + adoptions, ranked:
+
+**ADOPT — highest ROI, low/zero overhead:**
+1. **Config knobs (do these first — they directly cap the §5.1 context/cost problem,
+   zero token cost):** `MAX_THINKING_TOKENS=10000`, `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=50`,
+   `ECC_HOOK_PROFILE=minimal` (for the unattended run — each GateGuard-style
+   fact-prompt costs 200–500 tok; CLAUDE.md already allows `ECC_GATEGUARD=off` for
+   routine exec), `ECC_SESSION_RETENTION_DAYS=14`. These are the cheapest wins
+   available and were NOT set this session.
+2. **Subagent skill-loading to cut round-2s (measured cost: e.g. #29's 150 K-tok
+   round-2).** Tell each execution subagent to load the relevant ECC Swift skill for
+   its surface: `ecc:swift-concurrency-6-2` (AppState/actor/@MainActor work),
+   `ecc:swift-protocol-di-testing` (seams/mocks like #33's PasteboardReading),
+   `ecc:swift-actor-persistence` (CardStore/inbox), `ecc:swiftui-patterns` +
+   `ecc:make-interfaces-feel-better` (T1 UI, #53/#54 a11y),
+   `ecc:foundation-models-on-device` (any authoring change). Correct-first-time =
+   fewer BLOCK→round-2 cycles, the single most controllable execution cost.
+3. **Honor `strategic-compact`/autocompact as the mechanical reset trigger** (§5.1) —
+   it's already installed and fired this session; we ignored it. Use it, don't add a
+   new loop tool.
+
+**ADOPT — run ONCE at session-3 start (data-driven "are we optimal"):**
+4. **`/harness-audit`** (+ the `harness-optimizer` agent if the audit flags config) —
+   deterministic scorecard of harness reliability/eval-readiness/risk. This is the
+   literal tool for this question; run it once, apply the cheap findings, don't re-run
+   per issue.
+5. **`/fewer-permission-prompts`** — pre-allowlist the read-only bash/gh/git calls the
+   run repeats, so the unattended loop stops prompting. One-time setup.
+
+**CONSIDER — medium value, has switching risk:**
+6. **`/checkpoint` + `ecc:verification-loop`** — formalize the content-addressed CI
+   gate (§5.3) as first-class artifacts instead of ad-hoc `tail`/task-files. Nice, not
+   essential.
+7. **`ecc:autonomous-loops` / `/loop-start` / `loop-operator`** — a managed loop
+   (sequential/PR/DAG + stop conditions + `/loop-status`) that could replace the
+   hand-rolled ledger. Real, but swapping a *working* loop mid-project is risky;
+   evaluate on a low-stakes tier first, don't bet a whole session on it.
+
+**Do NOT adopt (efficiency traps for THIS workflow):**
+- **`ecc:santa-loop`/`santa-method`** (two independent reviewers must BOTH approve) —
+  doubles review cost. Our lighter model (per-issue swift-reviewer + per-epic GPT-5.5
+  checkpoint) is cheaper and already caught the real bugs. At most, reserve santa-loop
+  for the single riskiest T2 change (#35+#36 snapshot schema), not as the default.
+- **`dmux-workflows`** (tmux multi-pane parallelism) — real parallelism but heavy
+  orchestration overhead/fragility; §6 caps parallelism at 2 anyway.
+- **Installing the broader ECC set / more reviewer agents** — context bloat; ECC's own
+  guidance says don't. We already have the exact reviewers we need.
+
+**Net:** the ceiling isn't more tools — it's (a) the config knobs above, (b) the §5–6
+process changes, (c) subagent skill-loading to kill round-2s. Do a one-time
+`/harness-audit` to confirm, then stop tuning and execute. Over-tooling (and
+over-analyzing — this retro's own iterations cost real $) is itself an inefficiency.
