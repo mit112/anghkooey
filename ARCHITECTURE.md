@@ -640,7 +640,7 @@ Three hardening constraints applied after Codex review:
 - Mnemonic generation is fully optional: `ReviewSession` without an injected `MnemonicService` never shows the button (`isMnemonicAvailable == false`).
 - Generation failures are non-fatal: the button remains visible for retry; `currentMnemonic` stays nil.
 - The mnemonic persists across sessions: on next `loadDueQueue`, `currentMnemonic` is seeded from the stored `Card.Snapshot.mnemonic`.
-- `make generate` drops xcprivacy from PBXResourcesBuildPhase (xcodegen fragility). Re-apply the Python patch in `project.pbxproj` after each regeneration (6 entries: PBXBuildFile × 2, PBXFileReference × 2, PBXGroup × 2).
+- `make generate` drops xcprivacy from PBXResourcesBuildPhase (xcodegen fragility) — now handled automatically (#56): `make generate` runs `scripts/patch_privacy_info.py` (also wired as a `postGenCommand`), which re-adds all three targets' entries (app/share/widget → 12 PrivacyInfo lines total), and `scripts/ci.sh` fails if any are missing. No manual patch step; do not re-apply it by hand.
 
 ### Test counts after lane close
 

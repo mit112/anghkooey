@@ -9,10 +9,11 @@ xcodegen-generated PBXResourcesBuildPhase rather than creating a second resource
 A target with two Copy Bundle Resources phases builds incorrectly — Xcode executes only
 one, which previously caused the asset catalog (AppIcon/AccentColor) to never reach actool.
 """
+import os
 import re
 import sys
 
-PBXPROJ = "App/Anghkooey.xcodeproj/project.pbxproj"
+PBXPROJ = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "App", "Anghkooey.xcodeproj", "project.pbxproj")
 
 # Stable UUIDs used across all regenerations
 BUILD_FILE = {

@@ -39,12 +39,19 @@ final class WidgetGradeReconciler {
         let allCards = try await store.allCards()
         let cardsByID = Dictionary(uniqueKeysWithValues: allCards.map { ($0.id, $0) })
 
+        // Tracks whether any decision hit a retryable (scheduler/store)
+        // failure this pass. If so, `grades.jsonl` must NOT be cleared —
+        // clearing it would permanently delete the user's still-unapplied
+        // grade tap with no way to retry (the bug this guards against).
+        var hadRetryableFailure = false
+
         for decision in decisions {
             guard !appliedIDs.contains(decision.id) else { continue }
-            appliedIDs.insert(decision.id)
 
             guard let card = cardsByID[decision.cardID] else {
-                // Unknown card — drop silently.
+                // Unknown card (e.g. deleted) — permanently undeliverable,
+                // not retryable, so mark resolved and drop silently.
+                appliedIDs.insert(decision.id)
                 continue
             }
 
@@ -55,14 +62,22 @@ final class WidgetGradeReconciler {
                     now: decision.decidedAt
                 )
                 try await store.apply(output, to: card.id, grade: decision.rating, now: decision.decidedAt)
+                // Only mark applied on success — a thrown apply must not be
+                // skipped as "already applied" on a same-session retry.
+                appliedIDs.insert(decision.id)
             } catch {
-                // Non-fatal: log and continue so remaining decisions are processed.
-                // A future telemetry hook can capture `error` here.
-                _ = error
+                CoreLog.persistence.error(
+                    "widget grade decision \(decision.id) failed to apply: \(error.localizedDescription, privacy: .public)")
+                hadRetryableFailure = true
             }
         }
 
-        try bridge.clearGrades()
+        // Leave the file intact when a retryable failure occurred so the
+        // failed decision(s) are retried on the next reconcile (this
+        // session via `appliedIDs`, or on relaunch by re-reading the file).
+        if !hadRetryableFailure {
+            try bridge.clearGrades()
+        }
         try await rewriteSnapshot(now: now)
     }
 

@@ -317,6 +317,22 @@ public struct ReviewView: View {
 
     // MARK: - Empty
 
+    /// VoiceOver-friendly copy for "next card due at `date`" (#18). Rounds up
+    /// to whole minutes so "due in 61 seconds" doesn't misleadingly read as
+    /// "now" — a user who trusts the copy and returns 60s early should still
+    /// find the card ready by the time they act on it.
+    private func nextDueCopy(for date: Date) -> String {
+        let seconds = date.timeIntervalSinceNow
+        guard seconds > 0 else {
+            return "Next card is due now."
+        }
+        guard seconds >= 60 else {
+            return "Next card in under a minute."
+        }
+        let minutes = Int((seconds / 60).rounded(.up))
+        return "Next card in ~\(minutes) minute\(minutes == 1 ? "" : "s")."
+    }
+
     private var emptyBody: some View {
         VStack(spacing: 12) {
             if session.totalCardCount == 0 {
@@ -348,11 +364,21 @@ public struct ReviewView: View {
                     .padding(.horizontal)
                 }
                 ltmBanner
-                ContentUnavailableView(
-                    "All caught up",
-                    systemImage: "checkmark.circle.fill",
-                    description: Text("Come back when your next review is due, or capture something new to grow your deck.")
-                )
+                if let nextDueDate = session.nextDueDate {
+                    ContentUnavailableView {
+                        Label("Next card coming up", systemImage: "clock.fill")
+                    } description: {
+                        Text(nextDueCopy(for: nextDueDate))
+                    }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel(nextDueCopy(for: nextDueDate))
+                } else {
+                    ContentUnavailableView(
+                        "All caught up",
+                        systemImage: "checkmark.circle.fill",
+                        description: Text("Come back when your next review is due, or capture something new to grow your deck.")
+                    )
+                }
             }
         }
         .sheet(isPresented: $showingCreate) {
@@ -373,6 +399,9 @@ private struct CardEditSheet: View {
     @State private var editedQuestion: String
     @State private var editedAnswer: String
     @State private var editedTags: [String]
+    // Own presenter, not the screen's: a screen-level `.errorToast` would be
+    // hidden behind this sheet, so the sheet surfaces its own failures.
+    @State private var errorPresenter = ErrorPresenter()
 
     init(isPresented: Binding<Bool>, card: Card.Snapshot, session: ReviewSession) {
         _isPresented = isPresented
@@ -406,17 +435,33 @@ private struct CardEditSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        Task { @MainActor in
-                            await session.submitEdit(
-                                question: editedQuestion,
-                                answer: editedAnswer,
-                                tags: editedTags
-                            )
-                            isPresented = false
-                        }
+                        Task { @MainActor in await saveEdit() }
                     }
                 }
             }
+        }
+        .errorToast(errorPresenter)
+    }
+
+    /// Submits the current edit fields. On success, closes the sheet. On
+    /// failure, keeps the sheet open with the entered text intact and offers
+    /// a retry that re-runs this same save (#23 — no silent swallow).
+    @MainActor
+    private func saveEdit() async {
+        do {
+            try await session.submitEdit(
+                cardID: card.id,
+                question: editedQuestion,
+                answer: editedAnswer,
+                tags: editedTags
+            )
+            isPresented = false
+        } catch {
+            UILog.review.error("Card edit save failed: \(error)")
+            errorPresenter.present(
+                "Couldn't save your edit — try again.",
+                retry: { await self.saveEdit() }
+            )
         }
     }
 }

@@ -84,7 +84,9 @@ The repo uses xcodegen; the Xcode project is generated from [`App/project.yml`](
 
 ```bash
 # Generate the project (after cloning or editing project.yml)
-make generate && python3 scripts/patch_privacy_info.py
+# `make generate` runs scripts/patch_privacy_info.py automatically (#56) and
+# keeps the camera Info.plist keys, so no manual follow-up step is needed.
+make generate
 
 # Build
 xcodebuild build -project App/Anghkooey.xcodeproj \

@@ -1,30 +1,59 @@
 import Foundation
 import Observation
-import CryptoKit
 import UIKit
 
 struct ClipboardOffer: Equatable {
     let text: String
 }
 
+/// Seam over `UIPasteboard.general` so the coordinator is testable and so
+/// production call sites can be reasoned about without touching the real
+/// pasteboard. `hasStrings` and `changeCount` are readable without
+/// triggering iOS's paste-notification prompt; `string` is only read on
+/// explicit user action (accept).
 @MainActor
-protocol OfferHashStore: AnyObject {
-    var offeredHashes: [String] { get set }
+protocol PasteboardReading {
+    var hasStrings: Bool { get }
+    var changeCount: Int { get }
+    var string: String? { get }
 }
 
 @MainActor
-final class InMemoryOfferStore: OfferHashStore {
-    var offeredHashes: [String] = []
+final class SystemPasteboard: PasteboardReading {
+    var hasStrings: Bool { UIPasteboard.general.hasStrings }
+    var changeCount: Int { UIPasteboard.general.changeCount }
+    var string: String? { UIPasteboard.general.string }
+}
+
+/// Tracks the last pasteboard `changeCount` that was already offered or
+/// dismissed, so the coordinator doesn't re-offer the same clipboard
+/// content on every scene activation.
+@MainActor
+protocol LastHandledChangeCountStore: AnyObject {
+    var lastHandledChangeCount: Int? { get set }
 }
 
 @MainActor
-final class UserDefaultsOfferStore: OfferHashStore {
-    private let key = "anghkooey.clipboard.offeredHashes"
+final class InMemoryLastHandledChangeCountStore: LastHandledChangeCountStore {
+    var lastHandledChangeCount: Int?
+}
+
+@MainActor
+final class UserDefaultsLastHandledChangeCountStore: LastHandledChangeCountStore {
+    private let key = "anghkooey.clipboard.lastHandledChangeCount"
     private let defaults: UserDefaults
     init(defaults: UserDefaults = .standard) { self.defaults = defaults }
-    var offeredHashes: [String] {
-        get { defaults.stringArray(forKey: key) ?? [] }
-        set { defaults.set(newValue, forKey: key) }
+    var lastHandledChangeCount: Int? {
+        get {
+            defaults.object(forKey: key) == nil ? nil : defaults.integer(forKey: key)
+        }
+        set {
+            if let newValue {
+                defaults.set(newValue, forKey: key)
+            } else {
+                defaults.removeObject(forKey: key)
+            }
+        }
     }
 }
 
@@ -35,57 +64,39 @@ final class ClipboardCaptureCoordinator {
     private(set) var pendingOffer: ClipboardOffer?
     var onRoute: ((String) -> Void)?
 
-    private let offerStore: any OfferHashStore
-    private let minLength: Int
-    private let ringCapacity: Int
+    private let pasteboard: any PasteboardReading
+    private let store: any LastHandledChangeCountStore
 
-    init(offerStore: any OfferHashStore, minLength: Int = 20, ringCapacity: Int = 50) {
-        self.offerStore = offerStore
-        self.minLength = minLength
-        self.ringCapacity = ringCapacity
+    init(
+        pasteboard: any PasteboardReading = SystemPasteboard(),
+        store: any LastHandledChangeCountStore = UserDefaultsLastHandledChangeCountStore()
+    ) {
+        self.pasteboard = pasteboard
+        self.store = store
     }
 
-    func consider(clipboardText: String) {
-        let trimmed = clipboardText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmed.count >= minLength else { return }
-        let hash = Self.hash(for: clipboardText)
-        guard !offerStore.offeredHashes.contains(hash) else { return }
-        pendingOffer = ClipboardOffer(text: clipboardText)
-    }
-
-    /// Non-prompting detection: checks `hasStrings` without reading content.
-    /// Actual content is read in `acceptOffer()` after explicit user tap.
+    /// Non-prompting detection: checks `hasStrings`/`changeCount` without
+    /// reading content. Actual content is read in `acceptOffer()` after an
+    /// explicit user tap.
     func refreshOffer() {
-        guard UIPasteboard.general.hasStrings else { pendingOffer = nil; return }
+        guard pasteboard.hasStrings else { pendingOffer = nil; return }
+        guard store.lastHandledChangeCount != pasteboard.changeCount else { return }
         guard pendingOffer == nil else { return }
         pendingOffer = ClipboardOffer(text: "")
     }
 
     func acceptOffer() {
-        guard let offer = pendingOffer else { return }
-        // If consider() stored the text directly, use it; otherwise read from pasteboard now (user action).
-        let text = offer.text.isEmpty ? (UIPasteboard.general.string ?? "") : offer.text
+        guard pendingOffer != nil else { return }
+        let text = pasteboard.string ?? ""
         guard !text.isEmpty else { pendingOffer = nil; return }
         onRoute?(text)
-        offerStore.offeredHashes.append(Self.hash(for: text))
-        while offerStore.offeredHashes.count > ringCapacity {
-            offerStore.offeredHashes.removeFirst()
-        }
+        store.lastHandledChangeCount = pasteboard.changeCount
         pendingOffer = nil
     }
 
     func dismissOffer() {
-        guard let offer = pendingOffer else { return }
-        offerStore.offeredHashes.append(Self.hash(for: offer.text))
-        while offerStore.offeredHashes.count > ringCapacity {
-            offerStore.offeredHashes.removeFirst()
-        }
+        guard pendingOffer != nil else { return }
+        store.lastHandledChangeCount = pasteboard.changeCount
         pendingOffer = nil
-    }
-
-    static func hash(for text: String) -> String {
-        let norm = text.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        let digest = SHA256.hash(data: Data(norm.utf8))
-        return digest.map { String(format: "%02x", $0) }.joined()
     }
 }

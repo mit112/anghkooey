@@ -5,14 +5,15 @@ import AnghkooeyUI
 
 struct ContentView: View {
 
-    private enum CaptureMode { case qa, cloze }
+    private enum CaptureMode { case type, camera, cloze }
 
     @Environment(AppState.self) private var appState
     @Environment(ClipboardCaptureCoordinator.self) private var clipboardCoordinator
-    @State private var captureMode: CaptureMode = .qa
+    @State private var captureMode: CaptureMode = .type
     @State private var selectedTab: Int = 0
     @State private var onboardingState = OnboardingState()
     @State private var showingImportFromReview = false
+    @State private var availabilityBannerDismissed = false
 
     @State private var sampleLoadErrorMessage: String?
 
@@ -29,7 +30,7 @@ struct ContentView: View {
             NavigationStack {
                 ReviewScreen(
                     store: appState.cardStore,
-                    scheduler: appState.scheduler,
+                    scheduler: { appState.scheduler },
                     loadSampleCards: { await loadSamples() },
                     onImport: { showingImportFromReview = true }
                 )
@@ -40,27 +41,49 @@ struct ContentView: View {
             NavigationStack {
                 VStack(spacing: 0) {
                     Picker("Mode", selection: $captureMode) {
-                        Text("Q&A").tag(CaptureMode.qa)
+                        Text("Type").tag(CaptureMode.type)
+                        Text("Camera").tag(CaptureMode.camera)
                         Text("Cloze").tag(CaptureMode.cloze)
                     }
                     .pickerStyle(.segmented)
                     .padding(.horizontal)
                     .padding(.top, 8)
 
-                    if selectedTab == 1 && captureMode == .qa {
-                        CameraView(
-                            captureSession: CameraCaptureSession(),
-                            ocrService: LiveOCRServiceDataAdapter(),
-                            onCapture: { text in
-                                Task { await appState.enqueue(resolvedText: text) }
+                    Group {
+                        if let availability = appState.authoringAvailability,
+                           !availabilityBannerDismissed,
+                           CaptureAvailabilityModel(availability: availability).bannerMessage != nil {
+                            CaptureAvailabilityBanner(availability: availability) {
+                                availabilityBannerDismissed = true
                             }
-                        )
-                    } else if captureMode == .qa {
-                        ContentUnavailableView(
-                            "Camera",
-                            systemImage: "camera",
-                            description: Text("Switch to the Capture tab to use the camera.")
-                        )
+                        }
+                    }
+                    // Scope the banner's move/opacity transition to its own
+                    // insert (availability resolving) and dismiss without
+                    // animating the sibling Picker/camera content.
+                    .animation(.snappy, value: appState.authoringAvailability)
+                    .animation(.snappy, value: availabilityBannerDismissed)
+
+                    if captureMode == .type {
+                        TypedTextCaptureView(onDraft: { text in
+                            Task { await appState.enqueue(resolvedText: text) }
+                        })
+                    } else if captureMode == .camera {
+                        if selectedTab == 1 {
+                            CameraView(
+                                captureSession: CameraCaptureSession(),
+                                ocrService: LiveOCRServiceDataAdapter(),
+                                onCapture: { text in
+                                    Task { await appState.enqueue(resolvedText: text) }
+                                }
+                            )
+                        } else {
+                            ContentUnavailableView(
+                                "Camera",
+                                systemImage: "camera",
+                                description: Text("Switch to the Capture tab to use the camera.")
+                            )
+                        }
                     } else {
                         ClozeAuthoringView(
                             store: appState.cardStore,
@@ -69,6 +92,9 @@ struct ContentView: View {
                     }
                 }
                 .navigationTitle("Capture")
+                .onChange(of: appState.authoringAvailability) { _, _ in
+                    availabilityBannerDismissed = false
+                }
             }
             .tabItem { Label("Capture", systemImage: "camera") }
             .tag(1)
@@ -104,8 +130,24 @@ struct ContentView: View {
             )
         }
         .safeAreaInset(edge: .top) {
-            ClipboardBanner(coordinator: clipboardCoordinator)
-                .animation(.snappy, value: clipboardCoordinator.pendingOffer)
+            if appState.authoringCount > 0 {
+                DraftingIndicator()
+            } else {
+                ClipboardBanner(coordinator: clipboardCoordinator)
+                    .animation(.snappy, value: clipboardCoordinator.pendingOffer)
+            }
+        }
+        .animation(.snappy, value: appState.authoringCount > 0)
+        .onChange(of: appState.authoringCount) { old, new in
+            // Announce only on the 0↔non-zero boundary, not on every count
+            // change (e.g. a second concurrent capture starting while the
+            // first is still authoring shouldn't re-announce "Drafting
+            // cards") (#34).
+            if old == 0 && new > 0 {
+                AccessibilityNotification.Announcement("Drafting cards").post()
+            } else if old > 0 && new == 0 {
+                AccessibilityNotification.Announcement("Cards ready").post()
+            }
         }
         .alert(
             "Sample deck",

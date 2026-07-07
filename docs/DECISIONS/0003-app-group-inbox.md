@@ -187,6 +187,14 @@ CFNotificationCenterAddObserver(
 
 **Edge case — extension fires mid-drain:** The main app's drain enumeration captures a snapshot of `inbox/` at the start of the drain. A file written by the extension after enumeration starts is not in that snapshot. The Darwin notification triggers a second drain (queued behind the active one in the actor). The new item is picked up by the second drain. No item is lost.
 
+### 9. App-level failure surfacing (#28)
+
+§5's drain contract already encodes two distinct outcomes for an item the drainer can't route cleanly (steps 2.c/2.f); this section documents how the main app surfaces each to the user, and what it deliberately does not do yet.
+
+- **`didReadItem` throws (routing failure, e.g. `CardAuthor` unreachable):** the item's files are left in the inbox untouched. The drain loop stops for the pass, and the same item is retried from the top on the next drain. No user-visible message — the capture isn't lost, just delayed.
+- **`didFailItem` (drop — OCR failure, oversize image, corrupt/undecodable JSON):** by the time this delegate call fires, the drainer has **already deleted** the item's file(s). There is nothing left to retry. `AppState` counts drops per drain pass and, once the pass finishes, shows one summary toast — "Couldn't read N captured item(s). Try sharing them again." — instead of a toast per item. Each underlying error is still logged individually via `OSLog` for diagnosis.
+- **No retry counter, no schema change.** This version does not add a per-item attempt count to `InboxItem`, and does not distinguish transient OCR failures (worth a bounded retry) from permanent ones (oversize, corrupt) — both are dropped identically. A versioned retention design that would let transient failures survive a drain or two before dropping is deferred; it needs its own schema bump and is out of scope for the drop-with-message fix in #28.
+
 ---
 
 ## Consequences

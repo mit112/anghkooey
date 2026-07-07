@@ -12,7 +12,7 @@ struct ReviewSessionTests {
     ) -> ReviewSession {
         ReviewSession(
             store: store,
-            scheduler: MockFSRS6Engine(),
+            scheduler: { MockFSRS6Engine() },
             clock: { now }
         )
     }
@@ -121,5 +121,40 @@ struct ReviewSessionTests {
         #expect(session.isAnswerRevealed == true)
         session.revealAnswer()
         #expect(session.isAnswerRevealed == true)
+    }
+
+    @Test("loadDueQueue sets totalCardCount to the store total, not the due count, while reviewing")
+    func loadDueQueueSetsTotalCardCountToStoreTotalWhileReviewing() async throws {
+        let now = Date(timeIntervalSinceReferenceDate: 0)
+        let notYetDue = now.addingTimeInterval(86_400)
+        let store = MockCardStore()
+        for index in 1...3 {
+            _ = try await store.create(question: "Due\(index)", answer: "A\(index)", sourceSpan: nil, now: now)
+        }
+        for index in 1...2 {
+            _ = try await store.create(question: "NotDue\(index)", answer: "A\(index)", sourceSpan: nil, now: notYetDue)
+        }
+
+        let session = makeSession(store: store, now: now)
+        await session.loadDueQueue()
+
+        #expect(session.state == .reviewing)
+        #expect(session.totalCardCount == 5)
+    }
+
+    @Test("loadDueQueue surfaces a count() failure as .error rather than swallowing it into .empty")
+    func loadDueQueuePropagatesCountFailureAsError() async throws {
+        let now = Date(timeIntervalSinceReferenceDate: 0)
+        let store = MockCardStore()
+        store.countError = PersistenceError.invalidShift(days: -1)
+
+        let session = makeSession(store: store, now: now)
+        await session.loadDueQueue()
+
+        guard case .error = session.state else {
+            Issue.record("Expected .error state, got \(session.state)")
+            return
+        }
+        #expect(session.totalCardCount == 0)
     }
 }

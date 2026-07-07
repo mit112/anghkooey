@@ -22,13 +22,19 @@ public protocol CardAuthoringService: Sendable {
     func generateDrafts(from text: String) async throws -> AsyncThrowingStream<CardDraft, Error>
 
     /// Returns a single authored draft for callers that only need one card.
+    ///
+    /// Test/convenience-only: no production caller uses this anymore.
+    /// `AppState.enqueue(resolvedText:)` fully drains `generateDrafts(from:)`
+    /// instead, since a dense capture can author several cards and this
+    /// shim only ever surfaces the first, silently discarding the rest (#29).
     func author(from text: String) async throws -> CardDraft
 }
 
 public extension CardAuthoringService {
     /// Returns the first `CardDraft` from the generation stream.
     ///
-    /// Used by `AppState.enqueue` which processes one draft per captured item.
+    /// Test/convenience-only (see the protocol requirement's doc comment) —
+    /// `AppState.enqueue` no longer calls this; it drains the full stream.
     /// Throws `AuthoringError.generationFailed` if the stream ends without
     /// yielding a single draft (e.g. the model produced nothing).
     func author(from text: String) async throws -> CardDraft {

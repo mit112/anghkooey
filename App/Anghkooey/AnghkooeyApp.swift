@@ -14,7 +14,7 @@ extension URL: @retroactive Identifiable {
 struct AnghkooeyApp: App {
     @State private var appState: AppState
     @State private var freezeController: FreezeController
-    @State private var clipboardCoordinator = ClipboardCaptureCoordinator(offerStore: UserDefaultsOfferStore())
+    @State private var clipboardCoordinator = ClipboardCaptureCoordinator()
     @State private var pendingImportURL: URL?
     @Environment(\.scenePhase) private var scenePhase
     private let metricsReceiver = MetricsReceiver()
@@ -47,7 +47,9 @@ struct AnghkooeyApp: App {
                 .environment(appState)
                 .environment(freezeController)
                 .environment(clipboardCoordinator)
+                .errorToast(appState.rootErrorPresenter)
                 .task { await appState.drain() }
+                .task { await appState.refreshAuthoringAvailability() }
                 .task {
                     clipboardCoordinator.onRoute = { text in
                         Task { await appState.enqueue(resolvedText: text) }
@@ -56,9 +58,8 @@ struct AnghkooeyApp: App {
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .active {
                         Task { await appState.drain() }
-                        if UIPasteboard.general.hasStrings {
-                            clipboardCoordinator.refreshOffer()
-                        }
+                        Task { await appState.refreshAuthoringAvailability() }
+                        clipboardCoordinator.refreshOffer()
                     }
                 }
                 .onOpenURL { url in
@@ -75,12 +76,14 @@ struct AnghkooeyApp: App {
                         )
                     )
                 }
-                .sheet(item: $appState.presentedDraft) { identified in
+                .sheet(item: $appState.presentedDraft, onDismiss: { appState.handleSheetDismiss() }) { identified in
                     CardReviewSheet(
                         draft: identified,
-                        onAccept: { q, a in appState.acceptDraft(question: q, answer: a) },
-                        onSkip: { appState.skipDraft() }
+                        onAccept: { q, a in Task { await appState.acceptDraft(question: q, answer: a) } },
+                        onSkip: { appState.skipDraft() },
+                        progress: appState.presentedDraftProgress
                     )
+                    .errorToast(appState.errorPresenter)
                     .onAppear { appState.cardReviewSheetDidAppear() }
                 }
         }

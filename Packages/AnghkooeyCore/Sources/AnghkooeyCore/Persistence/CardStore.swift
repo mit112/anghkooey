@@ -218,6 +218,16 @@ public protocol CardStoreProtocol: Sendable {
     /// `(cardID, reviewedAt)`, for the FSRS optimizer. Projects only the four
     /// fields `OptimizationDataset` needs — never walks full `Card` graphs.
     func optimizationReviewLogs() async throws -> [OptimizationReviewLogRow]
+
+    /// Returns the earliest `dueAt` strictly greater than `now`, or `nil` if
+    /// no card is scheduled beyond `now`.
+    ///
+    /// Used by `ReviewSession` to know when to re-check the due queue after
+    /// it empties mid-session: FSRS-6 learning steps reschedule an
+    /// `.again`/`.hard` card to be due again in minutes, and without this
+    /// query the session has no way to learn *when* to look again short of
+    /// polling (#18).
+    func nextDueDate(after now: Date) async throws -> Date?
 }
 
 // MARK: - CardStoreProtocol backward-compat extensions
@@ -395,6 +405,16 @@ public actor CardStore: CardStoreProtocol {
         }
     }
 
+    public func nextDueDate(after now: Date) async throws -> Date? {
+        let predicate = #Predicate<Card> { $0.dueAt > now }
+        var descriptor = FetchDescriptor<Card>(
+            predicate: predicate,
+            sortBy: [SortDescriptor(\.dueAt)]
+        )
+        descriptor.fetchLimit = 1
+        return try modelContext.fetch(descriptor).first?.dueAt
+    }
+
     public func update(id: UUID, question: String, answer: String, tags: [String]) async throws {
         let predicate = #Predicate<Card> { $0.id == id }
         let descriptor = FetchDescriptor<Card>(predicate: predicate)
@@ -506,13 +526,56 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
     public var createError: Error?
     public var applyError: Error?
     public var updateError: Error?
+    public var updateMnemonicError: Error?
+    public var countError: Error?
+    /// When set, `optimizationReviewLogs()` throws this instead of returning
+    /// data — mirrors `createError`/`applyError`/`updateError` so a caller
+    /// (e.g. `OptimizeScheduleViewModel`) can be tested against a genuine
+    /// store failure distinct from "no review history yet" (#27).
+    public var optimizationReviewLogsError: Error?
     /// When set, `optimizationReviewLogs()` returns this instead of the computed result.
     public var optimizationReviewLogsOverride: [OptimizationReviewLogRow]?
+    /// Test-only gate: when set, `optimizationReviewLogs()` suspends on it
+    /// (after the error check, before returning any rows) until the test
+    /// resumes it. Lets a test hold `OptimizeScheduleViewModel.optimize()`
+    /// suspended between `phase == .ready` and `phase == .running` so a
+    /// second, overlapping `optimize()` call can be observed hitting the
+    /// reentrancy guard (#27). Mirrors `applyGate`/`createGate`/`updateGate`.
+    public var optimizationReviewLogsGate: (@Sendable () async -> Void)?
+    /// When non-nil (including `.some(nil)`), `nextDueDate(after:)` returns
+    /// this directly instead of computing it from `cards`. Lets a test
+    /// simulate "genuinely no upcoming card" — FSRS scheduling always
+    /// reschedules a graded card into the future, so that state can't be
+    /// reached by grading alone with the real formula (#18).
+    public var nextDueDateOverride: Date??
+
+    /// Test-only gate: when set, `apply(_:to:grade:now:)` suspends on it
+    /// (after the error check, before mutating any state) until the test
+    /// resumes it. Lets a test change `currentCard` — e.g. via a concurrent
+    /// `loadDueQueue()` — while `ReviewSession.applyGrade(_:to:)`'s call to
+    /// `store.apply` is still in flight, to exercise its post-await
+    /// re-check guard. Mirrors the `SleepGate` pattern used in
+    /// `ReviewSessionRequeueTests`/`ErrorPresenterTests`.
+    public var applyGate: (@Sendable () async -> Void)?
+
+    /// Same seam as `applyGate`, for `update(id:question:answer:tags:)` —
+    /// exercises `ReviewSession.submitEdit(...)`'s post-await re-check guard.
+    public var updateGate: (@Sendable () async -> Void)?
+
+    /// Same seam, for `create(question:answer:sourceSpan:tags:now:)` —
+    /// exercises `AppState.acceptDraft(question:answer:)`'s reentrancy guard.
+    /// Needed because this mock has no actor hop the way the real
+    /// (actor-isolated) `CardStore` does: without an explicit suspension
+    /// here, two `acceptDraft` calls never genuinely overlap — the first
+    /// runs to completion before the second's Task is ever scheduled — so
+    /// the reentrancy race can't be reproduced deterministically without it.
+    public var createGate: (@Sendable () async -> Void)?
 
     public init() {}
 
     public func create(question: String, answer: String, sourceSpan: String?, tags: [String], now: Date) async throws -> Card.Snapshot {
         if let err = createError { throw err }
+        if let gate = createGate { await gate() }
         let snap = Card.Snapshot(
             id: UUID(),
             question: question,
@@ -534,6 +597,7 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
 
     public func apply(_ output: SchedulerOutput, to cardID: UUID, grade: Rating, now: Date) async throws {
         if let err = applyError { throw err }
+        if let gate = applyGate { await gate() }
         reviewLogs.append((cardID: cardID, output: output, grade: grade))
         guard let idx = cards.firstIndex(where: { $0.id == cardID }) else { return }
         let old = cards[idx]
@@ -577,7 +641,8 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
     }
 
     public func count(asOf now: Date) async throws -> (total: Int, due: Int) {
-        (total: cards.count, due: cards.filter { $0.dueAt <= now }.count)
+        if let err = countError { throw err }
+        return (total: cards.count, due: cards.filter { $0.dueAt <= now }.count)
     }
 
     public func shiftAllDueDates(byDays days: Int) async throws {
@@ -613,6 +678,8 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
     }
 
     public func optimizationReviewLogs() async throws -> [OptimizationReviewLogRow] {
+        if let err = optimizationReviewLogsError { throw err }
+        if let gate = optimizationReviewLogsGate { await gate() }
         if let override = optimizationReviewLogsOverride { return override }
         return reviewLogs.map { entry in
             OptimizationReviewLogRow(
@@ -627,6 +694,7 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
 
     public func update(id: UUID, question: String, answer: String, tags: [String]) async throws {
         if let err = updateError { throw err }
+        if let gate = updateGate { await gate() }
         guard let idx = cards.firstIndex(where: { $0.id == id }) else { return }
         let old = cards[idx]
         cards[idx] = Card.Snapshot(
@@ -652,6 +720,7 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
     }
 
     public func updateMnemonic(id: UUID, mnemonic: String) async throws {
+        if let err = updateMnemonicError { throw err }
         guard let idx = cards.firstIndex(where: { $0.id == id }) else { return }
         let old = cards[idx]
         cards[idx] = Card.Snapshot(
@@ -678,6 +747,11 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
 
     public func findBySourceSpan(_ span: String) async throws -> Card.Snapshot? {
         cards.first { $0.sourceSpan == span }
+    }
+
+    public func nextDueDate(after now: Date) async throws -> Date? {
+        if let override = nextDueDateOverride { return override }
+        return cards.filter { $0.dueAt > now }.map(\.dueAt).min()
     }
 
     public func createImported(

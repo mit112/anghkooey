@@ -11,17 +11,25 @@ struct CardReviewSheet: View {
     let onAccept: (String, String) -> Void
     let onSkip: () -> Void
 
+    /// This draft's position within its capture's batch, e.g. `(2, 5)` for
+    /// "Card 2 of 5" — see `AppState.presentedDraftProgress`. `nil` when the
+    /// caller doesn't have an `AppState` to source it from (tests, previews);
+    /// defaults to `nil` so existing call sites keep compiling unchanged.
+    var progress: (position: Int, total: Int)?
+
     @State private var editedQuestion: String
     @State private var editedAnswer: String
 
     init(
         draft: IdentifiedDraft,
         onAccept: @escaping (String, String) -> Void,
-        onSkip: @escaping () -> Void
+        onSkip: @escaping () -> Void,
+        progress: (position: Int, total: Int)? = nil
     ) {
         self.draft = draft
         self.onAccept = onAccept
         self.onSkip = onSkip
+        self.progress = progress
         _editedQuestion = State(initialValue: draft.draft.question)
         _editedAnswer = State(initialValue: draft.draft.answer)
     }
@@ -30,6 +38,16 @@ struct CardReviewSheet: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
+                    if let progress, progress.total > 1 {
+                        Text("Card \(progress.position) of \(progress.total)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    if draft.isFallback {
+                        Text("AI unavailable — edit this card by hand.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                     editableFieldSection(label: "Question", text: $editedQuestion)
                     editableFieldSection(label: "Answer", text: $editedAnswer)
                     if let span = draft.draft.sourceSpan {
