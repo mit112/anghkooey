@@ -887,3 +887,51 @@ struct AppStateSheetDismissTests {
         #expect(sut.presentedDraft?.draft.question == "C")
     }
 }
+
+// MARK: - Epic #10 checkpoint hardening (#32 × #29 batchCounts leak on swipe)
+//
+// GPT-5.5's Epic #10 cross-issue checkpoint found that swiping away the LAST
+// card of a batch leaked its `batchCounts` entry: SwiftUI nils `presentedDraft`
+// before `handleSheetDismiss()` calls `advanceQueue()`, so the old per-id prune
+// had no "previous" batch to target. `pruneStaleBatchCounts()` (full sweep)
+// fixes it. These pin the invariant "batchCounts returns to empty once every
+// draft from a batch has left the queue" across the swipe paths.
+@Suite("AppState batchCounts — swipe-dismiss leak (Epic #10 checkpoint)")
+@MainActor
+struct AppStateBatchCountSwipeTests {
+
+    @Test("swiping away a single-draft batch prunes its batchCounts entry")
+    func swipeSingletonBatch_prunesBatchCounts() async throws {
+        let sut = AppState(cardAuthor: MockCardAuthoringService(drafts: [CardDraft(question: "Q1", answer: "A1")]))
+        await sut.enqueue(resolvedText: "one")
+        #expect(sut.batchCountEntryCount == 1)
+
+        // Interactive swipe: SwiftUI clears the binding, then onDismiss fires.
+        sut.presentedDraft = nil
+        sut.handleSheetDismiss()
+
+        #expect(sut.presentedDraft == nil)
+        #expect(sut.batchCountEntryCount == 0)
+    }
+
+    @Test("swiping away the LAST card of a multi-draft batch prunes its batchCounts entry")
+    func swipeLastCardOfBatch_prunesBatchCounts() async throws {
+        let d1 = CardDraft(question: "Q1", answer: "A1")
+        let d2 = CardDraft(question: "Q2", answer: "A2")
+        let sut = AppState(cardAuthor: MockCardAuthoringService(drafts: [d1, d2]))
+        await sut.enqueue(resolvedText: "two")
+        #expect(sut.batchCountEntryCount == 1)
+
+        // Swipe the first card → advances to the second (batch still live).
+        sut.presentedDraft = nil
+        sut.handleSheetDismiss()
+        #expect(sut.presentedDraft?.draft.question == "Q2")
+        #expect(sut.batchCountEntryCount == 1)
+
+        // Swipe the last card → batch is now gone everywhere; entry pruned.
+        sut.presentedDraft = nil
+        sut.handleSheetDismiss()
+        #expect(sut.presentedDraft == nil)
+        #expect(sut.batchCountEntryCount == 0)
+    }
+}
