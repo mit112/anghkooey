@@ -506,6 +506,7 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
     public var createError: Error?
     public var applyError: Error?
     public var updateError: Error?
+    public var countError: Error?
     /// When set, `optimizationReviewLogs()` returns this instead of the computed result.
     public var optimizationReviewLogsOverride: [OptimizationReviewLogRow]?
 
@@ -577,7 +578,8 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
     }
 
     public func count(asOf now: Date) async throws -> (total: Int, due: Int) {
-        (total: cards.count, due: cards.filter { $0.dueAt <= now }.count)
+        if let err = countError { throw err }
+        return (total: cards.count, due: cards.filter { $0.dueAt <= now }.count)
     }
 
     public func shiftAllDueDates(byDays days: Int) async throws {

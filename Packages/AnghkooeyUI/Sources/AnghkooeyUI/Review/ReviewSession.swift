@@ -115,7 +115,10 @@ public final class ReviewSession {
     public func loadDueQueue() async {
         state = .loading
         do {
+            // Both throwing fetches happen before any published-state mutation
+            // so a failure in either leaves no stale reviewing snapshot behind.
             let allDue = try await store.dueCards(asOf: clock())
+            let counts = try await store.count(asOf: clock())
             backlogTotal = allDue.count
             isCushionActive = allDue.count > backlogThreshold && allDue.count > dailyBatchCap
             let visible = isCushionActive ? Array(allDue.prefix(dailyBatchCap)) : allDue
@@ -125,7 +128,7 @@ public final class ReviewSession {
             isAnswerRevealed = false
             summary = ReviewSummary()
             state = visible.isEmpty ? .empty : .reviewing
-            totalCardCount = visible.isEmpty ? ((try? await store.allCards().count) ?? 0) : allDue.count
+            totalCardCount = counts.total
             currentMnemonic = currentCard?.mnemonic
             ltmCount = (try? await store.longTermMemoryCount(thresholdDays: LTMConfig.defaultThresholdDays)) ?? ltmCount
             isMnemonicLoading = false
