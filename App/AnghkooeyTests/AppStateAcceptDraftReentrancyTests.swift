@@ -69,8 +69,9 @@ struct AppStateAcceptDraftReentrancyTests {
         let gate = AwaitGate()
         let sut = AppState(cardAuthor: MockCardAuthoringService(drafts: [d1, d2]), cardStore: mockStore)
 
+        // A single capture whose stream yields both drafts (#29: enqueue now
+        // fully drains generateDrafts(from:), so one call queues both).
         await sut.enqueue(resolvedText: "text1")
-        await sut.enqueue(resolvedText: "text2")
         let first = try #require(sut.presentedDraft)
         #expect(first.draft.question == "Q1")
 
@@ -126,8 +127,9 @@ struct AppStateAcceptDraftReentrancyTests {
         let gate = AwaitGate()
         let sut = AppState(cardAuthor: MockCardAuthoringService(drafts: [d1, d2]), cardStore: mockStore)
 
+        // A single capture whose stream yields both drafts (#29: enqueue now
+        // fully drains generateDrafts(from:), so one call queues both).
         await sut.enqueue(resolvedText: "text1")
-        await sut.enqueue(resolvedText: "text2")
 
         mockStore.createGate = { await gate.wait() }
         let taskA = Task { @MainActor in
