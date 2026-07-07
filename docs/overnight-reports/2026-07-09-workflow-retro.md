@@ -75,28 +75,40 @@ Secondary drivers, in order:
 
 ## 5. Inefficiencies + concrete fixes (ranked by expected savings)
 
-1. **Compact/segment the orchestrator context.** Biggest lever. Options:
-   (a) run `/compact` (or ecc:strategic-compact) after each epic/tier boundary;
-   (b) start a **fresh orchestrator context per tier** (the handoff report + memory
-   already make this safe); (c) **demand terse structured subagent reports** — tell
-   subagents to reply with a fixed short schema (files changed / test names /
-   RED→GREEN one-liner / ci.sh tail / deviations), NOT multi-paragraph prose. The
-   prose reports this session were 500–1500 tokens each and live in Opus context
-   forever. Est. savings: large (this is most of the $).
-2. **Tier the review gate by risk instead of "swift-reviewer on everything."**
-   - Logic/concurrency/error-path/hub diff (AppState, scheduler, persistence,
-     drainer) → full swift-reviewer (+ silent-failure-hunter only if it touches
-     error handling; + pr-test-analyzer only for a hub rewrite).
-   - Pure UI-wiring / small view / docs → **orchestrator self-review** (Opus reads
-     the ≤~30-line diff directly) + one ci.sh, no reviewer subagent.
-   Would have cut ~2–3 reviewer runs (~160–240 K tok, ~15–20 min). Update the
-   session prompt's "MANDATORY on every diff" to "MANDATORY on every *logic* diff;
-   self-review small UI/doc diffs."
-3. **One ci.sh per issue, at the merge gate.** Rule: the *subagent* runs full ci.sh
-   once and pastes the tail as evidence; the orchestrator re-runs **only if it
-   edited the tree after the subagent**. Don't re-verify a byte-identical tree.
-   Reviewer agents should be told **not** to run their own full build unless a
-   finding depends on it. Est. savings: ~8–12 xcodebuild cycles.
+1. **Hard, mechanical orchestrator boundaries** (biggest lever; strengthened per
+   §8). StrategicCompact fired at 50 tool calls and was ignored while Opus context
+   grew unbounded. Make it a RULE, not a suggestion: **after each tier/epic OR every
+   2–3 merged PRs, write the handoff + restart the orchestrator context** (fresh
+   context reloads from the report + memory, which already make it safe). Also:
+   **artifact-based subagent reports** — subagents reply with a fixed short schema
+   (files changed / tests run / final status / **CI-output file path** / deviations),
+   put full CI logs in a file and report the PATH, and paste the tail ONLY on
+   failure. The prose reports this session were 500–1500 tokens each and lived in
+   Opus context forever. Est. savings: large (this is most of the $).
+2. **Tier the review gate by TOUCHED SURFACE, not diff size.** (Corrected after a
+   GPT-5.5 second-reviewer pass — see §8. My original "skip reviewer on small
+   diffs" framing was wrong: #32's 3-line prod diff was in `AppState.handleSheetDismiss`
+   /`advanceQueue` — central queue state — and the Epic-10 checkpoint later found a
+   `batchCounts` leak in exactly that interaction. Small diffs in state machines are
+   where regressions hide.)
+   - **Central-surface OR error-path diff → full swift-reviewer, regardless of size.**
+     Central = `AppState`/sheet queue, persistence/`CardStore`, FSRS/scheduler,
+     `InboxDrainer`, `ClipboardCaptureCoordinator`, widget snapshot, CI/project
+     generation, migrations, any `catch`/`try?`/fallback. (+ silent-failure-hunter
+     only when it touches error handling; + pr-test-analyzer only for a hub rewrite.)
+   - **Leaf UI / docs only → orchestrator self-review** (Opus reads the diff) + one
+     ci.sh, no reviewer subagent. "Leaf" = a self-contained SwiftUI view with no
+     shared-state logic, a pure formatting/string change, or markdown.
+   The saving comes from the genuinely-leaf diffs (some of #31's view, docs), NOT
+   from central-state diffs — do not downgrade those.
+3. **Content-addressed CI evidence; orchestrator owns the final gate** (sharpened
+   per §8). The subagent reports the **commit SHA / `git rev-parse HEAD^{tree}`
+   hash + `git status --short`** alongside its ci.sh result, so "byte-identical
+   tree" is *provable*, not assumed. The **orchestrator owns the one authoritative
+   full ci.sh on the exact merge candidate**; it skips a redundant run only when the
+   worker's reported tree-hash matches the current tree AND nothing was edited since.
+   Reviewer agents **must not** run their own full build unless a finding depends on
+   runtime behavior. Est. savings: ~8–12 xcodebuild cycles.
 4. **Findings-size routing for fixes.** Reviewer finding ≲10 lines → orchestrator
    Edit + single ci.sh. Larger/multi-file → subagent round-2. (Formalize what I did
    ad hoc.) Avoids full subagent round-trips for one-line log fixes.
@@ -117,19 +129,41 @@ Secondary drivers, in order:
    on the affected suite is seconds; reserve full ci.sh for the merge gate. Adds
    complexity; only worth it if inner-loop iteration grows.
 
-## 6. Recommended workflow deltas for the session-3 prompt
+## 6. Recommended workflow deltas for the session-3 prompt (consensus, post-§8)
 
-- Add a **"Reporting contract for subagents"**: fixed terse schema; run ci.sh in
-  foreground; report the tail; no prose essays; no background Monitor.
-- Change review-gate wording to **risk-tiered** (full reviewer for logic/error/hub;
-  orchestrator self-review for small UI/doc diffs).
-- Add **"ci.sh once per issue at the merge gate; re-run only after an
-  orchestrator edit"** and "reviewers don't run their own full build."
-- Add **"compact or fresh-context at each tier boundary."**
-- Add **"batch trivial/independent issues; run 2 subagents in parallel when no
-  shared files."**
-- Keep unchanged (high ROI): pre-run plan review, per-tier GPT-5.5 cross-issue
-  checkpoints, targeted `git add`, iCloud dup sweep, receiving-code-review verify.
+- **Orchestrator reset contract:** after each tier/epic OR every 2–3 merged PRs,
+  write the handoff and **restart the orchestrator context** (don't ride one Opus
+  context for a whole run). Treat StrategicCompact firing as a hard trigger.
+- **Subagent reporting contract:** fixed schema — files changed / tests run / final
+  status / **CI-output file path** / commit SHA + tree hash + `git status --short` /
+  deviations. Full CI logs to a file; paste tail ONLY on failure. Run ci.sh in the
+  FOREGROUND; **never background+Monitor+hand-back**.
+- **Review gate by TOUCHED SURFACE, not size:** central-surface/error-path diff →
+  full reviewer regardless of line count (`AppState`/queue, persistence, scheduler,
+  drainer, clipboard, widget snapshot, migrations, CI/project generation, any
+  `catch`/`try?`/fallback); leaf-UI/docs only → orchestrator self-review. Do NOT
+  frame this by diff size.
+- **CI gate:** orchestrator owns the single authoritative full ci.sh on the exact
+  merge candidate (verified by tree hash); reviewers don't full-build unless a
+  finding is runtime-dependent.
+- **Findings routing:** reviewer finding ≲10 lines → orchestrator Edit + one ci.sh;
+  larger/multi-file → subagent round-2.
+- **GPT-5.5 checkpoints:** keep them (highest ROI), but feed an **invariant-focused
+  packet** — issues merged, files touched, state machines affected, decisions, and
+  the specific invariants to attack, **plus the changed hunks/functions** (not
+  full-file diffs, not invariants-alone).
+- **Branch/main hygiene (attended, between sessions):** don't let the integration
+  branch keep ballooning (it's at 48 commits / 23 PRs across 2 sessions). Mit should
+  ratify decisions + merge to `main` **per completed epic**; a new session must
+  **rebranch off main if it has advanced**. The loop still never merges to main.
+- **iCloud root cause:** the real fix is **moving the working copy out of
+  `~/Documents`** (iCloud). Until then, a **mandatory pre-commit AND pre-merge sweep**
+  for `* 2.*`/`* 3.*`/`* 4.*` (not just an ad-hoc cleanup).
+- **Parallelism (minor lever):** only for genuinely independent work (#33/#56-style,
+  or trivial #85/#86 logging); cap at 2 concurrent subagents; merge sequentially.
+  Epic-style shared-file work stays serial.
+- **Keep unchanged (high ROI):** pre-run plan review, per-tier GPT-5.5 cross-issue
+  checkpoints, targeted `git add`, receiving-code-review verify-before-fixing.
 
 ## 7. Rough cost attribution (for intuition, not exact accounting)
 
@@ -140,3 +174,36 @@ rising per-turn Opus floor** as context grew (~$15–20/issue late-session basel
 just to re-read context). Cutting orchestrator context growth (§5.1) and the
 redundant reviewer/ci.sh work (§5.2–5.3) is where a session-3 could plausibly land
 the same output for meaningfully less — target ~$12–15/PR.
+
+## 8. External second-reviewer pass (GPT-5.5) — reconciliation
+
+A GPT-5.5 review of this retro sharpened it. Changes already folded into §5/§6:
+
+**Conceded (my original was wrong or weaker):**
+- **Review tiering must be by TOUCHED SURFACE, not diff size.** My "skip reviewer on
+  3–15 line diffs" was dangerous: #32's 3 prod lines were in `AppState`
+  queue-advance logic, and the Epic-10 checkpoint *later found a `batchCounts` leak
+  in that exact interaction*. Small diffs in state machines are precisely where
+  regressions hide. (§5.2, §6 corrected.)
+- **Orchestrator boundaries must be mechanical** (every 2–3 PRs / per tier), not a
+  soft "consider compacting." (§5.1.)
+- **Content-addressed CI evidence** (tree hash + `git status --short`), orchestrator
+  owns the final gate, reviewers don't full-build. (§5.3.)
+- **Artifact-based subagent reports** (CI log to a file + path, tail on failure
+  only). (§5.1, §6.)
+- **iCloud is a root-cause issue,** not noise — move the repo out of `~/Documents`;
+  sweep is only a mitigation. (§6.)
+
+**Accepted with nuance:**
+- **"Merge to main per epic; don't let the branch reach 48 commits."** Right as risk,
+  but the loop *cannot* merge to main by design — reframed as a Mit-attended
+  between-session action + "rebranch off main if it advanced." (§6.)
+- **"Feed checkpoints smaller packets."** Accepted, but NOT invariants-only: the
+  Epic-10 checkpoint caught the leak *because* it saw the actual code. So →
+  invariants-to-attack **+ the changed hunks/functions**, not full-file diffs. (§6.)
+- **"Parallelism isn't the main lever."** Agree; demoted to independent-work-only,
+  cap 2. (§6.)
+
+**Not verifiable by the external reviewer:** the raw cost/token figures (from
+harness telemetry) were treated as reported, not independently proven — same caveat
+applies to §1/§7 here.
