@@ -1,12 +1,19 @@
 import Foundation
 
+/// Minimal seam over "persist an optimized FSRS-6 weight set" so callers
+/// (e.g. `OptimizeScheduleViewModel`) can inject a mock and exercise the
+/// save-failure path without touching the filesystem (#27).
+public protocol OptimizedParametersStoring: Sendable {
+    func save(_ parameters: FSRSParameters) throws
+}
+
 /// Persists one global optimized FSRS-6 weight set and resolves
 /// optimized-or-default at the scheduling call site.
 ///
 /// Stored as JSON in the app-group container so the widget extension reads the
 /// same file. Only `w` is persisted; everything else is rebuilt onto
 /// `FSRSParameters.default` (which stays ADR-0002-immutable).
-public struct OptimizedParametersStore: Sendable {
+public struct OptimizedParametersStore: Sendable, OptimizedParametersStoring {
     /// Eligible-sample count below which `.default` is always used.
     public static let threshold = 512
 

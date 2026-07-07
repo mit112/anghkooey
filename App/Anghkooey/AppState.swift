@@ -143,8 +143,22 @@ final class AppState: @unchecked Sendable {
     /// Resolves optimized-or-default FSRS params from accumulated history and
     /// rebuilds the scheduler + widget reconciler. Call on launch and after
     /// each drain or optimization run.
+    ///
+    /// A transient `optimizationReviewLogs()` read failure must never be
+    /// coerced into "0 eligible reviews": that would resolve to `.default`
+    /// params and silently discard whatever optimized params (#27) were
+    /// already live, reverting the scheduler and widget reconciler with no
+    /// indication anything went wrong. On a read error this logs and returns
+    /// early, leaving the existing `scheduler`/`widgetReconciler` untouched.
     func refreshScheduler() async {
-        let rows = (try? await cardStore.optimizationReviewLogs()) ?? []
+        let rows: [OptimizationReviewLogRow]
+        do {
+            rows = try await cardStore.optimizationReviewLogs()
+        } catch {
+            CoreLog.scheduling.error(
+                "refreshScheduler: failed to load review history — keeping existing scheduler: \(error)")
+            return
+        }
         let eligible = OptimizationDataset(rows: rows).eligibleSampleCount
         let params = optimizedParamsStore.resolveParameters(eligibleSampleCount: eligible)
         let engine = LiveFSRS6Engine(parameters: params)
