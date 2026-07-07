@@ -28,8 +28,7 @@ private final class DrainerBridge: InboxDrainerDelegate, @unchecked Sendable {
     }
 
     func drainer(_ drainer: InboxDrainer, didFailItem _: InboxItem, error: Error) async {
-        // Telemetry: wired in a later milestone.
-        _ = error
+        await appState?.recordDrainFailure(error)
     }
 }
 
@@ -62,7 +61,22 @@ final class AppState: @unchecked Sendable {
     /// sheet and never be seen (#20). The presenter itself still lives here
     /// on `AppState`, not as sheet-local `@State`, so it survives the sheet
     /// being torn down and re-presented between drafts.
+    ///
+    /// For app-level messages that can fire with no sheet up (e.g. dropped
+    /// inbox captures, #28), see `rootErrorPresenter` instead — sharing this
+    /// instance across both contexts would let a stale accept-draft toast
+    /// resurface at the root the moment a sheet dismisses, or a drain-failure
+    /// toast bleed into an unrelated `CardReviewSheet` that opens while it's
+    /// still on screen.
     let errorPresenter = ErrorPresenter()
+
+    /// Surfaces app-level failures that have no associated sheet — currently
+    /// just the per-drain-pass "dropped captures" summary (#28). Applied via
+    /// `.errorToast(appState.rootErrorPresenter)` at the `ContentView` root
+    /// in `AnghkooeyApp`, so it stays visible regardless of sheet state.
+    /// Kept separate from `errorPresenter` (see its doc comment) so the two
+    /// contexts never cross-contaminate each other's toasts.
+    let rootErrorPresenter = ErrorPresenter()
 
     // MARK: Private state
 
@@ -79,6 +93,26 @@ final class AppState: @unchecked Sendable {
     /// the whole method makes the second, overlapping call a no-op instead —
     /// the correct, current draft stays presented for a fresh accept.
     private var isProcessingAccept = false
+
+    /// Number of inbox items dropped (`didFailItem`) during the drain pass
+    /// currently in progress. Reset by `beginDrainPass()`, read and reported
+    /// by `finishDrainPass()` — see `drain()` (#28).
+    private var failedDrainItemCount = 0
+
+    /// Reentrancy guard for `drain()`. `drain()` is invoked from three
+    /// unsynchronized triggers (launch `.task`, scenePhase `.active`, and
+    /// the Darwin-notification observer) and suspends at multiple points
+    /// (`drainer.drain()`, `widgetReconciler.reconcile()`,
+    /// `refreshScheduler()`). Without this guard, a second concurrent call
+    /// runs its own `beginDrainPass()` — resetting `failedDrainItemCount` to
+    /// zero — while the first pass is still recording drops via
+    /// `recordDrainFailure`, corrupting or silently swallowing the
+    /// end-of-pass summary (#28). Dropping a concurrent trigger outright is
+    /// fine: `drainer.drain()` already processes every item currently in
+    /// the inbox, and these triggers fire often enough that the next
+    /// foreground/notification will pick up anything that arrives after.
+    private var isDraining = false
+
     private let drainer: InboxDrainer
     private let bridge: DrainerBridge
     private var notificationToken: InboxNotificationToken?
@@ -135,9 +169,49 @@ final class AppState: @unchecked Sendable {
     // MARK: Drain
 
     func drain() async {
+        guard !isDraining else { return }
+        isDraining = true
+        defer { isDraining = false }
+
+        beginDrainPass()
         await drainer.drain()
-        try? await widgetReconciler.reconcile()
+        do {
+            try await widgetReconciler.reconcile()
+        } catch {
+            CoreLog.persistence.error(
+                "drain: widget reconcile failed: \(error.localizedDescription, privacy: .public)")
+        }
         await refreshScheduler()
+        finishDrainPass()
+    }
+
+    /// Resets the per-pass drop counter. Called before `drainer.drain()` so
+    /// each pass starts from zero regardless of what a previous pass saw.
+    /// Split out from `drain()` so tests can drive `recordDrainFailure` +
+    /// `finishDrainPass` directly without a real `InboxDrainer` (#28).
+    func beginDrainPass() {
+        failedDrainItemCount = 0
+    }
+
+    /// Reports the drain pass that just finished. Per ADR-0003 §9, a
+    /// `didFailItem` drop means the drainer has already deleted the item's
+    /// files — this is not a retry candidate, so the only recovery is
+    /// telling the user to re-share it. Rather than one toast per dropped
+    /// item, this shows a single summary once the whole pass is done.
+    ///
+    /// Known limitation: `rootErrorPresenter`'s toast is a `safeAreaInset`
+    /// on `ContentView` (see the presenter's declaration above), so if a
+    /// drain failure lands while a sheet (draft review, Anki import) is
+    /// presented, this toast renders *behind* that sheet and may
+    /// auto-dismiss before the user ever sees it. Still a strict
+    /// improvement over the prior silent no-op (#28); a robust fix
+    /// (persistent-until-seen toast, or sheet-aware presentation) is
+    /// deferred.
+    func finishDrainPass() {
+        guard failedDrainItemCount > 0 else { return }
+        rootErrorPresenter.present(
+            "Couldn't read \(failedDrainItemCount) captured item(s). Try sharing them again."
+        )
     }
 
     /// Resolves optimized-or-default FSRS params from accumulated history and
@@ -208,6 +282,17 @@ final class AppState: @unchecked Sendable {
     }
 
     // MARK: Internal (testable via @testable import)
+
+    /// Called by `DrainerBridge` when the drainer permanently drops an inbox
+    /// item (OCR failure, oversize image, corrupt file — see ADR-0003 §9).
+    /// By the time this fires the drainer has already deleted the item's
+    /// files, so there is nothing left to retry: this only counts the drop
+    /// (for the end-of-pass summary in `finishDrainPass()`) and logs the
+    /// underlying error immediately, per item, for diagnosis.
+    func recordDrainFailure(_ error: Error) {
+        failedDrainItemCount += 1
+        CoreLog.captureInbox.error("inbox item dropped: \(error.localizedDescription, privacy: .public)")
+    }
 
     /// Called by DrainerBridge when the drainer resolves text from an inbox item.
     ///

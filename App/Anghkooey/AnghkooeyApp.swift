@@ -47,6 +47,7 @@ struct AnghkooeyApp: App {
                 .environment(appState)
                 .environment(freezeController)
                 .environment(clipboardCoordinator)
+                .errorToast(appState.rootErrorPresenter)
                 .task { await appState.drain() }
                 .task {
                     clipboardCoordinator.onRoute = { text in

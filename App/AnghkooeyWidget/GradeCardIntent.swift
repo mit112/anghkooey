@@ -1,6 +1,14 @@
 import AppIntents
 import Foundation
+import OSLog
 import AnghkooeyCore
+
+/// Widget extensions run in their own process, so `CoreLog`'s injected
+/// subsystem (set by the main app's `AnghkooeyApp.init`) is never configured
+/// here. Build a standalone `Logger` instead of relying on `CoreLog`.
+private var log: Logger {
+    Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.unknown.anghkooey", category: "Widget")
+}
 
 struct GradeCardIntent: AppIntent {
     nonisolated(unsafe) static var title: LocalizedStringResource = "Grade Card"
@@ -21,7 +29,11 @@ struct GradeCardIntent: AppIntent {
             .containerURL(forSecurityApplicationGroupIdentifier: InboxConstants.appGroupID)
             ?? FileManager.default.temporaryDirectory
         let bridge = WidgetBridge(containerURL: containerURL)
-        try? bridge.appendGrade(WidgetGradeDecision(id: UUID(), cardID: uuid, rating: rating, decidedAt: .now))
+        do {
+            try bridge.appendGrade(WidgetGradeDecision(id: UUID(), cardID: uuid, rating: rating, decidedAt: .now))
+        } catch {
+            log.error("widget grade append failed: \(error.localizedDescription, privacy: .public)")
+        }
         return .result()
     }
 }
