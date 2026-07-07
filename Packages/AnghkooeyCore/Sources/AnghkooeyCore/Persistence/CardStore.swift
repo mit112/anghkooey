@@ -218,6 +218,16 @@ public protocol CardStoreProtocol: Sendable {
     /// `(cardID, reviewedAt)`, for the FSRS optimizer. Projects only the four
     /// fields `OptimizationDataset` needs — never walks full `Card` graphs.
     func optimizationReviewLogs() async throws -> [OptimizationReviewLogRow]
+
+    /// Returns the earliest `dueAt` strictly greater than `now`, or `nil` if
+    /// no card is scheduled beyond `now`.
+    ///
+    /// Used by `ReviewSession` to know when to re-check the due queue after
+    /// it empties mid-session: FSRS-6 learning steps reschedule an
+    /// `.again`/`.hard` card to be due again in minutes, and without this
+    /// query the session has no way to learn *when* to look again short of
+    /// polling (#18).
+    func nextDueDate(after now: Date) async throws -> Date?
 }
 
 // MARK: - CardStoreProtocol backward-compat extensions
@@ -395,6 +405,16 @@ public actor CardStore: CardStoreProtocol {
         }
     }
 
+    public func nextDueDate(after now: Date) async throws -> Date? {
+        let predicate = #Predicate<Card> { $0.dueAt > now }
+        var descriptor = FetchDescriptor<Card>(
+            predicate: predicate,
+            sortBy: [SortDescriptor(\.dueAt)]
+        )
+        descriptor.fetchLimit = 1
+        return try modelContext.fetch(descriptor).first?.dueAt
+    }
+
     public func update(id: UUID, question: String, answer: String, tags: [String]) async throws {
         let predicate = #Predicate<Card> { $0.id == id }
         let descriptor = FetchDescriptor<Card>(predicate: predicate)
@@ -510,6 +530,12 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
     public var countError: Error?
     /// When set, `optimizationReviewLogs()` returns this instead of the computed result.
     public var optimizationReviewLogsOverride: [OptimizationReviewLogRow]?
+    /// When non-nil (including `.some(nil)`), `nextDueDate(after:)` returns
+    /// this directly instead of computing it from `cards`. Lets a test
+    /// simulate "genuinely no upcoming card" — FSRS scheduling always
+    /// reschedules a graded card into the future, so that state can't be
+    /// reached by grading alone with the real formula (#18).
+    public var nextDueDateOverride: Date??
 
     public init() {}
 
@@ -682,6 +708,11 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
 
     public func findBySourceSpan(_ span: String) async throws -> Card.Snapshot? {
         cards.first { $0.sourceSpan == span }
+    }
+
+    public func nextDueDate(after now: Date) async throws -> Date? {
+        if let override = nextDueDateOverride { return override }
+        return cards.filter { $0.dueAt > now }.map(\.dueAt).min()
     }
 
     public func createImported(
