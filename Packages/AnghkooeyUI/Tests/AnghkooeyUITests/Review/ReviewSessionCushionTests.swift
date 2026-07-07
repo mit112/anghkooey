@@ -13,7 +13,7 @@ struct ReviewSessionCushionTests {
         try? await seedDueCards(in: store, count: 30)
         let session = ReviewSession(
             store: store,
-            scheduler: FakeNoopScheduler(),
+            scheduler: { FakeNoopScheduler() },
             clock: { .now },
             dailyBatchCap: 20,
             backlogThreshold: 50
@@ -30,7 +30,7 @@ struct ReviewSessionCushionTests {
         try? await seedDueCards(in: store, count: 87)
         let session = ReviewSession(
             store: store,
-            scheduler: FakeNoopScheduler(),
+            scheduler: { FakeNoopScheduler() },
             clock: { .now },
             dailyBatchCap: 20,
             backlogThreshold: 50
@@ -47,7 +47,7 @@ struct ReviewSessionCushionTests {
         try? await seedDueCards(in: store, count: 50)
         let session = ReviewSession(
             store: store,
-            scheduler: FakeNoopScheduler(),
+            scheduler: { FakeNoopScheduler() },
             clock: { .now },
             dailyBatchCap: 20,
             backlogThreshold: 50

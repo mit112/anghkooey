@@ -40,7 +40,7 @@ struct ReviewTapLatencyTests {
 
         let session = ReviewSession(
             store: store,
-            scheduler: engine,
+            scheduler: { engine },
             clock: { seedDate }
         )
         await session.loadDueQueue()

@@ -16,7 +16,7 @@ struct ReviewSessionMnemonicTests {
     ) -> ReviewSession {
         ReviewSession(
             store: store,
-            scheduler: MockFSRS6Engine(),
+            scheduler: { MockFSRS6Engine() },
             clock: { now },
             mnemonicService: service
         )

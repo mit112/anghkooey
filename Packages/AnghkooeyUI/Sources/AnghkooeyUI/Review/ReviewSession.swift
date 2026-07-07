@@ -56,7 +56,7 @@ public final class ReviewSession {
     /// Empty when there is no current card.
     public var currentIntervals: [Rating: TimeInterval] {
         guard let card = currentCard else { return [:] }
-        return IntervalProjection.project(card: card.schedulingCard, engine: scheduler, now: clock())
+        return IntervalProjection.project(card: card.schedulingCard, engine: scheduler(), now: clock())
     }
 
     /// Cards remaining in this session including the current card.
@@ -85,7 +85,7 @@ public final class ReviewSession {
     // MARK: Private
 
     public let store: any CardStoreProtocol
-    private let scheduler: any FSRS6Engine
+    private let scheduler: () -> any FSRS6Engine
     private let clock: @Sendable () -> Date
     private var queue: [Card.Snapshot] = []
     private let mnemonicService: (any MnemonicService)?
@@ -94,7 +94,7 @@ public final class ReviewSession {
 
     public init(
         store: any CardStoreProtocol,
-        scheduler: any FSRS6Engine,
+        scheduler: @escaping () -> any FSRS6Engine = { LiveFSRS6Engine() },
         clock: @Sendable @escaping () -> Date = { .now },
         dailyBatchCap: Int = 20,
         backlogThreshold: Int = 50,
@@ -151,7 +151,7 @@ public final class ReviewSession {
         let intervalState = signposter.beginInterval("review-tap", id: signpostID)
         defer { signposter.endInterval("review-tap", intervalState) }
         do {
-            let output = try scheduler.next(
+            let output = try scheduler().next(
                 card: card.schedulingCard,
                 rating: grade.fsrsRating,
                 now: clock()
