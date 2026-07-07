@@ -152,10 +152,17 @@ Secondary drivers, in order:
   packet** — issues merged, files touched, state machines affected, decisions, and
   the specific invariants to attack, **plus the changed hunks/functions** (not
   full-file diffs, not invariants-alone).
-- **Branch/main hygiene (attended, between sessions):** don't let the integration
-  branch keep ballooning (it's at 48 commits / 23 PRs across 2 sessions). Mit should
-  ratify decisions + merge to `main` **per completed epic**; a new session must
-  **rebranch off main if it has advanced**. The loop still never merges to main.
+- **Per-epic merge to `main` — the loop is now AUTHORIZED (Mit granted 2026-07-09):**
+  after a tier/epic fully completes on the integration branch (all its issues
+  merged + GPT-5.5 checkpoint passed + full green ci.sh on the exact tip), the loop
+  merges `overnight/backlog-2026-07` → `main` **itself**, then continues the next
+  tier from the updated tip (integration == main at that boundary). The main-merge
+  must: pass ci.sh on the exact merge candidate; **prominently list the ⚖️ decisions
+  it carries** (all reversible — for Mit's post-hoc review, not a blocker); note
+  which issues auto-close. **Start of session 3: merge the current 48-commit backlog
+  (completed epics #8/#9/#10 + tooling #56) to main FIRST**, before any new work.
+  Never force-push or rewrite `main`. If Mit advanced `main` out of band, pull first.
+  This keeps the integration branch bounded to ~one epic instead of ballooning.
 - **iCloud root cause:** the real fix is **moving the working copy out of
   `~/Documents`** (iCloud). Until then, a **mandatory pre-commit AND pre-merge sweep**
   for `* 2.*`/`* 3.*`/`* 4.*` (not just an ad-hoc cleanup).
@@ -195,9 +202,11 @@ A GPT-5.5 review of this retro sharpened it. Changes already folded into §5/§6
   sweep is only a mitigation. (§6.)
 
 **Accepted with nuance:**
-- **"Merge to main per epic; don't let the branch reach 48 commits."** Right as risk,
-  but the loop *cannot* merge to main by design — reframed as a Mit-attended
-  between-session action + "rebranch off main if it advanced." (§6.)
+- **"Merge to main per epic; don't let the branch reach 48 commits."** Right as risk.
+  Initially reframed as Mit-attended, but **Mit then explicitly authorized the loop
+  to merge to main per epic (2026-07-09)** — so §6 now has the loop do it directly
+  (gated on green ci.sh + checkpoint, carrying the reversible ⚖️ decisions for
+  post-hoc review). GPT was right that the accumulation was the risk.
 - **"Feed checkpoints smaller packets."** Accepted, but NOT invariants-only: the
   Epic-10 checkpoint caught the leak *because* it saw the actual code. So →
   invariants-to-attack **+ the changed hunks/functions**, not full-file diffs. (§6.)
