@@ -16,7 +16,7 @@ public struct ReviewScreen: View {
     private let onImport: (() -> Void)?
 
     public init(store: any CardStoreProtocol,
-                scheduler: any FSRS6Engine = LiveFSRS6Engine(),
+                scheduler: @escaping () -> any FSRS6Engine = { LiveFSRS6Engine() },
                 loadSampleCards: (() async -> Void)? = nil,
                 onImport: (() -> Void)? = nil) {
         _session = State(initialValue: ReviewSession(store: store, scheduler: scheduler))

@@ -29,7 +29,7 @@ struct ContentView: View {
             NavigationStack {
                 ReviewScreen(
                     store: appState.cardStore,
-                    scheduler: appState.scheduler,
+                    scheduler: { appState.scheduler },
                     loadSampleCards: { await loadSamples() },
                     onImport: { showingImportFromReview = true }
                 )

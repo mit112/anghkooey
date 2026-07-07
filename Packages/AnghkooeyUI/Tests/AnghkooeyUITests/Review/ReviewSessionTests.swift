@@ -12,7 +12,7 @@ struct ReviewSessionTests {
     ) -> ReviewSession {
         ReviewSession(
             store: store,
-            scheduler: MockFSRS6Engine(),
+            scheduler: { MockFSRS6Engine() },
             clock: { now }
         )
     }
