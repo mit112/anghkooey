@@ -43,6 +43,11 @@ struct CardReviewSheet: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
+                    if draft.isFallback {
+                        Text("AI unavailable — edit this card by hand.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                     editableFieldSection(label: "Question", text: $editedQuestion)
                     editableFieldSection(label: "Answer", text: $editedAnswer)
                     if let span = draft.draft.sourceSpan {

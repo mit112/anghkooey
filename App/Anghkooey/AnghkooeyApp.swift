@@ -49,6 +49,7 @@ struct AnghkooeyApp: App {
                 .environment(clipboardCoordinator)
                 .errorToast(appState.rootErrorPresenter)
                 .task { await appState.drain() }
+                .task { await appState.refreshAuthoringAvailability() }
                 .task {
                     clipboardCoordinator.onRoute = { text in
                         Task { await appState.enqueue(resolvedText: text) }
@@ -57,6 +58,7 @@ struct AnghkooeyApp: App {
                 .onChange(of: scenePhase) { _, phase in
                     if phase == .active {
                         Task { await appState.drain() }
+                        Task { await appState.refreshAuthoringAvailability() }
                         if UIPasteboard.general.hasStrings {
                             clipboardCoordinator.refreshOffer()
                         }

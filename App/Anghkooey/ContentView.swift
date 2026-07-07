@@ -13,6 +13,7 @@ struct ContentView: View {
     @State private var selectedTab: Int = 0
     @State private var onboardingState = OnboardingState()
     @State private var showingImportFromReview = false
+    @State private var availabilityBannerDismissed = false
 
     @State private var sampleLoadErrorMessage: String?
 
@@ -47,6 +48,21 @@ struct ContentView: View {
                     .padding(.horizontal)
                     .padding(.top, 8)
 
+                    Group {
+                        if let availability = appState.authoringAvailability,
+                           !availabilityBannerDismissed,
+                           CaptureAvailabilityModel(availability: availability).bannerMessage != nil {
+                            CaptureAvailabilityBanner(availability: availability) {
+                                availabilityBannerDismissed = true
+                            }
+                        }
+                    }
+                    // Scope the banner's move/opacity transition to its own
+                    // insert (availability resolving) and dismiss without
+                    // animating the sibling Picker/camera content.
+                    .animation(.snappy, value: appState.authoringAvailability)
+                    .animation(.snappy, value: availabilityBannerDismissed)
+
                     if selectedTab == 1 && captureMode == .qa {
                         CameraView(
                             captureSession: CameraCaptureSession(),
@@ -69,6 +85,9 @@ struct ContentView: View {
                     }
                 }
                 .navigationTitle("Capture")
+                .onChange(of: appState.authoringAvailability) { _, _ in
+                    availabilityBannerDismissed = false
+                }
             }
             .tabItem { Label("Capture", systemImage: "camera") }
             .tag(1)
