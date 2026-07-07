@@ -76,7 +76,7 @@ struct AnghkooeyApp: App {
                         )
                     )
                 }
-                .sheet(item: $appState.presentedDraft) { identified in
+                .sheet(item: $appState.presentedDraft, onDismiss: { appState.handleSheetDismiss() }) { identified in
                     CardReviewSheet(
                         draft: identified,
                         onAccept: { q, a in Task { await appState.acceptDraft(question: q, answer: a) } },

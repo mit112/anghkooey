@@ -311,6 +311,48 @@ final class AppState: @unchecked Sendable {
 
     func skipDraft() { advanceQueue() }
 
+    /// Called from the draft sheet's `.sheet(item:onDismiss:)` whenever the
+    /// sheet goes away — whether the user swiped it down interactively or an
+    /// Accept/Skip button dismissed it.
+    ///
+    /// The rule is purely state-based and idempotent: **advance the queue
+    /// only when `presentedDraft` is already `nil` at the moment this
+    /// fires.**
+    ///
+    /// Why this and not a one-shot "was this a button tap" flag: a button
+    /// (`acceptDraft`/`skipDraft`) calls `advanceQueue()` itself *before* the
+    /// sheet ever dismisses, so by the time SwiftUI's `onDismiss` runs,
+    /// `presentedDraft` already reflects the outcome — non-nil if another
+    /// draft was queued behind it, or nil if that button emptied the queue.
+    /// Either way, calling `advanceQueue()` again here would double-advance
+    /// (dropping the very draft the button just surfaced) or be a harmless
+    /// no-op (queue already empty) — so a non-nil `presentedDraft` here means
+    /// "do nothing".
+    ///
+    /// An interactive swipe-down never calls `advanceQueue()`: SwiftUI sets
+    /// `presentedDraft = nil` on its own and then fires `onDismiss`, leaving
+    /// any remaining `pendingDrafts` stranded unless something advances the
+    /// queue here. So `presentedDraft == nil` at `onDismiss` time is exactly
+    /// the swipe signal — advance.
+    ///
+    /// A bool flag set by the button handlers and cleared here would need to
+    /// distinguish "onDismiss fired because of the button's own advance" from
+    /// "onDismiss fired because of a genuine swipe that happened to race it",
+    /// and — more fundamentally — relies on whether SwiftUI fires `onDismiss`
+    /// at all on an item-to-item change (old draft's item replaced by a new
+    /// one without the sheet dropping to nil in between). That behavior has
+    /// varied across SwiftUI/iOS versions. Gating on `presentedDraft`'s
+    /// *current value* sidesteps the question entirely: whether or not
+    /// `onDismiss` fires on every item change, checking `presentedDraft ==
+    /// nil` right now is always the correct thing to do, because
+    /// `advanceQueue()` on a non-empty pending queue and on an empty one are
+    /// both safe to call unconditionally when it's genuinely warranted, and a
+    /// no-op is guaranteed whenever it isn't.
+    func handleSheetDismiss() {
+        guard presentedDraft == nil else { return }
+        advanceQueue()
+    }
+
     /// Called from `CardReviewSheet.onAppear` to close the
     /// `"card-review-sheet-ready"` signpost interval.
     func cardReviewSheetDidAppear() {
