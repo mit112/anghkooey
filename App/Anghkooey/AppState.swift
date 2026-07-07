@@ -2,6 +2,7 @@ import Foundation
 import OSLog
 import AnghkooeyCore
 import AnghkooeyIntelligence
+import AnghkooeyUI
 
 // MARK: - IdentifiedDraft
 
@@ -51,6 +52,17 @@ final class AppState: @unchecked Sendable {
     /// Persistence layer injected at app startup; `MockCardStore` until M4.9
     /// wires the real `CardStore` backed by a `ModelContainer`.
     let cardStore: any CardStoreProtocol
+
+    /// Surfaces `acceptDraft` failures as a toast. `acceptDraft` is only ever
+    /// invoked from `CardReviewSheet`, and a failure always leaves a sheet on
+    /// screen (the draft is re-presented, or the next one shows) — so
+    /// `.errorToast(appState.errorPresenter)` is applied to the
+    /// `CardReviewSheet` content in `AnghkooeyApp`'s `.sheet(item:)`, not to
+    /// the app root. A root-level toast would render *behind* the modal
+    /// sheet and never be seen (#20). The presenter itself still lives here
+    /// on `AppState`, not as sheet-local `@State`, so it survives the sheet
+    /// being torn down and re-presented between drafts.
+    let errorPresenter = ErrorPresenter()
 
     // MARK: Private state
 
@@ -135,32 +147,25 @@ final class AppState: @unchecked Sendable {
 
     /// Accepts the current draft with the supplied (possibly edited) Q/A.
     /// Called by `CardReviewSheet`'s Accept button.
-    func acceptDraft(question: String, answer: String) {
+    ///
+    /// Advances the sheet immediately — before any `await` — so the UI stays
+    /// snappy. `.anghkooeyCardAccepted` is posted only after the card is
+    /// actually persisted: `ReviewScreen` reloads its due queue on that
+    /// notification, and reloading before the card exists is the #20 race.
+    /// On a failed save the draft is never dropped: it's put back at the
+    /// head of the queue (re-presented immediately if the queue is now
+    /// idle) and the failure is surfaced via `errorPresenter`.
+    func acceptDraft(question: String, answer: String) async {
         guard let draft = presentedDraft else { return }
-        let tags = draft.draft.proposedTags
         advanceQueue()
-        Task {
-            do {
-                _ = try await cardStore.create(
-                    question: question,
-                    answer: answer,
-                    sourceSpan: draft.draft.sourceSpan,
-                    tags: tags,
-                    now: .now
-                )
-            } catch {
-                CoreLog.persistence.error("acceptDraft: card creation failed: \(error)")
-            }
-            try? await widgetReconciler.rewriteSnapshot()
-        }
-        NotificationCenter.default.post(name: .anghkooeyCardAccepted, object: nil)
+        await persistAcceptedDraft(draft, question: question, answer: answer)
     }
 
     /// Convenience shim: accepts using the draft's original (unedited) Q/A.
     /// Kept so existing test call sites compile unchanged.
-    func acceptDraft() {
+    func acceptDraft() async {
         guard let draft = presentedDraft else { return }
-        acceptDraft(question: draft.draft.question, answer: draft.draft.answer)
+        await acceptDraft(question: draft.draft.question, answer: draft.draft.answer)
     }
 
     func skipDraft() { advanceQueue() }
@@ -193,7 +198,70 @@ final class AppState: @unchecked Sendable {
 
     // MARK: Private
 
+    /// Does the actual persistence work for `acceptDraft(question:answer:)`,
+    /// pinned to the exact `draft` the caller already resolved so a retry
+    /// (below) re-attempts the same draft even if `presentedDraft`/
+    /// `pendingDrafts` have since changed.
+    private func persistAcceptedDraft(_ draft: IdentifiedDraft, question: String, answer: String) async {
+        do {
+            _ = try await cardStore.create(
+                question: question,
+                answer: answer,
+                sourceSpan: draft.draft.sourceSpan,
+                tags: draft.draft.proposedTags,
+                now: .now
+            )
+            do {
+                try await widgetReconciler.rewriteSnapshot()
+            } catch {
+                CoreLog.persistence.error("acceptDraft: widget snapshot refresh failed: \(error)")
+            }
+            NotificationCenter.default.post(name: .anghkooeyCardAccepted, object: nil)
+            // A prior failed accept may have left a retry-able toast on screen
+            // (see the catch branch below). Dismiss it now: its stale retry
+            // closure still targets this same draft/question/answer, and if
+            // left live the user could tap it after this success and create a
+            // duplicate card for content that's already persisted.
+            errorPresenter.dismiss()
+        } catch {
+            CoreLog.persistence.error("acceptDraft: card creation failed: \(error)")
+            pendingDrafts.insert(draft, at: 0)
+            if presentedDraft == nil { advanceQueue() }
+            errorPresenter.present(
+                "Couldn't save the card — try again.",
+                retry: { [weak self] in
+                    guard let self else { return }
+                    await self.retryAcceptDraft(draft, question: question, answer: answer)
+                }
+            )
+        }
+    }
+
+    /// Removes `draft` from wherever the failure path parked it (either
+    /// re-presented or sitting at the head of `pendingDrafts`), then
+    /// re-attempts persistence. Removing first means a repeat failure
+    /// re-enqueues cleanly via `persistAcceptedDraft`'s own catch block
+    /// instead of leaving a duplicate behind.
+    private func retryAcceptDraft(_ draft: IdentifiedDraft, question: String, answer: String) async {
+        if presentedDraft?.id == draft.id {
+            advanceQueue()
+        } else {
+            pendingDrafts.removeAll { $0.id == draft.id }
+        }
+        await persistAcceptedDraft(draft, question: question, answer: answer)
+    }
+
     private func advanceQueue() {
+        // A failure/retry path can call advanceQueue() again before the
+        // in-flight sheet ever reached onAppear (cardReviewSheetDidAppear),
+        // leaving reviewSheetSignpostState still open. End it here first so
+        // repeated failures don't leak an ever-growing set of unclosed
+        // "card-review-sheet-ready" intervals.
+        if let state = reviewSheetSignpostState {
+            CoreLog.poiSignposter.endInterval("card-review-sheet-ready", state)
+            reviewSheetSignpostState = nil
+        }
+
         let next = pendingDrafts.isEmpty ? nil : pendingDrafts.removeFirst()
         presentedDraft = next
         if next != nil {

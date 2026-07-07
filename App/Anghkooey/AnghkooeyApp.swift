@@ -78,9 +78,10 @@ struct AnghkooeyApp: App {
                 .sheet(item: $appState.presentedDraft) { identified in
                     CardReviewSheet(
                         draft: identified,
-                        onAccept: { q, a in appState.acceptDraft(question: q, answer: a) },
+                        onAccept: { q, a in Task { await appState.acceptDraft(question: q, answer: a) } },
                         onSkip: { appState.skipDraft() }
                     )
+                    .errorToast(appState.errorPresenter)
                     .onAppear { appState.cardReviewSheetDidAppear() }
                 }
         }
