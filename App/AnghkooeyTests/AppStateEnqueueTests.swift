@@ -477,3 +477,213 @@ struct AppStateEnqueueTests {
         #expect(presented.draft.answer.isEmpty == true)
     }
 }
+
+// MARK: - #32 handleSheetDismiss (interactive swipe-dismiss must advance the queue)
+//
+// The draft sheet is `.sheet(item: $appState.presentedDraft, onDismiss: ...)`.
+// An interactive swipe-down sets `presentedDraft = nil` without going through
+// `advanceQueue()`, stranding any remaining `pendingDrafts` invisibly until a
+// new capture calls `enqueue`. `handleSheetDismiss()` fixes this with a
+// purely state-based, idempotent rule: advance only when `presentedDraft` is
+// already `nil` at the moment `onDismiss` fires. A button (Accept/Skip) calls
+// `advanceQueue()` itself before the sheet ever dismisses, so by the time
+// `onDismiss` runs `presentedDraft` is already non-nil (next draft) or nil
+// (queue emptied) — either way, re-advancing here would double-advance or
+// drop a draft. A swipe never calls `advanceQueue()`, so `presentedDraft` is
+// still nil at `onDismiss` time, and this is the only path that needs to
+// advance.
+/// Controllable suspension point standing in for the `CardStore` actor's
+/// genuine cross-actor hop on `create(...)`. `MockCardStore` is a plain
+/// class, so without this its `create(...)` never truly suspends and the
+/// in-flight-persist race #32's rule must survive can't be reproduced
+/// deterministically. Mirrors the `AwaitGate` idiom in
+/// `AppStateAcceptDraftReentrancyTests` (file-private, so no collision).
+@MainActor
+private final class AwaitGate: @unchecked Sendable {
+    private var pending: [CheckedContinuation<Void, Never>] = []
+    private(set) var callCount = 0
+
+    func wait() async {
+        await withCheckedContinuation { continuation in
+            callCount += 1
+            pending.append(continuation)
+        }
+    }
+
+    func fireOldest() {
+        guard !pending.isEmpty else { return }
+        pending.removeFirst().resume()
+    }
+}
+
+@Suite("AppState.handleSheetDismiss — #32 swipe-dismiss advances the queue")
+@MainActor
+struct AppStateSheetDismissTests {
+
+    /// Cooperatively yields the MainActor until `condition` holds, bounded so
+    /// a genuine regression fails fast instead of hanging. Mirrors the helper
+    /// in `AppStateAcceptDraftReentrancyTests`.
+    private func waitUntil(
+        maxIterations: Int = 10_000,
+        _ condition: () -> Bool
+    ) async {
+        for _ in 0..<maxIterations {
+            if condition() { return }
+            await Task.yield()
+        }
+    }
+
+    // MARK: swipeDismiss_advancesToNextDraft_onePerSwipe
+
+    @Test("an interactive swipe-dismiss advances to the next pending draft, exactly once per swipe")
+    func swipeDismiss_advancesToNextDraft_onePerSwipe() async throws {
+        let a = CardDraft(question: "A", answer: "a")
+        let b = CardDraft(question: "B", answer: "b")
+        let c = CardDraft(question: "C", answer: "c")
+        let sut = AppState(cardAuthor: MockCardAuthoringService(drafts: [a, b, c]))
+
+        await sut.enqueue(resolvedText: "one dense paragraph")
+        #expect(sut.presentedDraft?.draft.question == "A")
+
+        // Simulate SwiftUI's interactive swipe: it clears the binding first,
+        // then fires onDismiss.
+        sut.presentedDraft = nil
+        sut.handleSheetDismiss()
+        #expect(sut.presentedDraft?.draft.question == "B")
+
+        sut.presentedDraft = nil
+        sut.handleSheetDismiss()
+        #expect(sut.presentedDraft?.draft.question == "C")
+
+        sut.presentedDraft = nil
+        sut.handleSheetDismiss()
+        #expect(sut.presentedDraft == nil)
+    }
+
+    // MARK: buttonDismiss_doesNotDoubleAdvance
+
+    @Test("a button-driven dismiss does not double-advance when onDismiss fires on an item-to-item change")
+    func buttonDismiss_doesNotDoubleAdvance() async throws {
+        let a = CardDraft(question: "A", answer: "a")
+        let b = CardDraft(question: "B", answer: "b")
+        let c = CardDraft(question: "C", answer: "c")
+        let mockStore = MockCardStore()
+        let sut = AppState(cardAuthor: MockCardAuthoringService(drafts: [a, b, c]), cardStore: mockStore)
+
+        await sut.enqueue(resolvedText: "one dense paragraph")
+        await sut.acceptDraft() // advanceQueue() already ran: presentedDraft == B
+        #expect(sut.presentedDraft?.draft.question == "B")
+
+        // Simulate SwiftUI firing onDismiss on an item->item change, WITHOUT
+        // clearing presentedDraft first (unlike the swipe path above).
+        sut.handleSheetDismiss()
+
+        // No-op: still B, C still pending behind it.
+        #expect(sut.presentedDraft?.draft.question == "B")
+        await sut.acceptDraft()
+        #expect(sut.presentedDraft?.draft.question == "C")
+    }
+
+    // MARK: lastCardButtonDismiss_isHarmlessNoOp
+
+    @Test("dismiss after the last card's button-accept is a harmless no-op — no duplicate persist")
+    func lastCardButtonDismiss_isHarmlessNoOp() async throws {
+        let a = CardDraft(question: "A", answer: "a")
+        let mockStore = MockCardStore()
+        let sut = AppState(cardAuthor: MockCardAuthoringService(drafts: [a]), cardStore: mockStore)
+
+        await sut.enqueue(resolvedText: "single draft capture")
+        await sut.acceptDraft() // advanceQueue() emptied the queue: presentedDraft == nil
+        #expect(sut.presentedDraft == nil)
+        #expect(mockStore.cards.count == 1)
+
+        // onDismiss now fires for the sheet's teardown. presentedDraft is
+        // already nil, so this looks identical to a swipe — but
+        // advanceQueue() on an empty queue is itself a harmless no-op.
+        sut.handleSheetDismiss()
+
+        #expect(sut.presentedDraft == nil)
+        #expect(mockStore.cards.count == 1)
+    }
+
+    // MARK: mixedSequence_acceptSwipeAccept_persistsExactlyAcceptedDrafts
+
+    @Test("a mixed accept/swipe/accept sequence persists exactly the accepted drafts, with no drops or duplicates")
+    func mixedSequence_acceptSwipeAccept_persistsExactlyAcceptedDrafts() async throws {
+        let a = CardDraft(question: "A", answer: "a")
+        let b = CardDraft(question: "B", answer: "b")
+        let c = CardDraft(question: "C", answer: "c")
+        let mockStore = MockCardStore()
+        let sut = AppState(cardAuthor: MockCardAuthoringService(drafts: [a, b, c]), cardStore: mockStore)
+
+        await sut.enqueue(resolvedText: "one dense paragraph")
+        #expect(sut.presentedDraft?.draft.question == "A")
+
+        await sut.acceptDraft() // accept A -> B
+        #expect(sut.presentedDraft?.draft.question == "B")
+
+        // Swipe away B (skipped, never persisted).
+        sut.presentedDraft = nil
+        sut.handleSheetDismiss()
+        #expect(sut.presentedDraft?.draft.question == "C")
+
+        await sut.acceptDraft() // accept C -> nil
+        #expect(sut.presentedDraft == nil)
+
+        #expect(mockStore.cards.count == 2)
+        #expect(mockStore.cards.map(\.question) == ["A", "C"])
+    }
+
+    // MARK: swipeDuringInFlightPersist_advancesOnce_withoutDropOrDuplicate
+    //
+    // The other four cases hand-order calls; this one pins the repo's known
+    // hotspot — a post-`await` state bug — with a *genuine* async suspension.
+    // A's persist is held open mid-`create(...)` while the user swipes the
+    // next draft away. The state-based rule must still advance exactly once
+    // and must not double-advance or drop/duplicate a draft when `onDismiss`
+    // races an accept that's already suspended past its synchronous advance.
+
+    @Test("a swipe landing while a prior accept's persist is still suspended advances exactly once, dropping/duplicating nothing")
+    func swipeDuringInFlightPersist_advancesOnce_withoutDropOrDuplicate() async throws {
+        let a = CardDraft(question: "A", answer: "a")
+        let b = CardDraft(question: "B", answer: "b")
+        let c = CardDraft(question: "C", answer: "c")
+        let mockStore = MockCardStore()
+        let gate = AwaitGate()
+        let sut = AppState(cardAuthor: MockCardAuthoringService(drafts: [a, b, c]), cardStore: mockStore)
+
+        await sut.enqueue(resolvedText: "one dense paragraph")
+        #expect(sut.presentedDraft?.draft.question == "A")
+
+        // Suspend acceptDraft's persist so A stays genuinely in flight.
+        mockStore.createGate = { await gate.wait() }
+
+        // Accept A: advanceQueue() runs synchronously (A -> B) *before* the
+        // persist of A suspends on the gate.
+        let acceptTask = Task { @MainActor in
+            await sut.acceptDraft()
+        }
+
+        // Registration barrier: the synchronous advance A -> B has happened
+        // and A's persist is genuinely parked inside cardStore.create.
+        await waitUntil { sut.presentedDraft?.draft.question == "B" && gate.callCount >= 1 }
+
+        // While A's create is still suspended, the user swipes B away —
+        // onDismiss fires with a persist still in flight. `presentedDraft`
+        // is nil here (swipe cleared it), so the rule advances exactly once.
+        sut.presentedDraft = nil
+        sut.handleSheetDismiss()
+        #expect(sut.presentedDraft?.draft.question == "C")
+
+        // Let A's persist complete and the accept task finish.
+        gate.fireOldest()
+        await acceptTask.value
+
+        // A (and only A) was persisted; C is still presented; the swipe
+        // racing the in-flight accept dropped/duplicated nothing and did not
+        // double-advance past C.
+        #expect(mockStore.cards.count == 1)
+        #expect(mockStore.cards.first?.question == "A")
+        #expect(sut.presentedDraft?.draft.question == "C")
+    }
+}
