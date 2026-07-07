@@ -49,5 +49,14 @@ xcodebuild test \
   CODE_SIGNING_ALLOWED=NO \
   -derivedDataPath "$DERIVED/app-tests"
 
+echo "=== PrivacyInfo manifest check ==="
+PBXPROJ="$WORKSPACE_ROOT/App/Anghkooey.xcodeproj/project.pbxproj"
+for uuid in AA000001000000000000AA01 AA000001000000000000AA02 AA000001000000000000AA03; do
+  grep -q "$uuid" "$PBXPROJ" || { echo "ERROR: PrivacyInfo file-ref $uuid missing from pbxproj — regenerate dropped a .xcprivacy (see #56)"; exit 1; }
+done
+# sanity: expect 12 total PrivacyInfo lines (4 per target × 3 targets)
+count=$(grep -c "PrivacyInfo" "$PBXPROJ" || true)
+[ "$count" -eq 12 ] || { echo "ERROR: expected 12 PrivacyInfo lines in pbxproj, found $count (see #56)"; exit 1; }
+
 echo ""
 echo "✓ All checks passed"

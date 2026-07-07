@@ -9,6 +9,12 @@ options:
     iOS: "26.0"
   defaultConfig: Debug
   createIntermediateGroups: true
+  # Re-applies PrivacyInfo.xcprivacy entries that xcodegen otherwise drops
+  # from the generated pbxproj. See scripts/patch_privacy_info.py and #56.
+  # NOTE: xcodegen runs postGenCommand with CWD = the directory containing
+  # this project.yml (App/), hence the "../" — the script itself resolves
+  # PBXPROJ relative to its own location, so this is CWD-independent otherwise.
+  postGenCommand: python3 ../scripts/patch_privacy_info.py
 
 settings:
   base:
@@ -46,6 +52,8 @@ targets:
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         CFBundlePackageType: $(PRODUCT_BUNDLE_PACKAGE_TYPE)
         LSRequiresIPhoneOS: true
+        NSCameraUsageDescription: Anghkooey uses the camera to capture text for automatic flashcard creation.
+        LSSupportsOpeningDocumentsInPlace: false
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
@@ -68,14 +76,7 @@ targets:
         excludes:
           - "**/*.xcprivacy"
     resources:
-      # WARNING — xcodegen fragility: xcodegen silently omits .xcprivacy from
-      # PBXResourcesBuildPhase even when listed here. After every `make generate`
-      # you MUST manually verify that PrivacyInfo.xcprivacy appears in the
-      # PBXResourcesBuildPhase section of project.pbxproj. If it is missing,
-      # re-add the PBXBuildFile entry and the reference in PBXResourcesBuildPhase.
-      # Run: grep -c "PrivacyInfo" App/Anghkooey.xcodeproj/project.pbxproj
-      # Expected count: 4 (PBXBuildFile, PBXFileReference, PBXGroup, PBXResourcesBuildPhase)
-      # TODO: replace this manual step with a postGenCommand patch script.
+      # .xcprivacy is re-added by scripts/patch_privacy_info.py (run via make generate / postGenCommand); CI verifies it. See #56.
       - Anghkooey/PrivacyInfo.xcprivacy
     settings:
       base:
@@ -104,10 +105,7 @@ targets:
         excludes:
           - "**/*.xcprivacy"
     resources:
-      # Same xcodegen fragility as main app: verify PrivacyInfo.xcprivacy appears in
-      # PBXResourcesBuildPhase after every `make generate`.
-      # Run: grep -c "AnghkooeyShare/PrivacyInfo" App/Anghkooey.xcodeproj/project.pbxproj
-      # Expected count: 4 (PBXBuildFile, PBXFileReference, PBXGroup, PBXResourcesBuildPhase)
+      # .xcprivacy is re-added by scripts/patch_privacy_info.py (run via make generate / postGenCommand); CI verifies it. See #56.
       - AnghkooeyShare/PrivacyInfo.xcprivacy
     settings:
       base:
@@ -133,10 +131,7 @@ targets:
         excludes:
           - "**/*.xcprivacy"
     resources:
-      # Same xcodegen fragility as main app: verify PrivacyInfo.xcprivacy appears in
-      # PBXResourcesBuildPhase after every `make generate`.
-      # Run: grep -c "AnghkooeyWidget/PrivacyInfo" App/Anghkooey.xcodeproj/project.pbxproj
-      # Expected count: 4 (PBXBuildFile, PBXFileReference, PBXGroup, PBXResourcesBuildPhase)
+      # .xcprivacy is re-added by scripts/patch_privacy_info.py (run via make generate / postGenCommand); CI verifies it. See #56.
       - AnghkooeyWidget/PrivacyInfo.xcprivacy
     settings:
       base:
