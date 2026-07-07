@@ -23,6 +23,7 @@ struct GradeCardIntent: AppIntent {
     func perform() async throws -> some IntentResult {
         guard let uuid = UUID(uuidString: cardID),
               let rating = Rating(rawValue: ratingRaw) else {
+            log.error("Dropped widget grade: unparseable cardID/rating (cardID=\(cardID, privacy: .public), rating=\(ratingRaw, privacy: .public))")
             return .result()
         }
         let containerURL = FileManager.default
