@@ -80,7 +80,8 @@ struct AnghkooeyApp: App {
                     CardReviewSheet(
                         draft: identified,
                         onAccept: { q, a in Task { await appState.acceptDraft(question: q, answer: a) } },
-                        onSkip: { appState.skipDraft() }
+                        onSkip: { appState.skipDraft() },
+                        progress: appState.presentedDraftProgress
                     )
                     .errorToast(appState.errorPresenter)
                     .onAppear { appState.cardReviewSheetDidAppear() }

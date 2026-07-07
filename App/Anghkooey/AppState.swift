@@ -11,9 +11,17 @@ import AnghkooeyUI
 /// `CardDraft` is `@Generable` and therefore not `Identifiable`; this thin
 /// wrapper provides the `Identifiable` conformance the SwiftUI sheet API needs
 /// without mutating the Intelligence module.
+///
+/// `batchID` identifies the single `enqueue(resolvedText:)` call (capture)
+/// that produced this draft; `batchIndex` is this draft's 1-based position
+/// within that capture's drafts. Together they drive
+/// `AppState.presentedDraftProgress` without relying on global queue
+/// position, which would misreport progress once captures interleave (#29).
 struct IdentifiedDraft: Identifiable {
     let id = UUID()
     let draft: CardDraft
+    let batchID: UUID
+    let batchIndex: Int
 }
 
 // MARK: - Delegate bridge
@@ -45,6 +53,28 @@ final class AppState: @unchecked Sendable {
     // MARK: Sheet state (observed by AnghkooeyApp)
 
     var presentedDraft: IdentifiedDraft?
+
+    /// This capture's position within its own batch, e.g. `(2, 5)` for
+    /// "card 2 of 5". `nil` when there's no `presentedDraft`.
+    ///
+    /// Deliberately per-batch rather than derived from
+    /// `presented + pendingDrafts.count`: a global count lies the moment two
+    /// captures interleave (#29 plan review) — an in-progress capture's
+    /// drafts would inflate the *next* capture's queue-position display.
+    /// `total` grows live as `enqueue(resolvedText:)` streams in more drafts
+    /// for the still-presented capture; that's honest reporting for a
+    /// streaming source, not a bug.
+    var presentedDraftProgress: (position: Int, total: Int)? {
+        guard let presentedDraft else { return nil }
+        let total = batchCounts[presentedDraft.batchID] ?? presentedDraft.batchIndex
+        return (presentedDraft.batchIndex, total)
+    }
+
+    /// Test-only window onto `batchCounts`'s size, so the leak-prevention
+    /// invariant (the dict returns to empty once every draft from a batch
+    /// leaves the queue) can be asserted via `@testable import` without
+    /// exposing the dictionary's contents.
+    var batchCountEntryCount: Int { batchCounts.count }
 
     // MARK: Observed by ContentView
 
@@ -81,6 +111,14 @@ final class AppState: @unchecked Sendable {
     // MARK: Private state
 
     private var pendingDrafts: [IdentifiedDraft] = []
+
+    /// Known total drafts per in-flight batch (capture), keyed by
+    /// `IdentifiedDraft.batchID`. Backs `presentedDraftProgress`'s `total`.
+    /// Grows as `enqueue(resolvedText:)` streams in more drafts for a batch;
+    /// pruned by `advanceQueue()` once no draft from that batch remains
+    /// anywhere in `presentedDraft`/`pendingDrafts`, so this never grows
+    /// unboundedly across the app's lifetime.
+    private var batchCounts: [UUID: Int] = [:]
 
     /// Reentrancy guard for `acceptDraft(question:answer:)`. `AnghkooeyApp`
     /// wraps the Accept button's tap in `Task { await appState.acceptDraft(...) }`,
@@ -296,18 +334,83 @@ final class AppState: @unchecked Sendable {
 
     /// Called by DrainerBridge when the drainer resolves text from an inbox item.
     ///
-    /// Runs `cardAuthor.author(from:)` to produce a Q&A draft. On failure,
-    /// falls back to a stub draft so captured text is never silently lost.
+    /// Fully drains `cardAuthor.generateDrafts(from:)` — a dense capture can
+    /// author several Q&A pairs, and the old `cardAuthor.author(from:)` shim
+    /// only kept the first, silently dropping the rest (#29). Each yielded
+    /// draft is appended to the queue as it arrives, and the very first one
+    /// is presented immediately rather than waiting for the stream to
+    /// finish, so the user isn't kept staring at nothing while a slow
+    /// generation continues in the background.
+    ///
+    /// A soft cap of 10 drafts per capture guards against a pathological
+    /// generation from queuing an unbounded review backlog; breaking the
+    /// loop early terminates the underlying stream via its `onTermination`.
+    ///
+    /// Failure handling never silently loses captured text:
+    /// - If the stream completes without yielding anything, or throws
+    ///   before yielding anything, a stub draft (`question: resolvedText,
+    ///   answer: ""`) is queued instead.
+    /// - If the stream throws *after* already yielding one or more drafts,
+    ///   those drafts are kept as-is and the error is only logged — a stub
+    ///   is not appended, since the capture already has real content queued.
+    ///
+    /// Unlike `acceptDraft` and `drain`, this needs no reentrancy guard even
+    /// though it awaits mid-method: `batchID` is a call-local `let`, and every
+    /// mutation of `pendingDrafts`/`presentedDraft`/`batchCounts` happens in
+    /// non-suspending code between the `await`s. Two concurrent captures
+    /// therefore interleave safely — each owns its own `batchID`, and no
+    /// suspension point ever exposes a half-updated shared collection.
+    ///
+    /// Log sites use `String(describing: error)` rather than
+    /// `error.localizedDescription`: `AuthoringError` is not `LocalizedError`,
+    /// so `.localizedDescription` collapses to a generic "operation couldn't
+    /// be completed" string that drops the case name and the
+    /// `.generationFailed(underlying:)` payload — exactly the diagnostic
+    /// information we're logging for.
     func enqueue(resolvedText: String) async {
+        let batchID = UUID()
+        var indexInBatch = 0
+
         do {
-            let draft = try await cardAuthor.author(from: resolvedText)
-            pendingDrafts.append(IdentifiedDraft(draft: draft))
-            if presentedDraft == nil { advanceQueue() }
+            let stream = try await cardAuthor.generateDrafts(from: resolvedText)
+            for try await draft in stream {
+                indexInBatch += 1
+                batchCounts[batchID] = indexInBatch
+                pendingDrafts.append(
+                    IdentifiedDraft(draft: draft, batchID: batchID, batchIndex: indexInBatch)
+                )
+                if presentedDraft == nil { advanceQueue() }
+                if indexInBatch >= 10 {
+                    CoreLog.captureInbox.notice(
+                        "enqueue: soft cap, batch \(batchID.uuidString, privacy: .public) capped at \(indexInBatch)")
+                    break
+                }
+            }
+            if indexInBatch == 0 {
+                CoreLog.captureInbox.notice(
+                    "enqueue: stream yielded 0 drafts, batch \(batchID.uuidString, privacy: .public), using fallback")
+                appendFallbackDraft(resolvedText: resolvedText, batchID: batchID)
+            }
         } catch {
-            let fallback = CardDraft(question: resolvedText, answer: "")
-            pendingDrafts.append(IdentifiedDraft(draft: fallback))
-            if presentedDraft == nil { advanceQueue() }
+            if indexInBatch == 0 {
+                CoreLog.captureInbox.error(
+                    "enqueue: stream failed pre-yield, using fallback: \(String(describing: error), privacy: .public)")
+                appendFallbackDraft(resolvedText: resolvedText, batchID: batchID)
+            } else {
+                CoreLog.captureInbox.error(
+                    "enqueue: stream failed after \(indexInBatch); kept:\(String(describing: error), privacy: .public)")
+            }
         }
+    }
+
+    /// Queues a single stub draft (`question: resolvedText, answer: ""`) as
+    /// a batch of one. Shared by `enqueue(resolvedText:)`'s zero-yield and
+    /// no-drafts-yet-error paths so captured text is never silently dropped.
+    private func appendFallbackDraft(resolvedText: String, batchID: UUID) {
+        let fallback = CardDraft(question: resolvedText, answer: "")
+        batchCounts[batchID] = 1
+        pendingDrafts.append(IdentifiedDraft(draft: fallback, batchID: batchID, batchIndex: 1))
+        if presentedDraft == nil { advanceQueue() }
     }
 
     // MARK: Private
@@ -361,6 +464,11 @@ final class AppState: @unchecked Sendable {
             advanceQueue()
         } else {
             pendingDrafts.removeAll { $0.id == draft.id }
+            // `advanceQueue()` handles its own pruning; the direct-removal
+            // branch must prune too, or a batch whose last draft is removed
+            // here leaks its `batchCounts` entry forever (contradicting the
+            // "never grows unboundedly" guarantee on `batchCounts`).
+            pruneBatchCount(draft.batchID)
         }
         await persistAcceptedDraft(draft, question: question, answer: answer)
     }
@@ -376,6 +484,7 @@ final class AppState: @unchecked Sendable {
             reviewSheetSignpostState = nil
         }
 
+        let previousBatchID = presentedDraft?.batchID
         let next = pendingDrafts.isEmpty ? nil : pendingDrafts.removeFirst()
         presentedDraft = next
         if next != nil {
@@ -385,5 +494,20 @@ final class AppState: @unchecked Sendable {
                 id: signposter.makeSignpostID()
             )
         }
+
+        // The batch that was presented before this advance may now have no
+        // draft left anywhere — prune its count entry so `batchCounts`
+        // doesn't grow unboundedly over the app's lifetime.
+        if let previousBatchID { pruneBatchCount(previousBatchID) }
+    }
+
+    /// Removes `batchID`'s entry from `batchCounts` iff no draft carrying
+    /// that batchID remains in `presentedDraft` or `pendingDrafts`. Safe to
+    /// call whenever a draft leaves the queue (advance, skip, retry-remove);
+    /// a no-op while any sibling draft from the same capture is still around.
+    private func pruneBatchCount(_ batchID: UUID) {
+        guard presentedDraft?.batchID != batchID,
+              !pendingDrafts.contains(where: { $0.batchID == batchID }) else { return }
+        batchCounts.removeValue(forKey: batchID)
     }
 }
