@@ -22,6 +22,27 @@ struct IdentifiedDraft: Identifiable {
     let draft: CardDraft
     let batchID: UUID
     let batchIndex: Int
+
+    /// True only for the stub `appendFallbackDraft` queues when on-device
+    /// authoring is unavailable or fails before yielding anything (#30).
+    /// `false` for every real AI-authored draft yielded by
+    /// `enqueue(resolvedText:)`'s stream. `CardReviewSheet` reads this to
+    /// show an inline "AI unavailable" note instead of presenting a stub as
+    /// if it were AI-authored.
+    ///
+    /// Given an explicit `init` rather than relying on the synthesized
+    /// memberwise one: a `let` property with a default *value* (as opposed
+    /// to a `var`) is excluded from Swift's synthesized memberwise
+    /// initializer entirely, so `isFallback: true` at the one call site that
+    /// needs it would otherwise fail to compile as an "extra argument".
+    let isFallback: Bool
+
+    init(draft: CardDraft, batchID: UUID, batchIndex: Int, isFallback: Bool = false) {
+        self.draft = draft
+        self.batchID = batchID
+        self.batchIndex = batchIndex
+        self.isFallback = isFallback
+    }
 }
 
 // MARK: - Delegate bridge
@@ -107,6 +128,13 @@ final class AppState: @unchecked Sendable {
     /// Kept separate from `errorPresenter` (see its doc comment) so the two
     /// contexts never cross-contaminate each other's toasts.
     let rootErrorPresenter = ErrorPresenter()
+
+    /// Cached on-device authoring availability, refreshed by
+    /// `refreshAuthoringAvailability()` on launch and scene-active (#30).
+    /// `nil` means "not yet resolved" — `ContentView`'s capture-tab banner
+    /// stays hidden until this has a value, rather than flashing a
+    /// possibly-wrong state before the first check completes.
+    private(set) var authoringAvailability: AuthoringAvailability?
 
     // MARK: Private state
 
@@ -202,6 +230,18 @@ final class AppState: @unchecked Sendable {
                 await self?.drain()
             }
         }
+    }
+
+    // MARK: Authoring availability
+
+    /// Refreshes `authoringAvailability` from the injected `cardAuthor`.
+    /// Called on launch and on scene-active (#30) so the capture-tab banner
+    /// reflects the current on-device model state — e.g. Apple Intelligence
+    /// getting enabled or the model finishing its download mid-session.
+    /// Cheap and independent of `drain()`: never awaits alongside it and
+    /// never blocks it.
+    func refreshAuthoringAvailability() async {
+        authoringAvailability = await cardAuthor.availability
     }
 
     // MARK: Drain
@@ -451,7 +491,9 @@ final class AppState: @unchecked Sendable {
     private func appendFallbackDraft(resolvedText: String, batchID: UUID) {
         let fallback = CardDraft(question: resolvedText, answer: "")
         batchCounts[batchID] = 1
-        pendingDrafts.append(IdentifiedDraft(draft: fallback, batchID: batchID, batchIndex: 1))
+        pendingDrafts.append(
+            IdentifiedDraft(draft: fallback, batchID: batchID, batchIndex: 1, isFallback: true)
+        )
         if presentedDraft == nil { advanceQueue() }
     }
 

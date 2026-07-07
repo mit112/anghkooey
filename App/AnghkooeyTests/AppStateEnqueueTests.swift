@@ -476,6 +476,77 @@ struct AppStateEnqueueTests {
         #expect(presented.draft.question == "Mitochondria is the powerhouse of the cell")
         #expect(presented.draft.answer.isEmpty == true)
     }
+
+    // MARK: isFallback marking (#30)
+    //
+    // `CaptureAvailabilityBanner`/`CardReviewSheet` need to distinguish a
+    // real AI-authored draft from the stub `appendFallbackDraft` queues when
+    // authoring produced nothing, so the review sheet can tell the user "AI
+    // unavailable — edit this card by hand" instead of presenting a stub as
+    // if it were AI-authored.
+
+    @Test("a fallback draft queued after a zero-yield stream is marked isFallback")
+    func enqueue_zeroYieldFallback_marksIsFallback() async throws {
+        let sut = AppState(cardAuthor: EmptyStreamAuthor())
+
+        await sut.enqueue(resolvedText: "Text the model produced nothing for")
+
+        let presented = try #require(sut.presentedDraft)
+        #expect(presented.isFallback == true)
+    }
+
+    @Test("a fallback draft queued after a pre-yield throw is marked isFallback")
+    func enqueue_preYieldThrowFallback_marksIsFallback() async throws {
+        let sut = AppState(cardAuthor: FailingAuthor())
+
+        await sut.enqueue(resolvedText: "Some captured text")
+
+        let presented = try #require(sut.presentedDraft)
+        #expect(presented.isFallback == true)
+    }
+
+    @Test("a real AI-authored draft from a streaming author is not marked isFallback")
+    func enqueue_realStreamedDraft_isNotFallback() async throws {
+        let expected = CardDraft(question: "What is the capital of France?", answer: "Paris")
+        let sut = AppState(cardAuthor: MockCardAuthoringService(drafts: [expected]))
+
+        await sut.enqueue(resolvedText: "France's capital is Paris.")
+
+        let presented = try #require(sut.presentedDraft)
+        #expect(presented.isFallback == false)
+    }
+}
+
+// MARK: - #30 authoring availability caching
+
+@Suite("AppState.refreshAuthoringAvailability — #30 capture-tab banner")
+@MainActor
+struct AppStateAuthoringAvailabilityTests {
+
+    @Test("authoringAvailability is nil until refreshAuthoringAvailability has run")
+    func authoringAvailability_isNilBeforeFirstRefresh() async throws {
+        let sut = AppState(cardAuthor: MockCardAuthoringService(availability: .available))
+        #expect(sut.authoringAvailability == nil)
+    }
+
+    @Test("refreshAuthoringAvailability caches the cardAuthor's current availability")
+    func refreshAuthoringAvailability_setsFromCardAuthor() async throws {
+        let mock = MockCardAuthoringService(availability: .unavailable(reason: .deviceNotEligible))
+        let sut = AppState(cardAuthor: mock)
+
+        await sut.refreshAuthoringAvailability()
+
+        #expect(sut.authoringAvailability == .unavailable(reason: .deviceNotEligible))
+    }
+
+    @Test("refreshAuthoringAvailability reflects .available when the model is ready")
+    func refreshAuthoringAvailability_reflectsAvailable() async throws {
+        let sut = AppState(cardAuthor: MockCardAuthoringService(availability: .available))
+
+        await sut.refreshAuthoringAvailability()
+
+        #expect(sut.authoringAvailability == .available)
+    }
 }
 
 // MARK: - #32 handleSheetDismiss (interactive swipe-dismiss must advance the queue)
