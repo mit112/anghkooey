@@ -18,6 +18,7 @@ public struct LibraryView: View {
     @State private var loadFailed = false
     @State private var showingImport = false
     @State private var showingCreate = false
+    @State private var searchText = ""
 
     public init(store: any CardStoreProtocol, loadSampleCards: (() async -> Void)? = nil) {
         self.store = store
@@ -29,8 +30,42 @@ public struct LibraryView: View {
     }
 
     private var filteredCards: [Card.Snapshot] {
-        guard let tag = selectedTag else { return cards }
-        return cards.filter { $0.tags.contains(tag) }
+        Self.filter(cards, searchText: searchText, selectedTag: selectedTag)
+    }
+
+    /// Pure filter combining the tag-chip selection and the search query with AND semantics.
+    ///
+    /// - `selectedTag`, when non-nil, keeps only cards whose `tags` contains it.
+    /// - `searchText`, when non-empty (after trimming), keeps only cards where the
+    ///   question, answer, or any tag contains the query (case-insensitive).
+    ///
+    /// Static and side-effect-free so it can be unit-tested without a view or store.
+    ///
+    /// Explicitly `nonisolated`: `LibraryView` conforms to `View`, whose `body`
+    /// requirement is `@MainActor`, and Swift infers main-actor isolation onto
+    /// the whole conforming type by default — including static members. Without
+    /// this annotation, calling `filter` from a non-main-actor context (e.g. a
+    /// Swift Testing test function, which runs off the main actor) trips a
+    /// runtime actor-isolation assertion. `filter` touches no view/actor state,
+    /// so it can safely opt out.
+    nonisolated static func filter(
+        _ cards: [Card.Snapshot],
+        searchText: String,
+        selectedTag: String?
+    ) -> [Card.Snapshot] {
+        var result = cards
+        if let tag = selectedTag {
+            result = result.filter { $0.tags.contains(tag) }
+        }
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !query.isEmpty {
+            result = result.filter { card in
+                card.question.localizedCaseInsensitiveContains(query)
+                    || card.answer.localizedCaseInsensitiveContains(query)
+                    || card.tags.contains { $0.localizedCaseInsensitiveContains(query) }
+            }
+        }
+        return result
     }
 
     public var body: some View {
@@ -39,12 +74,14 @@ public struct LibraryView: View {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if loadFailed {
-                ContentUnavailableView(
-                    "Couldn't load your cards",
-                    systemImage: "exclamationmark.triangle",
-                    description: Text("Pull to retry.")
-                )
-                .refreshable { await load() }
+                ContentUnavailableView {
+                    Label("Couldn't load your cards", systemImage: "exclamationmark.triangle")
+                } description: {
+                    Text("Something went wrong. Check your connection and try again.")
+                } actions: {
+                    Button("Retry") { Task { await load() } }
+                        .buttonStyle(.borderedProminent)
+                }
             } else if cards.isEmpty {
                 ContentUnavailableView {
                     Label("No cards yet", systemImage: "rectangle.stack")
@@ -105,7 +142,11 @@ public struct LibraryView: View {
     // MARK: - Card list
 
     private var cardList: some View {
-        List {
+        let filtered = filteredCards
+        let trimmedQuery = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let filterIsActive = !trimmedQuery.isEmpty || selectedTag != nil
+
+        return List {
             if !allTags.isEmpty {
                 Section {
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -128,7 +169,7 @@ public struct LibraryView: View {
             }
 
             Section {
-                ForEach(filteredCards) { card in
+                ForEach(filtered) { card in
                     Button {
                         editingCard = card
                     } label: {
@@ -137,10 +178,20 @@ public struct LibraryView: View {
                     .buttonStyle(.plain)
                 }
             } header: {
-                Text("\(filteredCards.count) card\(filteredCards.count == 1 ? "" : "s")")
+                Text("\(filtered.count) card\(filtered.count == 1 ? "" : "s")")
             }
         }
         .listStyle(.insetGrouped)
+        .searchable(text: $searchText)
+        .overlay {
+            if filtered.isEmpty && filterIsActive {
+                if !trimmedQuery.isEmpty {
+                    ContentUnavailableView.search(text: trimmedQuery)
+                } else {
+                    ContentUnavailableView.search
+                }
+            }
+        }
     }
 
     private func cardRow(_ card: Card.Snapshot) -> some View {
@@ -173,6 +224,12 @@ public struct LibraryView: View {
                 .foregroundStyle(isSelected ? .white : .primary)
         }
         .buttonStyle(.plain)
+        // The visual capsule stays compact; the frame below only expands the
+        // tappable region to meet the 44pt minimum hit-target guideline.
+        .frame(minWidth: 44, minHeight: 44)
+        .contentShape(Rectangle())
+        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
+        .accessibilityHint("Filters the card list")
     }
 
     // MARK: - Data
@@ -183,6 +240,11 @@ public struct LibraryView: View {
         do {
             cards = try await store.allCards()
             loadFailed = false
+            // A stale chip selection (tag deleted/removed elsewhere) would
+            // otherwise show an empty list with no visibly-selected chip.
+            if let tag = selectedTag, !cards.contains(where: { $0.tags.contains(tag) }) {
+                selectedTag = nil
+            }
         } catch {
             loadFailed = true
             UILog.library.error("Library load failed: \(error)")
