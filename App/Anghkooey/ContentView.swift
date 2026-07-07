@@ -5,11 +5,11 @@ import AnghkooeyUI
 
 struct ContentView: View {
 
-    private enum CaptureMode { case qa, cloze }
+    private enum CaptureMode { case type, camera, cloze }
 
     @Environment(AppState.self) private var appState
     @Environment(ClipboardCaptureCoordinator.self) private var clipboardCoordinator
-    @State private var captureMode: CaptureMode = .qa
+    @State private var captureMode: CaptureMode = .type
     @State private var selectedTab: Int = 0
     @State private var onboardingState = OnboardingState()
     @State private var showingImportFromReview = false
@@ -41,7 +41,8 @@ struct ContentView: View {
             NavigationStack {
                 VStack(spacing: 0) {
                     Picker("Mode", selection: $captureMode) {
-                        Text("Q&A").tag(CaptureMode.qa)
+                        Text("Type").tag(CaptureMode.type)
+                        Text("Camera").tag(CaptureMode.camera)
                         Text("Cloze").tag(CaptureMode.cloze)
                     }
                     .pickerStyle(.segmented)
@@ -63,20 +64,26 @@ struct ContentView: View {
                     .animation(.snappy, value: appState.authoringAvailability)
                     .animation(.snappy, value: availabilityBannerDismissed)
 
-                    if selectedTab == 1 && captureMode == .qa {
-                        CameraView(
-                            captureSession: CameraCaptureSession(),
-                            ocrService: LiveOCRServiceDataAdapter(),
-                            onCapture: { text in
-                                Task { await appState.enqueue(resolvedText: text) }
-                            }
-                        )
-                    } else if captureMode == .qa {
-                        ContentUnavailableView(
-                            "Camera",
-                            systemImage: "camera",
-                            description: Text("Switch to the Capture tab to use the camera.")
-                        )
+                    if captureMode == .type {
+                        TypedTextCaptureView(onDraft: { text in
+                            Task { await appState.enqueue(resolvedText: text) }
+                        })
+                    } else if captureMode == .camera {
+                        if selectedTab == 1 {
+                            CameraView(
+                                captureSession: CameraCaptureSession(),
+                                ocrService: LiveOCRServiceDataAdapter(),
+                                onCapture: { text in
+                                    Task { await appState.enqueue(resolvedText: text) }
+                                }
+                            )
+                        } else {
+                            ContentUnavailableView(
+                                "Camera",
+                                systemImage: "camera",
+                                description: Text("Switch to the Capture tab to use the camera.")
+                            )
+                        }
                     } else {
                         ClozeAuthoringView(
                             store: appState.cardStore,
