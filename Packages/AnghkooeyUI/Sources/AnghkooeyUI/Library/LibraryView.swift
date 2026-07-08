@@ -19,6 +19,8 @@ public struct LibraryView: View {
     @State private var showingImport = false
     @State private var showingCreate = false
     @State private var searchText = ""
+    @State private var cardPendingDelete: Card.Snapshot? = nil
+    @State private var deleteErrorMessage: String? = nil
 
     public init(store: any CardStoreProtocol, loadSampleCards: (() async -> Void)? = nil) {
         self.store = store
@@ -176,6 +178,13 @@ public struct LibraryView: View {
                         cardRow(card)
                     }
                     .buttonStyle(.plain)
+                    .swipeActions(edge: .trailing) {
+                        Button(role: .destructive) {
+                            cardPendingDelete = card
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                    }
                 }
             } header: {
                 Text("\(filtered.count) card\(filtered.count == 1 ? "" : "s")")
@@ -191,6 +200,34 @@ public struct LibraryView: View {
                     ContentUnavailableView.search
                 }
             }
+        }
+        .confirmationDialog(
+            "Delete this card?",
+            isPresented: Binding(
+                get: { cardPendingDelete != nil },
+                set: { if !$0 { cardPendingDelete = nil } }
+            ),
+            titleVisibility: .visible
+        ) {
+            Button("Delete", role: .destructive) {
+                if let card = cardPendingDelete {
+                    Task { await deleteCard(card) }
+                }
+            }
+            Button("Cancel", role: .cancel) { cardPendingDelete = nil }
+        } message: {
+            Text("This can't be undone.")
+        }
+        .alert(
+            "Couldn't delete the card",
+            isPresented: Binding(
+                get: { deleteErrorMessage != nil },
+                set: { if !$0 { deleteErrorMessage = nil } }
+            )
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(deleteErrorMessage ?? "")
         }
     }
 
@@ -248,6 +285,21 @@ public struct LibraryView: View {
         } catch {
             loadFailed = true
             UILog.library.error("Library load failed: \(error)")
+        }
+    }
+
+    /// Deletes `card` and reloads. Only posts `.anghkooeyDeckDidChange` and
+    /// reloads AFTER a successful delete — a failed delete leaves the list
+    /// untouched and surfaces `deleteErrorMessage` instead (#38).
+    private func deleteCard(_ card: Card.Snapshot) async {
+        defer { cardPendingDelete = nil }
+        do {
+            try await store.delete(id: card.id)
+            NotificationCenter.default.post(name: .anghkooeyDeckDidChange, object: card.id)
+            await load()
+        } catch {
+            UILog.library.error("Card delete failed: \(error)")
+            deleteErrorMessage = "Couldn't delete the card — try again."
         }
     }
 }

@@ -44,6 +44,14 @@ public final class CardEditorViewModel {
         return false
     }
 
+    /// The id of the card being edited, or `nil` in create mode. Lets the
+    /// view post `.anghkooeyDeckDidChange` after a successful `delete()`
+    /// without needing to know about `Mode` itself (#38).
+    public var editingCardID: UUID? {
+        if case let .edit(card) = mode { return card.id }
+        return nil
+    }
+
     private var parsedCloze: ClozeTemplate? {
         try? ClozeMarkupParser.parse(clozeText)
     }
@@ -95,6 +103,23 @@ public final class CardEditorViewModel {
             }
         } catch {
             UILog.library.error("Card save failed: \(error)")
+            errorMessage = Self.errorMessage(for: error)
+            throw error
+        }
+    }
+
+    /// Deletes the card being edited. Edit mode only — a no-op in create
+    /// mode, since there's nothing persisted yet to delete.
+    ///
+    /// On failure, `errorMessage` is set and the error is rethrown so the
+    /// sheet stays open (mirrors `save()`'s contract, #38).
+    public func delete() async throws {
+        guard case let .edit(card) = mode else { return }
+        errorMessage = nil
+        do {
+            try await store.delete(id: card.id)
+        } catch {
+            UILog.library.error("Card delete failed: \(error)")
             errorMessage = Self.errorMessage(for: error)
             throw error
         }

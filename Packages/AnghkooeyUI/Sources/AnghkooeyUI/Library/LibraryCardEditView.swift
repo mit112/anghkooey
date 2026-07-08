@@ -8,6 +8,7 @@ import AnghkooeyCore
 public struct LibraryCardEditView: View {
 
     @State private var model: CardEditorViewModel
+    @State private var isPresentingDeleteConfirm = false
     @Environment(\.dismiss) private var dismiss
     private let onSaved: () -> Void
 
@@ -58,9 +59,41 @@ public struct LibraryCardEditView: View {
                         .font(.caption)
                         .foregroundStyle(.red)
                 }
+                if !model.isCreateMode {
+                    Section {
+                        Button("Delete Card", role: .destructive) {
+                            isPresentingDeleteConfirm = true
+                        }
+                    }
+                }
             }
             .navigationTitle(model.navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
+            .confirmationDialog(
+                "Delete this card?",
+                isPresented: $isPresentingDeleteConfirm,
+                titleVisibility: .visible
+            ) {
+                Button("Delete Card", role: .destructive) {
+                    Task {
+                        do {
+                            try await model.delete()
+                            if let id = model.editingCardID {
+                                NotificationCenter.default.post(name: .anghkooeyDeckDidChange, object: id)
+                            }
+                            onSaved()
+                            dismiss()
+                        } catch {
+                            // Already logged and surfaced via model.errorMessage;
+                            // the sheet just stays open so the user sees it.
+                            model.surfaceFallbackErrorIfNeeded()
+                        }
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This can't be undone.")
+            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
