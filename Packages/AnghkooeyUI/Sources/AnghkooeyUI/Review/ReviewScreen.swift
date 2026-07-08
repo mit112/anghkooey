@@ -42,5 +42,12 @@ public struct ReviewScreen: View {
             ) { _ in
                 Task { await session.loadDueQueue() }
             }
+            .onReceive(
+                NotificationCenter.default.publisher(for: .anghkooeyDeckDidChange)
+            ) { note in
+                if let id = note.object as? UUID {
+                    session.handleExternalDelete(cardID: id)
+                }
+            }
     }
 }

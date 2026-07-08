@@ -537,6 +537,7 @@ private struct CardEditSheet: View {
     // Own presenter, not the screen's: a screen-level `.errorToast` would be
     // hidden behind this sheet, so the sheet surfaces its own failures.
     @State private var errorPresenter = ErrorPresenter()
+    @State private var isPresentingDeleteConfirm = false
 
     init(isPresented: Binding<Bool>, card: Card.Snapshot, session: ReviewSession) {
         _isPresented = isPresented
@@ -561,6 +562,11 @@ private struct CardEditSheet: View {
                 Section("Tags") {
                     TagEditorView(tags: $editedTags)
                 }
+                Section {
+                    Button("Delete Card", role: .destructive) {
+                        isPresentingDeleteConfirm = true
+                    }
+                }
             }
             .navigationTitle("Edit Card")
             .navigationBarTitleDisplayMode(.inline)
@@ -573,6 +579,18 @@ private struct CardEditSheet: View {
                         Task { @MainActor in await saveEdit() }
                     }
                 }
+            }
+            .confirmationDialog(
+                "Delete this card?",
+                isPresented: $isPresentingDeleteConfirm,
+                titleVisibility: .visible
+            ) {
+                Button("Delete Card", role: .destructive) {
+                    Task { @MainActor in await deleteCard() }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This can't be undone.")
             }
         }
         .errorToast(errorPresenter)
@@ -596,6 +614,23 @@ private struct CardEditSheet: View {
             errorPresenter.present(
                 "Couldn't save your edit — try again.",
                 retry: { await self.saveEdit() }
+            )
+        }
+    }
+
+    /// Deletes the card. On success, closes the sheet — `ReviewSession` has
+    /// already advanced past it. On failure, keeps the sheet open and offers
+    /// a retry that re-runs this same delete (#23-style — no silent swallow).
+    @MainActor
+    private func deleteCard() async {
+        do {
+            try await session.deleteCurrentCard(cardID: card.id)
+            isPresented = false
+        } catch {
+            UILog.review.error("Card delete failed: \(error)")
+            errorPresenter.present(
+                "Couldn't delete the card — try again.",
+                retry: { await self.deleteCard() }
             )
         }
     }

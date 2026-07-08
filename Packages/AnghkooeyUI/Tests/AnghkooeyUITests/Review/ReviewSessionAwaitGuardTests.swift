@@ -247,4 +247,80 @@ struct ReviewSessionAwaitGuardTests {
         let storedX = try await store.allCards().first { $0.id == cardX.id }
         #expect(storedX?.mnemonic == nil)
     }
+
+    // MARK: - Bug 4 (#38): deleteCurrentCard superseded by a concurrent load
+
+    /// Collects `.anghkooeyDeckDidChange` posts. The notification is posted
+    /// synchronously on the MainActor, so a plain reference box is safe here.
+    private final class DeckChangeSpy: @unchecked Sendable {
+        var ids: [UUID] = []
+    }
+
+    @Test("deleteCurrentCard: X's delete lands and STILL posts .anghkooeyDeckDidChange even when a concurrent loadDueQueue() supersedes it, without clobbering the reload's state")
+    func deleteCurrentCardPostsNotificationAndDoesNotClobberWhenSuperseded() async throws {
+        let t0 = Date(timeIntervalSinceReferenceDate: 0)
+        let clockBox = ClockBox(t0)
+        let store = MockCardStore()
+        let gate = AwaitGate()
+
+        let cardY = try await store.create(question: "QY", answer: "AY", sourceSpan: nil, now: t0.addingTimeInterval(10))
+        let cardX = try await store.create(question: "QX", answer: "AX", sourceSpan: nil, now: t0)
+
+        let session = ReviewSession(
+            store: store,
+            scheduler: { MockFSRS6Engine() },
+            clock: { clockBox.date }
+        )
+        await session.loadDueQueue()
+        #expect(session.currentCard?.id == cardX.id) // only X is due at t0
+
+        // Observe the deck-change notification: the regression this pins is
+        // that the post must fire on ANY successful delete, not only when this
+        // session's own generation still owns the display state.
+        let spy = DeckChangeSpy()
+        let token = NotificationCenter.default.addObserver(
+            forName: .anghkooeyDeckDidChange, object: nil, queue: nil
+        ) { note in
+            if let id = note.object as? UUID { spy.ids.append(id) }
+        }
+        defer { NotificationCenter.default.removeObserver(token) }
+
+        store.deleteGate = { await gate.wait() }
+
+        let deleteTask = Task { @MainActor in
+            try await session.deleteCurrentCard(cardID: cardX.id)
+        }
+
+        await waitUntil { gate.callCount >= 1 }
+
+        // A concurrent reload (scenePhase / .anghkooeyCardAccepted / the #18
+        // wake) lands while X's delete is still in flight — Y is now due and
+        // becomes currentCard. deleteCurrentCard's post-await identity guard
+        // (`currentCard?.id == cardID`) then no longer matches, so its own
+        // advance is (correctly) skipped — but the delete and the deck-change
+        // notification still complete.
+        clockBox.date = t0.addingTimeInterval(10)
+        await session.loadDueQueue()
+        #expect(session.currentCard?.id == cardY.id)
+
+        gate.fireOldest()
+        try await deleteTask.value
+
+        // X's delete landed — the store write is correct and must not be lost.
+        #expect(!store.cards.contains { $0.id == cardX.id })
+        // The notification fired despite the supersession (bug: it used to sit
+        // behind the generation guard and get dropped) — so the widget refresh
+        // / cross-screen queue prune still happens.
+        #expect(spy.ids.contains(cardX.id))
+        // The superseded delete did not clobber the reload's state or record a
+        // review: Y is still current and the summary is untouched.
+        #expect(session.currentCard?.id == cardY.id)
+        #expect(session.summary.reviewed == 0)
+    }
+
+    // NOTE: `deleteCurrentCard` deliberately does NOT mutate `loadGeneration`
+    // (it uses the same `currentCard?.id == cardID` identity guard as
+    // `applyGrade`/`submitEdit`), so there is no failure-path generation
+    // restore to test and no way for a failed delete to strand a concurrent
+    // `loadDueQueue()` in `.loading`. See `deleteCurrentCard`'s doc comment.
 }

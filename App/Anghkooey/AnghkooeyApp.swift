@@ -62,6 +62,9 @@ struct AnghkooeyApp: App {
                         clipboardCoordinator.refreshOffer()
                     }
                 }
+                .onReceive(NotificationCenter.default.publisher(for: .anghkooeyDeckDidChange)) { _ in
+                    Task { await appState.rewriteWidgetSnapshot() }
+                }
                 .onOpenURL { url in
                     if url.pathExtension.lowercased() == "apkg" {
                         pendingImportURL = url

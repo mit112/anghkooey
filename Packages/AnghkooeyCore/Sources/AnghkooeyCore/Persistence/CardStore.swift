@@ -233,6 +233,22 @@ public protocol CardStoreProtocol: Sendable {
     /// query the session has no way to learn *when* to look again short of
     /// polling (#18).
     func nextDueDate(after now: Date) async throws -> Date?
+
+    /// Deletes the card identified by `id`.
+    ///
+    /// Passing an unknown `id` is a silent no-op, matching `update(id:...)`.
+    /// `ReviewLog`s belonging to the card cascade-delete automatically (see
+    /// `Card.reviewLogs`'s `.cascade` delete rule) — no separate cleanup is
+    /// needed here. Deleting one card from a cloze group does **not** delete
+    /// its siblings: cards sharing a `clozeGroupID` are independent rows, not
+    /// linked by a SwiftData relationship, so each remains reviewable.
+    ///
+    /// Any tag whose only linked card was this one is pruned in the same
+    /// transaction, mirroring `update(id:...)`'s orphan-prune behavior (#41)
+    /// so deleting a card's last use of a tag doesn't leave a dangling `Tag`
+    /// row behind. A tag still used by another card is left untouched.
+    /// - Throws: `PersistenceError` on a SwiftData write failure.
+    func delete(id: UUID) async throws
 }
 
 // MARK: - CardStoreProtocol backward-compat extensions
@@ -451,6 +467,34 @@ public actor CardStore: CardStoreProtocol {
         return Card.Snapshot(from: card)
     }
 
+    public func delete(id: UUID) async throws {
+        let predicate = #Predicate<Card> { $0.id == id }
+        let descriptor = FetchDescriptor<Card>(predicate: predicate)
+        guard let card = try modelContext.fetch(descriptor).first else { return }
+
+        // Capture prune candidates BEFORE deleting the card: SwiftData's
+        // inverse relationship (`Tag.cards`) isn't guaranteed to reflect the
+        // pending delete until after `save()`, so checking `tag.cards.isEmpty`
+        // post-delete would be unreliable. Checking "this card is the only
+        // one" now, before the delete, is exact.
+        let cardID = card.id
+        let pruneCandidates = card.tags.filter { tag in
+            tag.cards.allSatisfy { $0.id == cardID }
+        }
+
+        modelContext.delete(card)
+        for tag in pruneCandidates {
+            modelContext.delete(tag)
+        }
+
+        do {
+            try modelContext.save()
+        } catch {
+            modelContext.rollback()
+            throw error
+        }
+    }
+
     public func updateMnemonic(id: UUID, mnemonic: String) async throws {
         let predicate = #Predicate<Card> { $0.id == id }
         let descriptor = FetchDescriptor<Card>(predicate: predicate)
@@ -546,6 +590,9 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
     public var createError: Error?
     public var applyError: Error?
     public var updateError: Error?
+    /// When set, `delete(id:)` throws this instead of removing the card.
+    /// Mirrors `updateError`.
+    public var deleteError: Error?
     public var updateMnemonicError: Error?
     public var countError: Error?
     /// When set, `shiftAllDueDates(byDays:)` throws this instead of shifting.
@@ -600,6 +647,13 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
     /// runs to completion before the second's Task is ever scheduled — so
     /// the reentrancy race can't be reproduced deterministically without it.
     public var createGate: (@Sendable () async -> Void)?
+
+    /// Same seam, for `delete(id:)` — lets a test hold a delete suspended
+    /// (after the error check, before mutating `cards`) while a concurrent
+    /// `loadDueQueue()` runs, to exercise `ReviewSession.deleteCurrentCard`'s
+    /// generation-ownership guard (that an in-flight load can't restore the
+    /// just-deleted card) (#38).
+    public var deleteGate: (@Sendable () async -> Void)?
 
     public init() {}
 
@@ -707,6 +761,16 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
 
     public func allCards() async throws -> [Card.Snapshot] {
         cards.sorted { $0.dueAt < $1.dueAt }
+    }
+
+    /// Removes the card with `id` from `cards`, or no-ops if absent. This
+    /// mock has no real `Tag` graph to prune (see `MockCardStore`'s doc
+    /// comment) and no cloze relationship beyond a shared `clozeGroupID`, so
+    /// removing only the matching id is already correct for both concerns.
+    public func delete(id: UUID) async throws {
+        if let err = deleteError { throw err }
+        if let gate = deleteGate { await gate() }
+        cards.removeAll { $0.id == id }
     }
 
     public func optimizationReviewLogs() async throws -> [OptimizationReviewLogRow] {

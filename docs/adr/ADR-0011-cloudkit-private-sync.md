@@ -56,9 +56,25 @@ factory passes `cloudKitDatabase: .none` explicitly.
 ### Relaunch requirement
 
 The `ModelContainer` is constructed exactly once in `AnghkooeyApp.init()`. Changing
-`SyncPreference.isEnabled` takes effect on the next launch. The Settings UI copy
-says "Restart Anghkooey for the change to take effect." An in-session switch would
-require tearing down and rebuilding the entire SwiftData stack — not justified for v1.1.
+`SyncPreference.isEnabled` takes effect on the next launch. An in-session switch would
+require tearing down and rebuilding the entire SwiftData stack — **we deliberately do
+not hot-swap the container at runtime in v1** (SwiftData + CloudKit container swap
+mid-flight is risk we're not taking); the setting is applied on relaunch instead.
+
+**Restart-not-hot-swap, guided (#50).** Rather than leave the user with a bare
+"Restart Anghkooey" footnote (most users don't know that means force-quitting an iOS
+app, and nothing showed whether sync was active vs. pending), Settings now:
+- captures the launch-time preference as `AppState.launchSyncPreferenceEnabled` (the
+  value the running container was actually built from — a snapshot of
+  `SyncPreference.isEnabled`, **not** the derived `SyncMode`, because on the Simulator
+  `SyncMode` is always `.local` regardless of the preference and would mislead);
+- shows an always-visible status row distinguishing effective from pending state
+  ("On" / "Off" / "On after you restart" / "Off after you restart");
+- shows persistent inline restart instructions while the toggle differs from the
+  launch value, plus a one-time alert on the transition into that pending state.
+
+This is a UX-only change over the existing relaunch model — no container rebuild, no
+schema change.
 
 ### Container ID
 

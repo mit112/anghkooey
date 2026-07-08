@@ -500,4 +500,108 @@ public final class ReviewSession {
         // input `tags` would show casing the store didn't actually keep (#54).
         currentCard = saved
     }
+
+    /// Deletes the card identified by `cardID` — the id of the card the edit
+    /// sheet was opened for, not just "whatever `currentCard` happens to be
+    /// right now" — and advances to the next queued card, or `.empty` if
+    /// none remain (#38).
+    ///
+    /// Guards against acting on a stale identity the same way `submitEdit`
+    /// does: throws `.noCurrentCard`/`.cardChanged` instead of silently
+    /// deleting the wrong card if the queue has since advanced or reloaded
+    /// underneath an open edit sheet.
+    ///
+    /// A delete is a correction, not a review: it never touches `summary`.
+    ///
+    /// Uses the same post-await identity re-check as `applyGrade`/`submitEdit`
+    /// (`currentCard?.id == cardID`) rather than mutating `loadGeneration`:
+    /// touching the shared generation counter from here cross-couples with
+    /// concurrent `loadDueQueue()` calls (it could strand a failed-delete's
+    /// racing load in `.loading`, or double-advance alongside `applyGrade`).
+    /// The identity guard is sufficient — on `CardStore` (an actor) an
+    /// in-flight `loadDueQueue()`'s `dueCards` fetch is serialized *before*
+    /// this delete, so if that load resumes first and restores the
+    /// just-deleted card as `currentCard`, the guard below still matches and
+    /// we advance past it; if it moved to a *different* card, the guard fails
+    /// (we leave its state alone) and the notification we post prunes the
+    /// deleted id from whatever queue that load built.
+    ///
+    /// On a store failure, state is left untouched (mirroring `submitEdit`) so
+    /// the caller (the edit sheet) can keep the sheet open.
+    public func deleteCurrentCard(cardID: UUID) async throws {
+        guard let card = currentCard else {
+            throw ReviewSessionError.noCurrentCard
+        }
+        guard card.id == cardID else {
+            throw ReviewSessionError.cardChanged
+        }
+        do {
+            try await store.delete(id: cardID)
+        } catch {
+            UILog.review.error("deleteCurrentCard failed to delete the card: \(error)")
+            throw error
+        }
+        // Advance THIS session's state only if the deleted card is still
+        // current — a concurrent `loadDueQueue()`/`applyGrade()`/`submitEdit()`
+        // may have advanced past it (or reloaded and restored it) while the
+        // delete's `await` was in flight. Advancing here BEFORE posting the
+        // notification is deliberate: `ReviewScreen` observes the post and
+        // calls `handleExternalDelete(cardID)`, so if the post preceded this
+        // advance, that observer could advance the queue and this method would
+        // then advance again — skipping a card. With the order below, by the
+        // time the observer runs `currentCard` is already the next card and
+        // `cardID` is gone from the queue, making it a strict no-op.
+        if currentCard?.id == cardID {
+            if queue.isEmpty {
+                await enterEmptyState(generation: loadGeneration)
+            } else {
+                currentCard = queue.removeFirst()
+                queueRemaining = queue.count
+                isAnswerRevealed = false
+                currentMnemonic = currentCard?.mnemonic
+                isMnemonicLoading = false
+            }
+        }
+        // The delete committed — this id no longer exists. Announce it
+        // UNCONDITIONALLY (widget refresh via `AppState.rewriteWidgetSnapshot`;
+        // cross-screen queue prune via `handleExternalDelete`), regardless of
+        // whether this session still owned the deleted card above.
+        NotificationCenter.default.post(name: .anghkooeyDeckDidChange, object: cardID)
+    }
+
+    /// Reacts to a card deleted elsewhere (the Library tab, or this
+    /// session's own `deleteCurrentCard` re-posting `.anghkooeyDeckDidChange`
+    /// — a harmless no-op re-entry since the id is already gone) by pruning
+    /// it from the in-memory queue (#38). Idempotent: a no-op for an id not
+    /// present in the queue or as the current card.
+    ///
+    /// Defensively also handles the (normally-impossible, since a card
+    /// currently being reviewed can't be deleted from elsewhere at the same
+    /// time) case where `cardID` is `currentCard`: advances to the next
+    /// queued card, or `.empty` if none remain. When it empties, it also kicks
+    /// off `enterEmptyState` to recompute the next-due ETA + wake, so a future
+    /// learning-step card still auto-reappears (a bare `.empty` would drop
+    /// that until the next foreground `loadDueQueue()`); the synchronous
+    /// `.empty`/`nil` assignments below still fire first so the deleted card
+    /// never lingers on screen while that async recompute runs.
+    public func handleExternalDelete(cardID: UUID) {
+        queue.removeAll { $0.id == cardID }
+        queueRemaining = queue.count
+        guard currentCard?.id == cardID else { return }
+        if queue.isEmpty {
+            currentCard = nil
+            queueRemaining = 0
+            currentMnemonic = nil
+            isAnswerRevealed = false
+            state = .empty
+            let gen = loadGeneration
+            Task { [weak self] in await self?.enterEmptyState(generation: gen) }
+        } else {
+            currentCard = queue.removeFirst()
+            queueRemaining = queue.count
+            isAnswerRevealed = false
+            currentMnemonic = currentCard?.mnemonic
+            isMnemonicLoading = false
+        }
+    }
 }
