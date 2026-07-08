@@ -482,8 +482,9 @@ public final class ReviewSession {
         guard card.id == cardID else {
             throw ReviewSessionError.cardChanged
         }
+        let saved: Card.Snapshot?
         do {
-            try await store.update(id: card.id, question: question, answer: answer, tags: tags)
+            saved = try await store.update(id: card.id, question: question, answer: answer, tags: tags)
         } catch {
             UILog.review.error("submitEdit failed to save the card: \(error)")
             throw error
@@ -491,27 +492,12 @@ public final class ReviewSession {
         // The edit persisted to `cardID` regardless — that's correct and
         // must not be rethrown. But a concurrent `loadDueQueue()` can have
         // changed `currentCard` while the write above was in flight; if it
-        // has, the reload owns the current state and this must not clobber
-        // it with a snapshot rebuilt from the (now stale) pre-await `card`.
-        guard currentCard?.id == cardID else { return }
+        // has, the reload owns the current state and this must not clobber it.
+        guard currentCard?.id == cardID, let saved else { return }
         errorPresenter?.dismiss()
-        currentCard = Card.Snapshot(
-            id: card.id,
-            question: question,
-            answer: answer,
-            sourceSpan: card.sourceSpan,
-            tags: tags,
-            state: card.state,
-            stability: card.stability,
-            difficulty: card.difficulty,
-            dueAt: card.dueAt,
-            lastReviewedAt: card.lastReviewedAt,
-            reps: card.reps,
-            lapses: card.lapses,
-            learningSteps: card.learningSteps,
-            scheduledDays: card.scheduledDays,
-            elapsedDays: card.elapsedDays,
-            mnemonic: card.mnemonic
-        )
+        // Use the store's persisted snapshot — its tag names are canonicalized
+        // (case-insensitive dedupe, first-writer casing), so rebuilding from the
+        // input `tags` would show casing the store didn't actually keep (#54).
+        currentCard = saved
     }
 }

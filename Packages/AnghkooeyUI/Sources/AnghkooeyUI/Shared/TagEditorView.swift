@@ -28,6 +28,9 @@ struct TagEditorView: View {
                                         .foregroundStyle(.secondary)
                                 }
                                 .buttonStyle(.plain)
+                                .frame(minWidth: 44, minHeight: 44)
+                                .contentShape(Rectangle())
+                                .accessibilityLabel("Remove tag \(tag)")
                             }
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
@@ -52,10 +55,12 @@ struct TagEditorView: View {
     }
 
     private func commitNewTag() {
-        let trimmed = newTagText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        // Preserve the user's display casing — Tag stores mixed-case `name`;
+        // uniqueness is enforced on the normalized form (matches CardStore.findOrCreateTags).
+        let trimmed = newTagText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { newTagText = ""; return }
-        let isDuplicate = tags.contains { Tag.normalize($0) == trimmed }
-        guard !isDuplicate else { newTagText = ""; return }
+        let normalized = Tag.normalize(trimmed)
+        guard !tags.contains(where: { Tag.normalize($0) == normalized }) else { newTagText = ""; return }
         tags.append(trimmed)
         newTagText = ""
     }
