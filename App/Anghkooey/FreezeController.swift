@@ -60,6 +60,13 @@ final class FreezeController {
 
     /// Shifts every card's due date forward by `floor(elapsed / 86_400)` days
     /// and clears the frozen state. No-op if not currently frozen.
+    ///
+    /// The shift is `elapsed seconds / 86,400`, rounded DOWN — a partial day
+    /// away never rounds up to a full day of grace. For example, freezing
+    /// Friday 6pm and unfreezing Sunday 10am is 40 elapsed hours, which
+    /// shifts by 1 day (not 2); a freeze under 24h elapsed shifts by 0 days.
+    /// This is intentional and conservative: a brief freeze shouldn't grant a
+    /// full day of slack it didn't earn (#48).
     func unfreeze(now: Date = .now) async throws {
         guard let start = storage.frozenSince else { return }
         let elapsed = now.timeIntervalSince(start)

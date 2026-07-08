@@ -548,6 +548,16 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
     public var updateError: Error?
     public var updateMnemonicError: Error?
     public var countError: Error?
+    /// When set, `shiftAllDueDates(byDays:)` throws this instead of shifting.
+    /// Mirrors `updateError` — lets a caller (e.g. `FreezeController.unfreeze`)
+    /// be tested against a genuine store failure so its "leave frozen state
+    /// intact on error" invariant can be asserted (#48).
+    public var shiftError: Error?
+    /// Records the `days` argument of the most recent `shiftAllDueDates(byDays:)`
+    /// call — including calls where `days == 0` — so a test can assert exactly
+    /// what a caller (e.g. `FreezeController.unfreeze`) computed and passed
+    /// through, rather than only inferring it from the shifted `dueAt` values.
+    public private(set) var lastShiftDays: Int?
     /// When set, `optimizationReviewLogs()` throws this instead of returning
     /// data — mirrors `createError`/`applyError`/`updateError` so a caller
     /// (e.g. `OptimizeScheduleViewModel`) can be tested against a genuine
@@ -666,7 +676,9 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
     }
 
     public func shiftAllDueDates(byDays days: Int) async throws {
+        if let err = shiftError { throw err }
         guard days >= 0 else { throw PersistenceError.invalidShift(days: days) }
+        lastShiftDays = days
         guard days > 0 else { return }
         let interval = TimeInterval(days) * 86_400
         cards = cards.map { snap in
