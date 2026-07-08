@@ -52,7 +52,7 @@ These are the gaps from §Phase 2 of the skill map that Rewind is explicitly des
 
 ## Naming note
 
-Product name: **Anghkooey** (tagline: *remember everything*), resolved 2026-05-20. Replaces the working name "Rewind" which collided with Rewind AI / Limitless. Bundle ID `com.<author>.anghkooey`; SPM packages are `AnghkooeyCore` / `AnghkooeyIntelligence` / `AnghkooeyUI`. The local repo directory `/Users/mitsheth/Documents/rewind/` keeps its current path until a deliberate rename — that's a workspace concern, not a product one. Name availability (App Store, `.com`/`.app`, USPTO TESS) is **not yet verified** and must be checked before any public push.
+Product name: **Anghkooey** (tagline: *remember everything*), resolved 2026-05-20. Replaces the working name "Rewind" which collided with Rewind AI / Limitless. Bundle ID `com.<author>.anghkooey`; SPM packages are `AnghkooeyCore` / `AnghkooeyIntelligence` / `AnghkooeyUI`. The local repo directory now lives at `/Users/mitsheth/dev/anghkooey/` (deliberately moved out of iCloud `~/Documents` on 2026-07-10 because iCloud eviction/sync was corrupting builds and git — see `docs/overnight-reports/2026-07-10.md` §5) — that's a workspace concern, not a product one. Name availability (App Store, `.com`/`.app`, USPTO TESS) is **not yet verified** and must be checked before any public push.
 
 ## Decision rule when in doubt
 
