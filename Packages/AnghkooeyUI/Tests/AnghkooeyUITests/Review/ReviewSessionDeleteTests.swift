@@ -211,6 +211,47 @@ struct ReviewSessionDeleteTests {
         #expect(session.state == .empty)
     }
 
+    @Test("deleteCurrentCard advances exactly once even when ReviewScreen's observer synchronously handles the deck-change post")
+    func deleteCurrentCardDoesNotDoubleAdvanceWithSynchronousObserver() async throws {
+        let now = Date(timeIntervalSinceReferenceDate: 0)
+        let store = MockCardStore()
+        // Three cards, all due now → currentCard = first, queue = [second, third].
+        let seeded = try await seedCards(count: 3, in: store, now: now)
+        let session = makeSession(store: store, now: now)
+        await session.loadDueQueue()
+        let firstID = try #require(session.currentCard?.id)
+        let secondID = try #require(seeded.map(\.id).first { $0 != firstID })
+
+        // Mimic ReviewScreen's `.onReceive` in its worst case: synchronous
+        // delivery, calling `handleExternalDelete` while the post is in flight.
+        // If `deleteCurrentCard` posted before advancing, this observer would
+        // advance the queue and `deleteCurrentCard` would advance again (#38
+        // checkpoint finding 1) — skipping the second card straight to the third.
+        // Box the (non-Sendable, MainActor) session so it can be captured by
+        // the @Sendable observer block; the post is always synchronous on the
+        // MainActor in this test, so `assumeIsolated` is sound.
+        final class SessionBox: @unchecked Sendable {
+            let session: ReviewSession
+            init(_ session: ReviewSession) { self.session = session }
+        }
+        let box = SessionBox(session)
+        let token = NotificationCenter.default.addObserver(
+            forName: .anghkooeyDeckDidChange, object: nil, queue: nil
+        ) { note in
+            if let id = note.object as? UUID {
+                MainActor.assumeIsolated { box.session.handleExternalDelete(cardID: id) }
+            }
+        }
+        defer { NotificationCenter.default.removeObserver(token) }
+
+        try await session.deleteCurrentCard(cardID: firstID)
+
+        // Advanced exactly once: to the SECOND card, not skipped to the third.
+        #expect(session.currentCard?.id == secondID)
+        #expect(session.queueRemaining == 1)
+        #expect(session.summary.reviewed == 0)
+    }
+
     // NOTE: the generation-race path (a concurrent `loadDueQueue()` superseding
     // an in-flight `deleteCurrentCard`, and the requirement that the delete
     // STILL posts `.anghkooeyDeckDidChange` without clobbering the reload's
