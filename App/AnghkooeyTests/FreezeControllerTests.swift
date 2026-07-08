@@ -100,6 +100,152 @@ struct FreezeControllerTests {
         // frozen state intact so the Settings toggle reverts back to on.
         #expect(controller.isFrozen == true)
     }
+
+    // MARK: - #96 double-unfreeze reentrancy
+
+    /// Waits for `condition` to become true by cooperatively yielding the
+    /// MainActor. Bounded so a genuine regression fails fast instead of
+    /// hanging. Mirrors `AppStateAcceptDraftReentrancyTests.waitUntil`.
+    private func waitUntil(
+        maxIterations: Int = 10_000,
+        _ condition: () -> Bool
+    ) async {
+        for _ in 0..<maxIterations {
+            if condition() { return }
+            await Task.yield()
+        }
+    }
+
+    @Test("two overlapping unfreeze() calls shift the deck only once, not twice (#96)")
+    func overlappingUnfreezeCallsShiftOnlyOnce() async throws {
+        let store = ShiftGateCardStore()
+        let start = Date(timeIntervalSince1970: 1_700_000_000)
+        let controller = FreezeController(cardStore: store, storage: InMemoryFreezeStorage())
+        controller.freeze(now: start)
+
+        let unfreezeAt = start.addingTimeInterval(3 * 86_400)
+
+        // First call (e.g. the Settings "I'm away" toggle flipped off):
+        // enters `unfreeze`, reads `frozenSince`, and suspends inside
+        // `shiftAllDueDates` before it ever clears the frozen state.
+        let taskA = Task { @MainActor in
+            try await controller.unfreeze(now: unfreezeAt)
+        }
+
+        // Confirm task A is genuinely parked inside `shiftAllDueDates`
+        // (i.e. `frozenSince` is still non-nil) before task B starts.
+        await waitUntil { store.shiftCallCount >= 1 }
+
+        // Second call: a rapid double-toggle firing while task A's shift is
+        // still in flight. Before the #96 fix this also reads
+        // `frozenSince != nil`, calls `shiftAllDueDates` a second time, and
+        // the deck slides forward by 2× the away-days once both resolve.
+        let taskB = Task { @MainActor in
+            try await controller.unfreeze(now: unfreezeAt)
+        }
+        await Task.yield()
+        await Task.yield()
+
+        // Release whatever is parked — one call if the guard held, two if it
+        // didn't — so the test resolves deterministically either way instead
+        // of hanging on a regression.
+        store.releaseAll()
+        try await taskA.value
+        try await taskB.value
+
+        #expect(store.shiftCallCount == 1)
+        #expect(store.lastShiftDays == 3)
+        #expect(controller.isFrozen == false)
+        #expect(controller.frozenSince == nil)
+    }
+}
+
+/// Test-only `CardStoreProtocol` stub whose `shiftAllDueDates(byDays:)`
+/// suspends on a continuation the test controls, so two overlapping
+/// `FreezeController.unfreeze()` calls can be forced to genuinely race
+/// (#96). `MockCardStore` exposes suspension gates for `create`/`apply`/
+/// `update`/`delete`/`optimizationReviewLogs` but not for
+/// `shiftAllDueDates`, so this is a standalone stub rather than an
+/// extension of it. `FreezeController` only ever calls
+/// `shiftAllDueDates(byDays:)` on its `cardStore` — every other protocol
+/// requirement below is unreachable for this test and stubs out with
+/// `fatalError`. Mirrors the `AwaitGate` suspension idiom used in
+/// `AppStateAcceptDraftReentrancyTests`.
+@MainActor
+private final class ShiftGateCardStore: CardStoreProtocol, @unchecked Sendable {
+    private(set) var shiftCallCount = 0
+    private(set) var lastShiftDays: Int?
+    private var pending: [CheckedContinuation<Void, Never>] = []
+
+    /// Resumes every call currently parked inside `shiftAllDueDates`.
+    func releaseAll() {
+        let waiting = pending
+        pending.removeAll()
+        waiting.forEach { $0.resume() }
+    }
+
+    func shiftAllDueDates(byDays days: Int) async throws {
+        shiftCallCount += 1
+        lastShiftDays = days
+        await withCheckedContinuation { continuation in
+            pending.append(continuation)
+        }
+    }
+
+    func create(question: String, answer: String, sourceSpan: String?, tags: [String], now: Date) async throws -> Card.Snapshot {
+        fatalError("ShiftGateCardStore.create is unused by FreezeController")
+    }
+
+    func dueCards(asOf now: Date) async throws -> [Card.Snapshot] {
+        fatalError("ShiftGateCardStore.dueCards is unused by FreezeController")
+    }
+
+    func apply(_ output: SchedulerOutput, to cardID: UUID, grade: Rating, now: Date) async throws {
+        fatalError("ShiftGateCardStore.apply is unused by FreezeController")
+    }
+
+    func count(asOf now: Date) async throws -> (total: Int, due: Int) {
+        fatalError("ShiftGateCardStore.count is unused by FreezeController")
+    }
+
+    func allCards() async throws -> [Card.Snapshot] {
+        fatalError("ShiftGateCardStore.allCards is unused by FreezeController")
+    }
+
+    @discardableResult
+    func update(id: UUID, question: String, answer: String, tags: [String]) async throws -> Card.Snapshot? {
+        fatalError("ShiftGateCardStore.update is unused by FreezeController")
+    }
+
+    func updateMnemonic(id: UUID, mnemonic: String) async throws {
+        fatalError("ShiftGateCardStore.updateMnemonic is unused by FreezeController")
+    }
+
+    func findBySourceSpan(_ span: String) async throws -> Card.Snapshot? {
+        fatalError("ShiftGateCardStore.findBySourceSpan is unused by FreezeController")
+    }
+
+    func createImported(
+        question: String, answer: String, sourceSpan: String?, tags: [String], dueAt: Date, now: Date
+    ) async throws -> Card.Snapshot {
+        fatalError("ShiftGateCardStore.createImported is unused by FreezeController")
+    }
+
+    func createClozeCards(from template: ClozeTemplate, tags: [String], now: Date) async throws -> [Card.Snapshot] {
+        fatalError("ShiftGateCardStore.createClozeCards is unused by FreezeController")
+    }
+
+    func optimizationReviewLogs() async throws -> [OptimizationReviewLogRow] {
+        fatalError("ShiftGateCardStore.optimizationReviewLogs is unused by FreezeController")
+    }
+
+    func nextDueDate(after now: Date) async throws -> Date? {
+        fatalError("ShiftGateCardStore.nextDueDate is unused by FreezeController")
+    }
+
+    func delete(id: UUID) async throws {
+        fatalError("ShiftGateCardStore.delete is unused by FreezeController")
+    }
 }
 
 /// In-memory test double for `FreezeStorage`. Production uses UserDefaults; tests inject this.
