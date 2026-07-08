@@ -18,3 +18,7 @@ Session 4 finished Stretch Tier 2 (#38, #50, #96, #35/#36). Deltas vs the 2026-0
 
 ## Net
 Output: all of Tier 2 (#38/#50/#96/#35+#36, 6 PRs incl. 3 checkpoint-hardening) on `main`, each reviewed + checkpointed, 0 round-2s, no flakes. The parallel-worktree pattern and the `high`-effort compact checkpoint are the two adopted improvements to carry forward.
+
+## Follow-ups actioned (post-session)
+- **The "orchestrator context rode long" watch-item now has a tool.** Built a per-unit context-reset launcher: `scripts/overnight/run.sh` + `docs/overnight/RUN.template.md`. It runs one fresh `claude -p` process per unit (each boots off the manifest + ledger + git, does ONE unit end-to-end, records a `STATUS <#> DONE <sha>` ledger line, and stops), so no single Opus context rides a whole tier. Idempotent/crash-safe. Setup is interactive ("set up a launcher overnight run for <scope>"); then `bash scripts/overnight/run.sh`. Committed this session.
+- **Two cost env knobs were confirmed inert and fixed.** `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=50` never fired because `CLAUDE_CODE_AUTO_COMPACT_WINDOW` wasn't set on this local `opus[1m]` session (added `=500000` → compaction now bites ~250K tokens). `MAX_THINKING_TOKENS=10000` is ignored on adaptive Opus without `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING=1` (removed it; kept adaptive thinking). Both edits are in the gitignored `.claude/settings.local.json` (per-machine, take effect next launch).
