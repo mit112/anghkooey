@@ -6,6 +6,34 @@ struct SettingsView: View {
     @Environment(AppState.self) private var appState
     @Environment(FreezeController.self) private var freeze
 
+    /// Live mirror of `SyncPreference.isEnabled`. Kept as view state (rather
+    /// than reading the static directly in `body`) so toggling it re-renders
+    /// the effective/pending status row below (#50). Seeded from the stored
+    /// preference on appear.
+    @State private var syncEnabled = SyncPreference.isEnabled
+    @State private var showSyncRestartAlert = false
+
+    /// How to force-quit + reopen on iOS — most users don't know "restart an
+    /// app" means this.
+    private static let restartInstructions =
+        "Quit Anghkooey fully for this to take effect: swipe up from the bottom edge of the screen, swipe the Anghkooey card up and off, then tap its icon to reopen."
+
+    /// True while the live toggle differs from the value the running container
+    /// was built with — i.e. a restart is needed for the change to apply.
+    private var syncChangePending: Bool {
+        syncEnabled != appState.launchSyncPreferenceEnabled
+    }
+
+    /// Effective-vs-pending status shown in the always-visible status row.
+    private var syncStatusText: String {
+        switch (appState.launchSyncPreferenceEnabled, syncEnabled) {
+        case (true, true): return "On"
+        case (false, false): return "Off"
+        case (false, true): return "On after you restart"
+        case (true, false): return "Off after you restart"
+        }
+    }
+
     var body: some View {
         @Bindable var freeze = freeze
 
@@ -62,16 +90,33 @@ struct SettingsView: View {
                 }
 
                 Section("iCloud Sync") {
-                    Toggle("Sync across my devices", isOn: Binding(
-                        get: { SyncPreference.isEnabled },
-                        set: { SyncPreference.isEnabled = $0 }
-                    ))
-                    Text("Your cards stay on this device by default. Turn this on to sync to your private iCloud (only you can read it). Restart Anghkooey for the change to take effect.")
+                    Toggle("Sync across my devices", isOn: $syncEnabled)
+                        .onChange(of: syncEnabled) { _, newValue in
+                            SyncPreference.isEnabled = newValue
+                            // Alert only on the transition INTO a pending
+                            // mismatch — re-toggling back to the launch state
+                            // clears the pending banner and shows no alert.
+                            if newValue != appState.launchSyncPreferenceEnabled {
+                                showSyncRestartAlert = true
+                            }
+                        }
+                    LabeledContent("Status", value: syncStatusText)
+                    if syncChangePending {
+                        Label(Self.restartInstructions, systemImage: "arrow.clockwise.circle")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                    Text("Your cards stay on this device by default. Turn this on to sync to your private iCloud (only you can read it).")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
             }
             .navigationTitle("Settings")
+            .alert("Restart to apply", isPresented: $showSyncRestartAlert) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(Self.restartInstructions)
+            }
         }
     }
 }

@@ -198,6 +198,17 @@ final class AppState: @unchecked Sendable {
     /// The resolved FSRS engine — default params until enough history accumulates.
     private(set) var scheduler: any FSRS6Engine = LiveFSRS6Engine()
 
+    /// The `SyncPreference.isEnabled` value captured at construction — i.e. the
+    /// setting the running `ModelContainer` was actually built from in
+    /// `AnghkooeyApp.init()`. `SettingsView` compares this to the live
+    /// preference to distinguish sync that is *effective now* from a change
+    /// that only takes effect after a relaunch (the container is built once at
+    /// launch; the toggle can't hot-swap it — see ADR-0011, #50). Captured as a
+    /// snapshot of the preference rather than the derived `SyncMode` on purpose:
+    /// on the Simulator `SyncMode` is always `.local` regardless of the
+    /// preference, which would make the effective/pending copy misleading there.
+    let launchSyncPreferenceEnabled: Bool = SyncPreference.isEnabled
+
     // Tracks the "card-review-sheet-ready" signpost interval: begun when a
     // draft is assigned to `presentedDraft`, ended on the sheet's onAppear.
     private var reviewSheetSignpostState: OSSignpostIntervalState?
