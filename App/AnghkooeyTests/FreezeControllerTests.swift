@@ -158,6 +158,35 @@ struct FreezeControllerTests {
         #expect(controller.isFrozen == false)
         #expect(controller.frozenSince == nil)
     }
+
+    @Test("a freeze() during an in-flight unfreeze() is preserved, not clobbered when the unfreeze resumes (#96 compare-and-clear)")
+    func freezeDuringInFlightUnfreeze_isPreserved() async throws {
+        let store = ShiftGateCardStore()
+        let storage = InMemoryFreezeStorage()
+        let start = Date(timeIntervalSince1970: 1_700_000_000)
+        let controller = FreezeController(cardStore: store, storage: storage)
+        controller.freeze(now: start)
+
+        let unfreezeAt = start.addingTimeInterval(3 * 86_400)
+        // Unfreeze enters, reads `frozenSince`, and parks inside the shift
+        // before it clears the frozen state.
+        let task = Task { @MainActor in try await controller.unfreeze(now: unfreezeAt) }
+        await waitUntil { store.shiftCallCount >= 1 }
+
+        // The user re-freezes (rapid toggle off→on) while the shift is still in
+        // flight. `freeze()` is intentionally not blocked by `isUnfreezing`.
+        let refreezeAt = unfreezeAt.addingTimeInterval(60)
+        controller.freeze(now: refreezeAt)
+
+        store.releaseAll()
+        try await task.value
+
+        // Compare-and-clear: the resumed unfreeze cleared the freeze it
+        // processed (`start`) only — the newer freeze period survives. Before
+        // the fix the unconditional clear deleted it (isFrozen would be false).
+        #expect(controller.isFrozen == true)
+        #expect(controller.frozenSince == refreezeAt)
+    }
 }
 
 /// Test-only `CardStoreProtocol` stub whose `shiftAllDueDates(byDays:)`
