@@ -1,6 +1,42 @@
 import SwiftUI
 import AnghkooeyCore
 
+/// Symbolic + textual swipe cue rendered by `ReviewView`'s swipe overlay
+/// (#53). Color alone fails WCAG 1.4.1 ("Use of Color"), so every direction
+/// pairs its tint with a SF Symbol and a label matching the equivalent
+/// grade button (`.again`/`.good`/`.easy` mirror the Again/Good/Easy button
+/// icons; `.edit` mirrors the down-swipe-to-edit affordance).
+enum ReviewSwipeCue: Equatable, Sendable {
+    case again, good, easy, edit
+
+    var symbolName: String {
+        switch self {
+        case .again: "arrow.counterclockwise"
+        case .good: "checkmark"
+        case .easy: "star.fill"
+        case .edit: "pencil"
+        }
+    }
+
+    var label: String {
+        switch self {
+        case .again: "Again"
+        case .good: "Good"
+        case .easy: "Easy"
+        case .edit: "Edit"
+        }
+    }
+
+    var tint: Color {
+        switch self {
+        case .again: .red
+        case .good: .green
+        case .easy: .blue
+        case .edit: .secondary
+        }
+    }
+}
+
 /// Flashcard review UI driven by a `ReviewSession`.
 ///
 /// State machine:
@@ -22,6 +58,12 @@ public struct ReviewView: View {
     @State private var dragOffset: CGSize = .zero
     @State private var isEditSheetPresented: Bool = false
     @State private var showingCreate = false
+    /// Tracks whether `dragOffset` is currently past `swipeCommitThreshold`
+    /// for an eligible direction. Drives the overlay's "committed" look and
+    /// flips `swipeCommitTrigger` exactly on threshold crossings (#53).
+    @State private var isPastCommitThreshold: Bool = false
+    @State private var swipeCommitTrigger: Bool = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     public init(session: ReviewSession,
                 loadSampleCards: (() async -> Void)? = nil,
@@ -120,7 +162,17 @@ public struct ReviewView: View {
         .rotationEffect(.degrees(Double(dragOffset.width) / 25))
         .simultaneousGesture(
             DragGesture(minimumDistance: 20)
-                .onChanged { dragOffset = $0.translation }
+                .onChanged { value in
+                    dragOffset = value.translation
+                    let committed = Self.isSwipeCommitted(
+                        translation: value.translation,
+                        isAnswerRevealed: session.isAnswerRevealed
+                    )
+                    if committed != isPastCommitThreshold {
+                        isPastCommitThreshold = committed
+                        swipeCommitTrigger.toggle()
+                    }
+                }
                 .onEnded { handleSwipeEnd($0) }
         )
         .sheet(isPresented: $isEditSheetPresented) {
@@ -133,29 +185,108 @@ public struct ReviewView: View {
             }
         }
         .animation(.easeInOut(duration: 0.2), value: session.isAnswerRevealed)
+        // Haptic fires exactly on threshold-crossing (#53); doesn't fire on
+        // Simulator, but the trigger path is correct.
+        .sensoryFeedback(.impact(weight: .medium), trigger: swipeCommitTrigger)
     }
 
     // MARK: - Swipe helpers
 
+    /// The displacement (in points) past which a swipe commits, shared by
+    /// the cue overlay and `handleSwipeEnd` so the two can't drift apart
+    /// (#53 anti-drift requirement).
+    private static let swipeCommitThreshold: CGFloat = 80
+
+    /// Below this displacement, no cue is shown at all — avoids flickering
+    /// a cue on incidental micro-movements at gesture start.
+    private static let swipeCueDeadzone: CGFloat = 10
+
+    /// Pure mapping of a drag translation to the cue it will trigger, gated
+    /// the same way `handleSwipeEnd` gates commits: grade cues (again/good/
+    /// easy) require `isAnswerRevealed`; edit does not, since
+    /// `handleSwipeEnd` never reveal-guards the down swipe. Returns `nil` in
+    /// the small activation deadzone, in the ambiguous near-45° diagonal
+    /// zone (dominant-axis rule, matching `handleSwipeEnd`'s 1.5× guard),
+    /// and for grade directions before the answer is revealed — showing a
+    /// grade cue there would be a false affordance since `handleSwipeEnd`
+    /// won't commit a grade in that state.
+    ///
+    /// This reflects *displacement + axis + reveal* eligibility only.
+    /// Velocity and `startLocation` are release-only and unknowable
+    /// mid-drag, so a rare low-velocity (or left-edge) release past the
+    /// threshold that `handleSwipeEnd` still rejects is an inherent,
+    /// acceptable mismatch between the mid-drag cue and the eventual commit
+    /// decision.
+    ///
+    /// Explicitly `nonisolated`: `ReviewView` conforms to `View`, whose
+    /// `body` requirement is `@MainActor`, and Swift infers main-actor
+    /// isolation onto the whole conforming type by default — including
+    /// static members. Without this annotation, calling `swipeCue` from a
+    /// non-main-actor context (e.g. a Swift Testing test function, which
+    /// runs off the main actor) trips a runtime actor-isolation assertion.
+    nonisolated static func swipeCue(translation: CGSize, isAnswerRevealed: Bool) -> ReviewSwipeCue? {
+        let dx = translation.width
+        let dy = translation.height
+
+        guard abs(dx) > swipeCueDeadzone || abs(dy) > swipeCueDeadzone else { return nil }
+
+        // Diagonal dead zone: require clear axis dominance (1.5x) to avoid
+        // misfiring on near-45 degree drags — mirrors handleSwipeEnd.
+        guard abs(dx) > abs(dy) * 1.5 || abs(dy) > abs(dx) * 1.5 else { return nil }
+
+        if abs(dx) >= abs(dy) {
+            guard isAnswerRevealed else { return nil }
+            return dx < 0 ? .again : .good
+        } else if dy < 0 {
+            guard isAnswerRevealed else { return nil }
+            return .easy
+        } else {
+            return .edit
+        }
+    }
+
+    /// Whether `translation` has crossed `swipeCommitThreshold` for a cue
+    /// that is actually eligible right now (see `swipeCue`). Built on top of
+    /// `swipeCue` rather than duplicating its gating, per the anti-drift
+    /// requirement that direction/eligibility logic live in one place.
+    nonisolated static func isSwipeCommitted(translation: CGSize, isAnswerRevealed: Bool) -> Bool {
+        guard swipeCue(translation: translation, isAnswerRevealed: isAnswerRevealed) != nil else { return false }
+        // Strict `>` matches handleSwipeEnd's commit comparisons exactly, so the
+        // "committed" cue can't promise a grade the release then rejects at the
+        // exact threshold value.
+        return max(abs(translation.width), abs(translation.height)) > swipeCommitThreshold
+    }
+
     @ViewBuilder
     private var swipeTintOverlay: some View {
-        let dx = dragOffset.width
-        let dy = dragOffset.height
-        let threshold: CGFloat = 80
-        if abs(dx) > 10 || abs(dy) > 10 {
-            if abs(dx) >= abs(dy) {
+        if let cue = Self.swipeCue(translation: dragOffset, isAnswerRevealed: session.isAnswerRevealed) {
+            let displacement = max(abs(dragOffset.width), abs(dragOffset.height))
+            let progress = min(displacement / Self.swipeCommitThreshold, 1.0)
+            let tintOpacity = (cue == .again || cue == .good) ? 0.2 : 0.18
+            let isCommitted = isPastCommitThreshold
+
+            ZStack {
                 Rectangle()
-                    .fill(dx < 0 ? Color.red : Color.green)
-                    .opacity(min(abs(dx) / threshold, 1.0) * 0.2)
-                    .ignoresSafeArea()
-                    .allowsHitTesting(false)
-            } else {
-                Rectangle()
-                    .fill(dy < 0 ? Color.blue : Color.secondary)
-                    .opacity(min(abs(dy) / threshold, 1.0) * 0.18)
-                    .ignoresSafeArea()
-                    .allowsHitTesting(false)
+                    .fill(cue.tint)
+                    .opacity(progress * tintOpacity)
+
+                VStack(spacing: 8) {
+                    Image(systemName: cue.symbolName)
+                        .font(.system(size: 36, weight: .bold))
+                    Text(cue.label)
+                        .font(.headline)
+                }
+                .foregroundStyle(cue.tint)
+                .opacity(progress)
+                .scaleEffect(reduceMotion ? 1.0 : (isCommitted ? 1.15 : 1.0))
+                .animation(reduceMotion ? nil : .spring(response: 0.25, dampingFraction: 0.65), value: isCommitted)
             }
+            .ignoresSafeArea()
+            .allowsHitTesting(false)
+            // Decorative reinforcement of the grade/edit buttons below, which
+            // already carry accessible labels — avoid a redundant, transient
+            // VoiceOver stop mid-gesture.
+            .accessibilityHidden(true)
         }
     }
 
@@ -163,37 +294,41 @@ public struct ReviewView: View {
         withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
             dragOffset = .zero
         }
-        let threshold: CGFloat = 80
+        isPastCommitThreshold = false
         let minVelocity: CGFloat = 100
         let dx = value.translation.width
         let dy = value.translation.height
 
-        // Diagonal dead zone: require clear axis dominance (1.5×) to
-        // avoid misfiring on near-45° drags.
-        guard abs(dx) > abs(dy) * 1.5 || abs(dy) > abs(dx) * 1.5 else { return }
+        // Direction, axis-dominance, and reveal-gating are single-sourced in
+        // `swipeCue` so the mid-drag cue can never drift from what actually
+        // commits here (#53). This adds only the guards that aren't knowable
+        // mid-drag: the per-axis velocity floor, the iOS left-edge back-swipe
+        // exclusion, and the commit threshold.
+        guard let cue = Self.swipeCue(translation: value.translation, isAnswerRevealed: session.isAnswerRevealed) else { return }
 
-        if abs(dx) >= abs(dy) {
+        switch cue {
+        case .again, .good:
             // Exclude iOS system left-edge back-swipe (~20pt zone).
             guard value.startLocation.x > 20 else { return }
-            // Velocity guard: distinguishes deliberate swipe from content scroll.
+            // Velocity guard: distinguishes a deliberate swipe from a content scroll.
             guard abs(value.velocity.width) >= minVelocity else { return }
-            guard session.isAnswerRevealed else { return }
-            if dx < -threshold {
+            guard abs(dx) > Self.swipeCommitThreshold else { return }
+            if cue == .again {
                 againTrigger.toggle()
                 Task { await session.submit(grade: .again) }
-            } else if dx > threshold {
+            } else {
                 goodTrigger.toggle()
                 Task { await session.submit(grade: .good) }
             }
-        } else {
+        case .easy:
             guard abs(value.velocity.height) >= minVelocity else { return }
-            if dy < -threshold {
-                guard session.isAnswerRevealed else { return }
-                easyTrigger.toggle()
-                Task { await session.submit(grade: .easy) }
-            } else if dy > threshold {
-                isEditSheetPresented = true
-            }
+            guard dy < -Self.swipeCommitThreshold else { return }
+            easyTrigger.toggle()
+            Task { await session.submit(grade: .easy) }
+        case .edit:
+            guard abs(value.velocity.height) >= minVelocity else { return }
+            guard dy > Self.swipeCommitThreshold else { return }
+            isEditSheetPresented = true
         }
     }
 
