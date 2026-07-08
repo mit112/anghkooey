@@ -26,14 +26,26 @@ struct SettingsView: View {
                             if newValue {
                                 freeze.freeze()
                             } else {
-                                Task { try? await freeze.unfreeze() }
+                                Task {
+                                    do {
+                                        try await freeze.unfreeze()
+                                    } catch {
+                                        // The toggle's get reads `freeze.isFrozen`; unfreeze()
+                                        // only clears frozenSince AFTER a successful shift, so
+                                        // on failure the toggle reverts to on by itself — we
+                                        // just surface the error.
+                                        appState.rootErrorPresenter.present(
+                                            "Couldn't finish unfreezing your deck. Try again."
+                                        )
+                                    }
+                                }
                             }
                         }
                     ))
                     if let since = freeze.frozenSince {
                         LabeledContent("Frozen since", value: since.formatted(date: .abbreviated, time: .shortened))
                     }
-                    Text("While frozen, no cards become due. When you turn this off, your deck slides forward by however many days you were away — no overdue debt.")
+                    Text("Heading out? Freeze marks your away time. You can still review if you like — and when you turn this off, your deck slides forward by however many whole days you were away, so you come back with no overdue pile-up.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
