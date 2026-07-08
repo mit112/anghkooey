@@ -401,6 +401,20 @@ final class AppState: @unchecked Sendable {
         advanceQueue()
     }
 
+    /// Rewrites the widget's due-card snapshot after an out-of-band deck
+    /// change (card deletion). Bridges the UI (which can't see the
+    /// reconciler) to the app-owned `WidgetGradeReconciler`. Logs and
+    /// swallows a refresh failure — a stale widget snapshot is
+    /// self-correcting on the next drain and must never block or crash a
+    /// delete (#38).
+    func rewriteWidgetSnapshot() async {
+        do {
+            try await widgetReconciler.rewriteSnapshot()
+        } catch {
+            CoreLog.persistence.error("rewriteWidgetSnapshot failed: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
     /// Called from `CardReviewSheet.onAppear` to close the
     /// `"card-review-sheet-ready"` signpost interval.
     func cardReviewSheetDidAppear() {
