@@ -73,7 +73,7 @@ struct SettingsView: View {
                     if let since = freeze.frozenSince {
                         LabeledContent("Frozen since", value: since.formatted(date: .abbreviated, time: .shortened))
                     }
-                    Text("Heading out? Freeze marks your away time. You can still review if you like — and when you turn this off, your deck slides forward by however many whole days you were away, so you come back with no overdue pile-up.")
+                    Text("Heading out? Freeze marks your away time. You can still review if you like — and when you turn this off, your deck slides forward by however many whole days you were away, so the days you were away don't pile onto what's already due.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }

@@ -45,6 +45,16 @@ final class FreezeController {
     private let cardStore: any CardStoreProtocol
     private let storage: any FreezeStorage
 
+    /// Reentrancy guard for `unfreeze()`. The Settings "I'm away" toggle
+    /// invokes `unfreeze()` from a `Task`-wrapped button action, and the
+    /// method suspends mid-body on `cardStore.shiftAllDueDates`. Without this
+    /// guard, a rapid double-toggle-off within that await window would let a
+    /// second call also observe `storage.frozenSince != nil` and shift the
+    /// deck a second time, sliding every card forward by `2 × away-days`
+    /// instead of once (#96). Mirrors `AppState.acceptDraft`'s
+    /// `isProcessingAccept` / `AppState.drain`'s `isDraining`.
+    private var isUnfreezing = false
+
     init(cardStore: any CardStoreProtocol, storage: any FreezeStorage) {
         self.cardStore = cardStore
         self.storage = storage
@@ -68,7 +78,9 @@ final class FreezeController {
     /// This is intentional and conservative: a brief freeze shouldn't grant a
     /// full day of slack it didn't earn (#48).
     func unfreeze(now: Date = .now) async throws {
-        guard let start = storage.frozenSince else { return }
+        guard !isUnfreezing, let start = storage.frozenSince else { return }
+        isUnfreezing = true
+        defer { isUnfreezing = false }
         let elapsed = now.timeIntervalSince(start)
         let days = max(0, Int(elapsed / 86_400))
         try await cardStore.shiftAllDueDates(byDays: days)
