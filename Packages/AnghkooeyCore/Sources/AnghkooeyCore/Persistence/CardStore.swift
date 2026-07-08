@@ -419,10 +419,21 @@ public actor CardStore: CardStoreProtocol {
         let predicate = #Predicate<Card> { $0.id == id }
         let descriptor = FetchDescriptor<Card>(predicate: predicate)
         guard let card = try modelContext.fetch(descriptor).first else { return }
+        // Resolve tags first: findOrCreateTags can throw (a context fetch), and
+        // doing it before mutating the card avoids leaving question/answer
+        // half-applied in the context if it does.
+        let newTags = try findOrCreateTags(tags)
+        let previousTags = card.tags // capture BEFORE reassignment
         card.question = question
         card.answer = answer
-        card.tags = try findOrCreateTags(tags)
+        card.tags = newTags
         card.updatedAt = .now
+        // #41: prune tags this edit removed from the card that are now orphaned.
+        // Scoped to previousTags — never a global sweep — so unrelated tags are untouched.
+        let retainedIDs = Set(newTags.map(\.id))
+        for tag in previousTags where !retainedIDs.contains(tag.id) && tag.cards.isEmpty {
+            modelContext.delete(tag)
+        }
         do {
             try modelContext.save()
         } catch {
