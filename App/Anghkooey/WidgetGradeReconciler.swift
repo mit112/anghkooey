@@ -81,16 +81,35 @@ final class WidgetGradeReconciler {
         try await rewriteSnapshot(now: now)
     }
 
-    /// Rewrites the widget's due-card snapshot to reflect the current store state.
-    /// Call this after any card is accepted or reviewed in-app, too.
+    /// Cap on `WidgetDueSnapshot.queue` length. Bounded so the widget's
+    /// shared-container payload stays small; the app remains authoritative
+    /// and rewrites this on every reconcile, so a small window is enough to
+    /// cover a burst of local widget taps between app launches.
+    private static let maxQueueLength = 5
+
+    /// Rewrites the widget's due-card snapshot to reflect the current store
+    /// state: the first due card (with its answer, unrevealed), plus a
+    /// bounded queue of the next-up due cards so the widget can advance
+    /// locally between rewrites. Call this after any card is accepted or
+    /// reviewed in-app, too.
     func rewriteSnapshot(now: Date = .now) async throws {
         let due = try await store.dueCards(asOf: now)
-        if let first = due.first {
-            try bridge.writeSnapshot(
-                WidgetDueSnapshot(cardID: first.id, question: first.question, dueCount: due.count)
-            )
-        } else {
+        guard let first = due.first else {
             try bridge.clearSnapshot()
+            return
         }
+        let queue = due.dropFirst().prefix(Self.maxQueueLength).map {
+            WidgetCardRef(cardID: $0.id, question: $0.question, answer: $0.answer)
+        }
+        try bridge.writeSnapshot(
+            WidgetDueSnapshot(
+                cardID: first.id,
+                question: first.question,
+                dueCount: due.count,
+                answer: first.answer,
+                revealed: false,
+                queue: Array(queue)
+            )
+        )
     }
 }
