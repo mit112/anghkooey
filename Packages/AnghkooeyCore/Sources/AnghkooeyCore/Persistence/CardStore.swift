@@ -178,9 +178,14 @@ public protocol CardStoreProtocol: Sendable {
 
     /// Updates the `question` and `answer` of the card identified by `id`.
     ///
-    /// Passing an unknown `id` is a silent no-op.
+    /// Passing an unknown `id` is a silent no-op that returns `nil`.
+    /// - Returns: the persisted `Card.Snapshot` — with tag names canonicalized
+    ///   by the store (case-insensitive dedupe, first-writer casing) — or `nil`
+    ///   if no card matches `id`. Callers that rebuild UI state after an edit
+    ///   must use this, not the input tags, to reflect the stored casing.
     /// - Throws: `PersistenceError` on a SwiftData write failure.
-    func update(id: UUID, question: String, answer: String, tags: [String]) async throws
+    @discardableResult
+    func update(id: UUID, question: String, answer: String, tags: [String]) async throws -> Card.Snapshot?
 
     /// Sets the on-device mnemonic for the card identified by `id`.
     ///
@@ -415,10 +420,11 @@ public actor CardStore: CardStoreProtocol {
         return try modelContext.fetch(descriptor).first?.dueAt
     }
 
-    public func update(id: UUID, question: String, answer: String, tags: [String]) async throws {
+    @discardableResult
+    public func update(id: UUID, question: String, answer: String, tags: [String]) async throws -> Card.Snapshot? {
         let predicate = #Predicate<Card> { $0.id == id }
         let descriptor = FetchDescriptor<Card>(predicate: predicate)
-        guard let card = try modelContext.fetch(descriptor).first else { return }
+        guard let card = try modelContext.fetch(descriptor).first else { return nil }
         // Resolve tags first: findOrCreateTags can throw (a context fetch), and
         // doing it before mutating the card avoids leaving question/answer
         // half-applied in the context if it does.
@@ -440,6 +446,9 @@ public actor CardStore: CardStoreProtocol {
             modelContext.rollback()
             throw error
         }
+        // Return the persisted snapshot (canonical tag casing), not the input,
+        // so callers reflect what actually stored.
+        return Card.Snapshot(from: card)
     }
 
     public func updateMnemonic(id: UUID, mnemonic: String) async throws {
@@ -703,10 +712,11 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
                                          : $0.cardID.uuidString < $1.cardID.uuidString }
     }
 
-    public func update(id: UUID, question: String, answer: String, tags: [String]) async throws {
+    @discardableResult
+    public func update(id: UUID, question: String, answer: String, tags: [String]) async throws -> Card.Snapshot? {
         if let err = updateError { throw err }
         if let gate = updateGate { await gate() }
-        guard let idx = cards.firstIndex(where: { $0.id == id }) else { return }
+        guard let idx = cards.firstIndex(where: { $0.id == id }) else { return nil }
         let old = cards[idx]
         cards[idx] = Card.Snapshot(
             id: old.id,
@@ -728,6 +738,7 @@ public final class MockCardStore: CardStoreProtocol, @unchecked Sendable {
             clozeGroupID: old.clozeGroupID,
             clozeBuriedUntil: old.clozeBuriedUntil
         )
+        return cards[idx]
     }
 
     public func updateMnemonic(id: UUID, mnemonic: String) async throws {

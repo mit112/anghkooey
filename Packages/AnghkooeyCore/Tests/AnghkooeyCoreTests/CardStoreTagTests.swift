@@ -189,4 +189,18 @@ struct CardStoreTagTests {
         let updated = try #require(all.first(where: { $0.id == snap.id }))
         #expect(updated.tags == ["Bar"])
     }
+
+    @Test("update returns the persisted snapshot with canonical (first-writer) tag casing, not the input casing")
+    func cardStore_update_returnsCanonicalTagCasing() async throws {
+        let container = try AnghkooeyModelContainer.makeInMemoryContainer()
+        let store = CardStore(container: container)
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
+        // First writer establishes the display casing "swift".
+        let snap = try await store.create(question: "Q", answer: "A", sourceSpan: nil, tags: ["swift"], now: now)
+        // Editing the same card with a different casing must resolve to the
+        // existing tag (same normalized name) and report its stored casing —
+        // the returned snapshot is what the Review/Library UIs render (#54).
+        let updated = try #require(try await store.update(id: snap.id, question: "Q", answer: "A", tags: ["Swift"]))
+        #expect(updated.tags == ["swift"])
+    }
 }
