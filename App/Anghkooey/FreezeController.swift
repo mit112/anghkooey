@@ -84,6 +84,15 @@ final class FreezeController {
         let elapsed = now.timeIntervalSince(start)
         let days = max(0, Int(elapsed / 86_400))
         try await cardStore.shiftAllDueDates(byDays: days)
-        storage.frozenSince = nil
+        // Compare-and-clear: only clear the freeze we actually processed. If
+        // `freeze()` ran during the `await` above (a rapid toggle-off→on
+        // within the shift window), it wrote a NEW `frozenSince`; clearing
+        // unconditionally here would silently delete that fresh freeze
+        // period. `isUnfreezing` blocks a concurrent *unfreeze* but not a
+        // concurrent *freeze* (which is intentionally always allowed), so
+        // this guard is the one that protects the re-freeze.
+        if storage.frozenSince == start {
+            storage.frozenSince = nil
+        }
     }
 }
