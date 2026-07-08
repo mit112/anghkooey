@@ -172,4 +172,117 @@ struct GradeReconciliationTests {
         #expect(store.reviewLogs.count == 1)
         #expect(bridge.readGrades().isEmpty)
     }
+
+    // MARK: - Issue #35/#36: widget grade-advance + answer-reveal
+
+    @Test("rewriteSnapshot writes the current card's answer and a bounded (max 5) queue of upcoming due cards")
+    func rewriteSnapshotWritesAnswerAndBoundedQueue() async throws {
+        let dir = try tmpDir(); defer { try? FileManager.default.removeItem(at: dir) }
+        let store = MockCardStore()
+        let base = Date(timeIntervalSinceReferenceDate: 0)
+        var created: [Card.Snapshot] = []
+        for i in 0..<8 {
+            let card = try await store.create(
+                question: "q\(i)", answer: "a\(i)", sourceSpan: nil, tags: [],
+                now: base.addingTimeInterval(Double(i))
+            )
+            created.append(card)
+        }
+        let bridge = WidgetBridge(containerURL: dir)
+        let reconciler = WidgetGradeReconciler(store: store, bridge: bridge)
+
+        try await reconciler.rewriteSnapshot(now: base.addingTimeInterval(100))
+
+        let snap = try #require(bridge.readSnapshot())
+        #expect(snap.cardID == created[0].id)
+        #expect(snap.question == created[0].question)
+        #expect(snap.answer == created[0].answer)
+        #expect(snap.revealed == false)
+        #expect(snap.dueCount == 8)
+        let queue = try #require(snap.queue)
+        #expect(queue.count == 5)
+        #expect(queue.map(\.cardID) == created[1...5].map(\.id))
+        #expect(queue.map(\.question) == created[1...5].map(\.question))
+        #expect(queue.map(\.answer) == created[1...5].map(\.answer))
+    }
+
+    @Test("rewriteSnapshot with a single due card writes an empty queue")
+    func rewriteSnapshotSingleCardEmptyQueue() async throws {
+        let dir = try tmpDir(); defer { try? FileManager.default.removeItem(at: dir) }
+        let store = MockCardStore()
+        let card = try await store.create(question: "q", answer: "a", sourceSpan: nil, tags: [], now: .now)
+        let bridge = WidgetBridge(containerURL: dir)
+        let reconciler = WidgetGradeReconciler(store: store, bridge: bridge)
+
+        try await reconciler.rewriteSnapshot(now: .now)
+
+        let snap = try #require(bridge.readSnapshot())
+        #expect(snap.cardID == card.id)
+        #expect(snap.answer == card.answer)
+        #expect(snap.dueCount == 1)
+        #expect(snap.queue?.isEmpty == true)
+    }
+
+    @Test("reconciling two decisions (current + queued-next, simulating a widget local advance) matches grading both in-app directly, applied once and in order")
+    func widgetAdvanceParityWithInAppGrading() async throws {
+        let dir = try tmpDir(); defer { try? FileManager.default.removeItem(at: dir) }
+        let t0 = Date(timeIntervalSinceReferenceDate: 0)
+
+        // Two independently-seeded stores with the same two cards.
+        let widgetStore = MockCardStore()
+        let inAppStore = MockCardStore()
+        let widgetA = try await widgetStore.create(question: "qA", answer: "aA", sourceSpan: nil, tags: [], now: t0)
+        let widgetB = try await widgetStore.create(
+            question: "qB", answer: "aB", sourceSpan: nil, tags: [], now: t0.addingTimeInterval(1)
+        )
+        let inAppA = try await inAppStore.create(question: "qA", answer: "aA", sourceSpan: nil, tags: [], now: t0)
+        let inAppB = try await inAppStore.create(
+            question: "qB", answer: "aB", sourceSpan: nil, tags: [], now: t0.addingTimeInterval(1)
+        )
+
+        let decidedA = t0.addingTimeInterval(10)
+        let decidedB = t0.addingTimeInterval(20)
+
+        // Widget side: simulate two taps — grade the current card (A), then
+        // grade the locally-advanced next card (B) — exactly as
+        // `GradeCardIntent` would append them, without any store access.
+        let bridge = WidgetBridge(containerURL: dir)
+        try bridge.appendGrade(WidgetGradeDecision(id: UUID(), cardID: widgetA.id, rating: .good, decidedAt: decidedA))
+        try bridge.appendGrade(WidgetGradeDecision(id: UUID(), cardID: widgetB.id, rating: .good, decidedAt: decidedB))
+
+        // Same scheduler instance for both paths — `WidgetGradeReconciler`
+        // defaults to `LiveFSRS6Engine()`, which would make the "control"
+        // comparison meaningless if the two paths used different engines.
+        let scheduler = MockFSRS6Engine()
+        let reconciler = WidgetGradeReconciler(store: widgetStore, bridge: bridge, scheduler: scheduler)
+        try await reconciler.reconcile(now: decidedB)
+
+        // In-app control: grade the same two cards directly, in the same
+        // order, via the same scheduler.
+        let outputA = try scheduler.next(card: inAppA.schedulingCard, rating: .good, now: decidedA)
+        try await inAppStore.apply(outputA, to: inAppA.id, grade: .good, now: decidedA)
+        let inAppBBeforeSecondGrade = try #require(inAppStore.cards.first { $0.id == inAppB.id })
+        let outputB = try scheduler.next(card: inAppBBeforeSecondGrade.schedulingCard, rating: .good, now: decidedB)
+        try await inAppStore.apply(outputB, to: inAppB.id, grade: .good, now: decidedB)
+
+        // Both decisions applied exactly once, in order.
+        #expect(widgetStore.reviewLogs.count == 2)
+        #expect(widgetStore.reviewLogs.map(\.cardID) == [widgetA.id, widgetB.id])
+        #expect(bridge.readGrades().isEmpty)
+
+        // Reconciled (widget-path) state matches the in-app-graded control.
+        let reconciledA = try #require(widgetStore.cards.first { $0.id == widgetA.id })
+        let reconciledB = try #require(widgetStore.cards.first { $0.id == widgetB.id })
+        let controlA = try #require(inAppStore.cards.first { $0.id == inAppA.id })
+        let controlB = try #require(inAppStore.cards.first { $0.id == inAppB.id })
+
+        #expect(reconciledA.stability == controlA.stability)
+        #expect(reconciledA.difficulty == controlA.difficulty)
+        #expect(reconciledA.dueAt == controlA.dueAt)
+        #expect(reconciledA.state == controlA.state)
+        #expect(reconciledB.stability == controlB.stability)
+        #expect(reconciledB.difficulty == controlB.difficulty)
+        #expect(reconciledB.dueAt == controlB.dueAt)
+        #expect(reconciledB.state == controlB.state)
+    }
 }
