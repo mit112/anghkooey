@@ -513,16 +513,21 @@ public final class ReviewSession {
     ///
     /// A delete is a correction, not a review: it never touches `summary`.
     ///
-    /// Claims `loadGeneration` *before* the store call so an already in-flight
-    /// `loadDueQueue()` — from a concurrent scenePhase/`.anghkooeyCardAccepted`/
-    /// #18-wake trigger — is invalidated when it resumes and cannot restore the
-    /// just-deleted card as `currentCard`, and so this method's own advance
-    /// can't clobber a *newer* load that started after the delete's `await`.
+    /// Uses the same post-await identity re-check as `applyGrade`/`submitEdit`
+    /// (`currentCard?.id == cardID`) rather than mutating `loadGeneration`:
+    /// touching the shared generation counter from here cross-couples with
+    /// concurrent `loadDueQueue()` calls (it could strand a failed-delete's
+    /// racing load in `.loading`, or double-advance alongside `applyGrade`).
+    /// The identity guard is sufficient — on `CardStore` (an actor) an
+    /// in-flight `loadDueQueue()`'s `dueCards` fetch is serialized *before*
+    /// this delete, so if that load resumes first and restores the
+    /// just-deleted card as `currentCard`, the guard below still matches and
+    /// we advance past it; if it moved to a *different* card, the guard fails
+    /// (we leave its state alone) and the notification we post prunes the
+    /// deleted id from whatever queue that load built.
     ///
     /// On a store failure, state is left untouched (mirroring `submitEdit`) so
-    /// the caller (the edit sheet) can keep the sheet open — and the generation
-    /// claim is undone (unless a newer load has since taken it) so a *failed*
-    /// delete never strands that concurrent load stuck in `.loading`.
+    /// the caller (the edit sheet) can keep the sheet open.
     public func deleteCurrentCard(cardID: UUID) async throws {
         guard let card = currentCard else {
             throw ReviewSessionError.noCurrentCard
@@ -530,43 +535,38 @@ public final class ReviewSession {
         guard card.id == cardID else {
             throw ReviewSessionError.cardChanged
         }
-        let previousGeneration = loadGeneration
-        loadGeneration &+= 1
-        let gen = loadGeneration
         do {
             try await store.delete(id: cardID)
         } catch {
-            // Undo our own claim so an earlier in-flight loadDueQueue() isn't
-            // left stranded in `.loading` — but only if no *newer* load has
-            // bumped the generation since; rewinding past a legitimate newer
-            // load would corrupt its ownership.
-            if loadGeneration == gen {
-                loadGeneration = previousGeneration
-            }
             UILog.review.error("deleteCurrentCard failed to delete the card: \(error)")
             throw error
         }
-        // The delete committed — this id no longer exists. Announce it
-        // UNCONDITIONALLY, before the ownership re-check below: the widget
-        // refresh (`AppState.rewriteWidgetSnapshot`) and cross-screen queue
-        // prune (`handleExternalDelete`) must fire whenever the delete
-        // succeeds, regardless of which load generation ends up owning this
-        // session's display state.
-        NotificationCenter.default.post(name: .anghkooeyDeckDidChange, object: cardID)
-        // A newer loadDueQueue() may have started (and finished) while the
-        // delete above was in flight; if so, it already owns the current
-        // session state and this must not clobber it. The notification just
-        // posted prunes the deleted id from whatever queue that load built.
-        guard gen == loadGeneration else { return }
-        if queue.isEmpty {
-            await enterEmptyState(generation: gen)
-        } else {
-            currentCard = queue.removeFirst()
-            queueRemaining = queue.count
-            isAnswerRevealed = false
-            currentMnemonic = currentCard?.mnemonic
-            isMnemonicLoading = false
+        // Advance THIS session's state only if the deleted card is still
+        // current — a concurrent `loadDueQueue()`/`applyGrade()`/`submitEdit()`
+        // may have advanced past it (or reloaded and restored it) while the
+        // delete's `await` was in flight. Advancing here BEFORE posting the
+        // notification is deliberate: `ReviewScreen` observes the post and
+        // calls `handleExternalDelete(cardID)`, so if the post preceded this
+        // advance, that observer could advance the queue and this method would
+        // then advance again — skipping a card. With the order below, by the
+        // time the observer runs `currentCard` is already the next card and
+        // `cardID` is gone from the queue, making it a strict no-op.
+        if currentCard?.id == cardID {
+            if queue.isEmpty {
+                await enterEmptyState(generation: loadGeneration)
+            } else {
+                currentCard = queue.removeFirst()
+                queueRemaining = queue.count
+                isAnswerRevealed = false
+                currentMnemonic = currentCard?.mnemonic
+                isMnemonicLoading = false
+            }
         }
+        // The delete committed — this id no longer exists. Announce it
+        // UNCONDITIONALLY (widget refresh via `AppState.rewriteWidgetSnapshot`;
+        // cross-screen queue prune via `handleExternalDelete`), regardless of
+        // whether this session still owned the deleted card above.
+        NotificationCenter.default.post(name: .anghkooeyDeckDidChange, object: cardID)
     }
 
     /// Reacts to a card deleted elsewhere (the Library tab, or this
@@ -578,10 +578,12 @@ public final class ReviewSession {
     /// Defensively also handles the (normally-impossible, since a card
     /// currently being reviewed can't be deleted from elsewhere at the same
     /// time) case where `cardID` is `currentCard`: advances to the next
-    /// queued card, or a plain `.empty` if none remain. Uses a bare `.empty`
-    /// rather than the async `enterEmptyState(generation:)` because this is
-    /// a synchronous notification handler; the ETA/wake is restored by the
-    /// next foreground `loadDueQueue()`.
+    /// queued card, or `.empty` if none remain. When it empties, it also kicks
+    /// off `enterEmptyState` to recompute the next-due ETA + wake, so a future
+    /// learning-step card still auto-reappears (a bare `.empty` would drop
+    /// that until the next foreground `loadDueQueue()`); the synchronous
+    /// `.empty`/`nil` assignments below still fire first so the deleted card
+    /// never lingers on screen while that async recompute runs.
     public func handleExternalDelete(cardID: UUID) {
         queue.removeAll { $0.id == cardID }
         queueRemaining = queue.count
@@ -592,6 +594,8 @@ public final class ReviewSession {
             currentMnemonic = nil
             isAnswerRevealed = false
             state = .empty
+            let gen = loadGeneration
+            Task { [weak self] in await self?.enterEmptyState(generation: gen) }
         } else {
             currentCard = queue.removeFirst()
             queueRemaining = queue.count

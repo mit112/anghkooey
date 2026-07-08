@@ -295,8 +295,10 @@ struct ReviewSessionAwaitGuardTests {
 
         // A concurrent reload (scenePhase / .anghkooeyCardAccepted / the #18
         // wake) lands while X's delete is still in flight — Y is now due and
-        // becomes currentCard, bumping loadGeneration past deleteCurrentCard's
-        // claim so its post-await advance is (correctly) skipped.
+        // becomes currentCard. deleteCurrentCard's post-await identity guard
+        // (`currentCard?.id == cardID`) then no longer matches, so its own
+        // advance is (correctly) skipped — but the delete and the deck-change
+        // notification still complete.
         clockBox.date = t0.addingTimeInterval(10)
         await session.loadDueQueue()
         #expect(session.currentCard?.id == cardY.id)
@@ -316,11 +318,9 @@ struct ReviewSessionAwaitGuardTests {
         #expect(session.summary.reviewed == 0)
     }
 
-    // NOTE: the *failure*-path counterpart — that a delete which throws restores
-    // `loadGeneration` so an already in-flight `loadDueQueue()` isn't left
-    // stranded in `.loading` — is verified by inspection, not a test: staging it
-    // deterministically needs a gate on `MockCardStore.dueCards` (to suspend a
-    // load mid-flight), which is broader mock surface than #38 warrants. The
-    // conditional-restore in `deleteCurrentCard`'s catch (only rewind when no
-    // newer load has claimed the generation) is the fix.
+    // NOTE: `deleteCurrentCard` deliberately does NOT mutate `loadGeneration`
+    // (it uses the same `currentCard?.id == cardID` identity guard as
+    // `applyGrade`/`submitEdit`), so there is no failure-path generation
+    // restore to test and no way for a failed delete to strand a concurrent
+    // `loadDueQueue()` in `.loading`. See `deleteCurrentCard`'s doc comment.
 }
