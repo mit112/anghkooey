@@ -69,6 +69,37 @@ struct FreezeControllerTests {
         try await controller.unfreeze(now: .now)
         #expect(controller.isFrozen == false)
     }
+
+    @Test("unfreeze shifts by floor(elapsed / 86_400) days — 1 day 16h elapsed shifts by 1, not 2")
+    func unfreeze_shiftsByFloorDays() async throws {
+        let store = MockCardStore()
+        let start = Date(timeIntervalSince1970: 1_700_000_000)
+        let controller = FreezeController(cardStore: store, storage: InMemoryFreezeStorage())
+        controller.freeze(now: start)
+
+        // 1 day + 16h elapsed: floor(40h / 24h) == 1, not 1.67 rounded up to 2.
+        try await controller.unfreeze(now: start.addingTimeInterval(40 * 3_600))
+
+        #expect(store.lastShiftDays == 1)
+    }
+
+    @Test("unfreeze failure leaves frozen state intact and rethrows")
+    func unfreezeFailure_leavesFrozenStateIntactAndRethrows() async throws {
+        struct StubShiftError: Error {}
+        let store = MockCardStore()
+        store.shiftError = StubShiftError()
+        let start = Date(timeIntervalSince1970: 1_700_000_000)
+        let controller = FreezeController(cardStore: store, storage: InMemoryFreezeStorage())
+        controller.freeze(now: start)
+
+        await #expect(throws: StubShiftError.self) {
+            try await controller.unfreeze(now: start.addingTimeInterval(2 * 86_400))
+        }
+
+        // The toggle's `get` reads `isFrozen`; a failed unfreeze must leave the
+        // frozen state intact so the Settings toggle reverts back to on.
+        #expect(controller.isFrozen == true)
+    }
 }
 
 /// In-memory test double for `FreezeStorage`. Production uses UserDefaults; tests inject this.
