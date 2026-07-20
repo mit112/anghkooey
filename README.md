@@ -102,3 +102,7 @@ xcodebuild test -project App/Anghkooey.xcodeproj \
 ```
 
 > Note: the FoundationModels eval harness and AI card-authoring require an Apple-Intelligence-capable device; on the simulator the AI paths degrade to editable stubs by design.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
