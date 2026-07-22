@@ -6,6 +6,17 @@
 
 > See implementation plan for details.
 
+### Test-target linking
+
+`AnghkooeyTests` depends on the `Anghkooey` host app (`embed: false`) and **must not** add
+`AnghkooeyCore` / `AnghkooeyIntelligence` as its own `package` dependencies — the host already
+contains them (app → `AnghkooeyUI` → Core/Intelligence). Linking them into the test bundle too
+gives every Core/Intelligence Swift type two metadata copies (host `.debug.dylib` + `.xctest`); the
+iOS 27 toolchain no longer dedupes them, so `as?` / `as` downcasts across the copies return `nil`
+(nil scheduler engine, missed `AuthoringError` catch → spurious app-suite failures). `import` /
+`@testable import` resolve transitively through the host, exactly like `AnghkooeyUI` — which is
+intentionally absent from the test target's deps for the same reason. See PR #106.
+
 ## Concurrency
 
 > See implementation plan for details.
