@@ -152,8 +152,13 @@ targets:
     dependencies:
       - target: Anghkooey
         embed: false
-      - package: AnghkooeyCore
-      - package: AnghkooeyIntelligence
+      # Core/Intelligence are provided at runtime by the host app above; do NOT
+      # add them as package deps here. Linking them into the test bundle too
+      # gives every Core/Intelligence Swift type two metadata copies (host dylib
+      # + xctest), which the iOS 27 toolchain no longer dedupes — `as?`/`as`
+      # downcasts then fail (nil engine, missed AuthoringError catch). `import`
+      # / `@testable import` still resolve transitively via the host, exactly
+      # like AnghkooeyUI (which is intentionally absent here for the same reason).
     sources:
       - path: AnghkooeyTests
     resources:
