@@ -28,4 +28,23 @@ import AnghkooeyCore
         #expect(all.count == count)
         #expect(all.contains { $0.tags.contains("Spanish") })
     }
+
+    /// Loading twice must not double-insert: the second call inserts nothing and
+    /// the store holds exactly one copy of the deck (#46).
+    @Test func loadIsIdempotent() async throws {
+        let store = MockCardStore()
+        let json = """
+        [
+          {"question": "Q1", "answer": "A1", "tags": ["Spanish"]},
+          {"question": "Q2", "answer": "A2", "tags": ["Math"]}
+        ]
+        """.data(using: .utf8)!
+        let loader = SampleDeckLoader(store: store, jsonData: json)
+        let first = try await loader.load(now: .now)
+        let second = try await loader.load(now: .now)
+        #expect(first == 2)
+        #expect(second == 0)
+        let all = try await store.allCards()
+        #expect(all.count == 2)
+    }
 }

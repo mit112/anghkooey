@@ -16,8 +16,16 @@ struct ContentView: View {
     @State private var availabilityBannerDismissed = false
 
     @State private var sampleLoadErrorMessage: String?
+    @State private var isLoadingSamples = false
 
     private func loadSamples() async {
+        // Debounce concurrent loads (a rapid double-tap, or two different "Load
+        // sample deck" buttons) so we never launch two overlapping inserts (#46).
+        // The loader is also idempotent per-entry, but this stops racing tasks
+        // before they reach the store's find-then-create TOCTOU window.
+        guard !isLoadingSamples else { return }
+        isLoadingSamples = true
+        defer { isLoadingSamples = false }
         do {
             try await SampleDeckLoader(store: appState.cardStore).load(now: .now)
         } catch {
@@ -114,7 +122,9 @@ struct ContentView: View {
         }
         .fullScreenCover(isPresented: Binding(
             get: { !onboardingState.hasCompleted },
-            set: { _ in }
+            // Real two-way binding: a system-initiated dismissal persists completion
+            // instead of silently re-presenting the cover (#45).
+            set: { presented in if !presented { onboardingState.complete() } }
         )) {
             OnboardingView(
                 onLoadSample: {
