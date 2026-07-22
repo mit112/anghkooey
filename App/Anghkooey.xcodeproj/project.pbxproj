@@ -10,11 +10,9 @@
 		14E38B10D19724BE8F36280F /* SyncPreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2542710C06ECE7EB817FF4F8 /* SyncPreference.swift */; };
 		1AF0E3AEA54D4E9C01AFAA11 /* SchemaMigrationV4Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAD0965A49F13A5EF35F4A5 /* SchemaMigrationV4Tests.swift */; };
 		1C5681F0A24B3964F71E900E /* FreezeControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAD05419FDB54EF847E4F217 /* FreezeControllerTests.swift */; };
-		1DC75093B4142C98F0B9D8D4 /* AppStateDrainReentrancyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BEA33956677C2E63F4F7A7F /* AppStateDrainReentrancyTests.swift */; };
 		23EB4719C6CDE2DF3A10FDB7 /* MetricsReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC86FF464394DC7B8C2BA50D /* MetricsReceiver.swift */; };
 		258EF0D8985B6D4FF200A34B /* MetricsReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6170637242A7E485A643F715 /* MetricsReceiverTests.swift */; };
 		271C36775D979860DD5D761D /* AnghkooeyWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2343F02E0386139B64E683EC /* AnghkooeyWidgetBundle.swift */; };
-		2D9E9B81761E8255480D8A34 /* AnghkooeyCore in Frameworks */ = {isa = PBXBuildFile; productRef = 810E677AFD18B25DCE67D6AF /* AnghkooeyCore */; };
 		30F70F1868CFA5B3723D6D5D /* ReviewSummaryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 098929DFADC2F309404636D8 /* ReviewSummaryTests.swift */; };
 		3C69A02A96CDAEB8DFFB0534 /* CardReviewSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E8F3B74ABF8A6FBD7019DB2 /* CardReviewSheet.swift */; };
 		426F8924560522E6031726D1 /* CardStoreClozeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBC479484E0ACC6EC3640D8E /* CardStoreClozeTests.swift */; };
@@ -25,7 +23,6 @@
 		582792F95044259D37BC944E /* CloudKitV5SchemaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5DEC5926D8513370FD52E5 /* CloudKitV5SchemaTests.swift */; };
 		5DAF33FB9439E111699C5B6D /* AnghkooeyCore in Frameworks */ = {isa = PBXBuildFile; productRef = DE9B9BE76EB0B805AB5D80E9 /* AnghkooeyCore */; };
 		65C5300478257265174ECB34 /* AnghkooeyUI in Frameworks */ = {isa = PBXBuildFile; productRef = 35F7FD1699C5DB4B94EEF7ED /* AnghkooeyUI */; };
-		6E2B75EF1D532905ED043B04 /* AnghkooeyIntelligence in Frameworks */ = {isa = PBXBuildFile; productRef = E463D25A57483D22C74E098F /* AnghkooeyIntelligence */; };
 		6F80EBA5F85241C073340591 /* AppStateSchedulerResolutionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39CCA16F4B517A6BB52C02BA /* AppStateSchedulerResolutionTests.swift */; };
 		78E69706CA93AED6A66F5C13 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9B639EF8A56B01C269368504 /* Assets.xcassets */; };
 		79C6AA877BE2A5BCD1BC8E7B /* CardStoreImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20946A67B7AE6E86392427A /* CardStoreImportTests.swift */; };
@@ -38,13 +35,14 @@
 		9929F859D0205BD04EFE66EE /* SampleDeckLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 241E47E7AFE127CC9C25C010 /* SampleDeckLoader.swift */; };
 		9E7D95BB2127525A1D3BD776 /* AddToAnghkooeyIntentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 912B355EF6B2C114C9EC763F /* AddToAnghkooeyIntentTests.swift */; };
 		A05524AC1F7FA8D8F1C2D24D /* GradeCardIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58DC8A89BB756CFDD147D74E /* GradeCardIntent.swift */; };
-		15BED32AFD2446174A8B34F0 /* RevealAnswerIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFABA0DD422B4BF301978E07 /* RevealAnswerIntent.swift */; };
 		A1161DD57B95A46494E6EEFA /* AnkiImporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AD794AD57F5F37BC67AAB49 /* AnkiImporterTests.swift */; };
 		A7AE1592FEEDA52EA1AD8284 /* AnghkooeyShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 0A037B8F43852214FC842CDF /* AnghkooeyShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		AB63CCDA634F0E31C168A19F /* AppStateDrainFailureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A29C77305009D977257A4E20 /* AppStateDrainFailureTests.swift */; };
 		ABB53006BD7A54F597BA4FAE /* sample.apkg in Resources */ = {isa = PBXBuildFile; fileRef = 1984AFE61E092F2A64C6836E /* sample.apkg */; };
+		AC1CC218B942A34870454134 /* RevealAnswerIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 702F9E7DF6D3A5F7A39669E3 /* RevealAnswerIntent.swift */; };
 		AE10CC0370F7C76BD262A2C7 /* AnkiPackageParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C32F9A6C7C0C292DE3ED8B1C /* AnkiPackageParserTests.swift */; };
 		AE2B092616BDC257E899D84C /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A6AE21F57389F2FA533F696 /* ShareViewController.swift */; };
+		B71A844C40D8B76ECB73A314 /* AppStateDrainReentrancyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22470C888EF39AFFE55D4704 /* AppStateDrainReentrancyTests.swift */; };
 		BB5809147A8AC7D33F6E8A41 /* AnghkooeyCore in Frameworks */ = {isa = PBXBuildFile; productRef = 6050CC9AE2B0A888BBACD0E2 /* AnghkooeyCore */; };
 		BD158D82F31B74D299DF85F8 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E3ED969F4ECE89B0A25E87 /* ContentView.swift */; };
 		C6CE3B6A74FF27E6CCA0C154 /* AnkiNoteMapperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9649E9840BC5BA0D460B7FAA /* AnkiNoteMapperTests.swift */; };
@@ -122,6 +120,7 @@
 		10541EABA7F5E2AF4A8A0343 /* ClozeMarkupParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClozeMarkupParserTests.swift; sourceTree = "<group>"; };
 		1984AFE61E092F2A64C6836E /* sample.apkg */ = {isa = PBXFileReference; path = sample.apkg; sourceTree = "<group>"; };
 		1CD36BC6DD0A3A1B128803A5 /* AnghkooeyWidget-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "AnghkooeyWidget-Info.plist"; sourceTree = "<group>"; };
+		22470C888EF39AFFE55D4704 /* AppStateDrainReentrancyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateDrainReentrancyTests.swift; sourceTree = "<group>"; };
 		2343F02E0386139B64E683EC /* AnghkooeyWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnghkooeyWidgetBundle.swift; sourceTree = "<group>"; };
 		241E47E7AFE127CC9C25C010 /* SampleDeckLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleDeckLoader.swift; sourceTree = "<group>"; };
 		2542710C06ECE7EB817FF4F8 /* SyncPreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncPreference.swift; sourceTree = "<group>"; };
@@ -132,7 +131,6 @@
 		473B3A4650CFC7C87202D922 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		55F0F922386EE72B02D5FC3F /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		58DC8A89BB756CFDD147D74E /* GradeCardIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradeCardIntent.swift; sourceTree = "<group>"; };
-		BFABA0DD422B4BF301978E07 /* RevealAnswerIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevealAnswerIntent.swift; sourceTree = "<group>"; };
 		5A6AE21F57389F2FA533F696 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		5B5DEC5926D8513370FD52E5 /* CloudKitV5SchemaTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitV5SchemaTests.swift; sourceTree = "<group>"; };
 		5BC74FCA67847F9D7EE391AA /* FreezeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreezeController.swift; sourceTree = "<group>"; };
@@ -142,12 +140,12 @@
 		6303924A04882FA4C900557B /* AnghkooeyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnghkooeyApp.swift; sourceTree = "<group>"; };
 		68C7356437F150F3733DF0DD /* AnghkooeyShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnghkooeyShortcuts.swift; sourceTree = "<group>"; };
 		6C67C61252A7F1C1BA1A218C /* CardStoreOptimizationLogsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardStoreOptimizationLogsTests.swift; sourceTree = "<group>"; };
+		702F9E7DF6D3A5F7A39669E3 /* RevealAnswerIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevealAnswerIntent.swift; sourceTree = "<group>"; };
 		712E1AED1C075F0AAC8CF0CA /* AnghkooeyShare-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "AnghkooeyShare-Info.plist"; sourceTree = "<group>"; };
 		718E27D7320553CBB6BCA62A /* AnghkooeyShare.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AnghkooeyShare.entitlements; sourceTree = "<group>"; };
 		7E8F3B74ABF8A6FBD7019DB2 /* CardReviewSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardReviewSheet.swift; sourceTree = "<group>"; };
 		80E3ED969F4ECE89B0A25E87 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		83CE7E31BDF48A8B35196DB6 /* AnghkooeyUI */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AnghkooeyUI; path = ../Packages/AnghkooeyUI; sourceTree = SOURCE_ROOT; };
-		8BEA33956677C2E63F4F7A7F /* AppStateDrainReentrancyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateDrainReentrancyTests.swift; sourceTree = "<group>"; };
 		8C501104D1E6F49E2BFB6FE8 /* ReviewTapLatencyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewTapLatencyTests.swift; sourceTree = "<group>"; };
 		912B355EF6B2C114C9EC763F /* AddToAnghkooeyIntentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddToAnghkooeyIntentTests.swift; sourceTree = "<group>"; };
 		94ECF49B9F9606DF76117048 /* SampleDeck.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = SampleDeck.json; sourceTree = "<group>"; };
@@ -184,15 +182,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		060225AC14E6BB94935D5B02 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				2D9E9B81761E8255480D8A34 /* AnghkooeyCore in Frameworks */,
-				6E2B75EF1D532905ED043B04 /* AnghkooeyIntelligence in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		ECD9F8F6385B28F86CD116B5 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -300,7 +289,7 @@
 				098D0C5450147DE402DC643A /* AnghkooeyWidget.entitlements */,
 				2343F02E0386139B64E683EC /* AnghkooeyWidgetBundle.swift */,
 				58DC8A89BB756CFDD147D74E /* GradeCardIntent.swift */,
-				BFABA0DD422B4BF301978E07 /* RevealAnswerIntent.swift */,
+				702F9E7DF6D3A5F7A39669E3 /* RevealAnswerIntent.swift */,
 				AA000001000000000000AA03 /* PrivacyInfo.xcprivacy */,
 			);
 			path = AnghkooeyWidget;
@@ -327,7 +316,7 @@
 				E0230E7868C5AFE5CB3D8E4D /* AppStateAcceptDraftOrderingTests.swift */,
 				F0DDC8B39008FDCA90A927FF /* AppStateAcceptDraftReentrancyTests.swift */,
 				A29C77305009D977257A4E20 /* AppStateDrainFailureTests.swift */,
-				8BEA33956677C2E63F4F7A7F /* AppStateDrainReentrancyTests.swift */,
+				22470C888EF39AFFE55D4704 /* AppStateDrainReentrancyTests.swift */,
 				DC510E7B9D8F52E50E4CCED4 /* AppStateEnqueueTests.swift */,
 				39CCA16F4B517A6BB52C02BA /* AppStateSchedulerResolutionTests.swift */,
 				DD989AFACC372F9FA57EA7CD /* CaptureAvailabilityModelTests.swift */,
@@ -449,7 +438,6 @@
 			buildPhases = (
 				9D770B56DDA5DAA296840A11 /* Sources */,
 				EB8A11E0D0AE56D311485B46 /* Resources */,
-				060225AC14E6BB94935D5B02 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -458,8 +446,6 @@
 			);
 			name = AnghkooeyTests;
 			packageProductDependencies = (
-				810E677AFD18B25DCE67D6AF /* AnghkooeyCore */,
-				E463D25A57483D22C74E098F /* AnghkooeyIntelligence */,
 			);
 			productName = AnghkooeyTests;
 			productReference = 03D1365FE0607DDE7DDF97F8 /* AnghkooeyTests.xctest */;
@@ -509,8 +495,8 @@
 			targets = (
 				02F92088487C152845F92C84 /* Anghkooey */,
 				7F720F6F21CF5127D7884289 /* AnghkooeyShare */,
-				C633685C3DE84BD0C1A8C9F8 /* AnghkooeyTests */,
 				5590F6898AB2844890005CC7 /* AnghkooeyWidget */,
+				C633685C3DE84BD0C1A8C9F8 /* AnghkooeyTests */,
 			);
 		};
 /* End PBXProject section */
@@ -586,7 +572,7 @@
 				D2FD61D83BB17F47EEFAB1CA /* AppStateAcceptDraftOrderingTests.swift in Sources */,
 				534957707953452019E7B473 /* AppStateAcceptDraftReentrancyTests.swift in Sources */,
 				AB63CCDA634F0E31C168A19F /* AppStateDrainFailureTests.swift in Sources */,
-				1DC75093B4142C98F0B9D8D4 /* AppStateDrainReentrancyTests.swift in Sources */,
+				B71A844C40D8B76ECB73A314 /* AppStateDrainReentrancyTests.swift in Sources */,
 				EA01604E660F4F05E86D4778 /* AppStateEnqueueTests.swift in Sources */,
 				6F80EBA5F85241C073340591 /* AppStateSchedulerResolutionTests.swift in Sources */,
 				8511152EC0636AF534E6B001 /* CaptureAvailabilityModelTests.swift in Sources */,
@@ -620,7 +606,7 @@
 			files = (
 				271C36775D979860DD5D761D /* AnghkooeyWidgetBundle.swift in Sources */,
 				A05524AC1F7FA8D8F1C2D24D /* GradeCardIntent.swift in Sources */,
-				15BED32AFD2446174A8B34F0 /* RevealAnswerIntent.swift in Sources */,
+				AC1CC218B942A34870454134 /* RevealAnswerIntent.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1028,17 +1014,9 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = AnghkooeyCore;
 		};
-		810E677AFD18B25DCE67D6AF /* AnghkooeyCore */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = AnghkooeyCore;
-		};
 		DE9B9BE76EB0B805AB5D80E9 /* AnghkooeyCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = AnghkooeyCore;
-		};
-		E463D25A57483D22C74E098F /* AnghkooeyIntelligence */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = AnghkooeyIntelligence;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
