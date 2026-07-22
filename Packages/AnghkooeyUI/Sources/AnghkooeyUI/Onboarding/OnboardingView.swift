@@ -4,9 +4,19 @@ import SwiftUI
 public final class OnboardingState {
     private let defaults: UserDefaults
     private let key = "hasCompletedOnboarding"
-    public init(defaults: UserDefaults = .standard) { self.defaults = defaults }
-    public var hasCompleted: Bool { defaults.bool(forKey: key) }
-    public func complete() { defaults.set(true, forKey: key) }
+    /// Stored so the `@Observable` macro emits a change event on `complete()`.
+    /// A computed property reading UserDefaults mutates no tracked storage, so
+    /// the onboarding cover's binding dismissed only by coincidence — unrelated
+    /// state churn re-evaluating the view — which a quiet launch path can miss (#45).
+    public private(set) var hasCompleted: Bool
+    public init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        self.hasCompleted = defaults.bool(forKey: key)
+    }
+    public func complete() {
+        hasCompleted = true
+        defaults.set(true, forKey: key)
+    }
 }
 
 public struct OnboardingView: View {
